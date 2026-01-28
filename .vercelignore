@@ -1,0 +1,41 @@
+# Keep uploads small
+node_modules/
+.npm/
+.pnpm-store/
+
+# Env
+.env
+.env.*
+
+# Local data / artifacts
+.data/
+
+# Build outputs
+web/dist/
+dist/
+
+# Logs
+*.log
+vercel-dev.log
+vercel.log
+server.log
+
+# Large/local test assets
+test.mp3
+
+# OS / editor
+.DS_Store
+Thumbs.db
+nul
+
+# Clawdbot assistant workspace files
+AGENTS.md
+BOOTSTRAP.md
+HEARTBEAT.md
+IDENTITY.md
+LOGS_OPENCODE.md
+MEMORY.md
+SOUL.md
+TOOLS.md
+USER.md
+ACTION_PLAN.md
