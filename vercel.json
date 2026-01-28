@@ -1,6 +1,7 @@
 {
-  "installCommand": "npm install",
-  "buildCommand": "npm run build",
+  "installCommand": "npm install && npm --prefix web install",
+  "buildCommand": "npm run build:vercel",
   "devCommand": "npm run dev",
-  "framework": null
+  "framework": null,
+  "outputDirectory": "web/dist"
 }
