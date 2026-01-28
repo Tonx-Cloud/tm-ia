@@ -1,0 +1,197 @@
+{
+  "nav.auto": "Auto (guiado)",
+  "nav.projects": "Projetos",
+  "nav.inspo": "Inspo",
+  "cta.create_demo": "Criar demo",
+  "cta.view_paywall": "Ver paywall",
+  "cta.create_video": "Criar vídeo",
+  "cta.unlock_full": "Liberar vídeo completo",
+  "cta.retry_demo": "Tentar demo novamente",
+  "badge.demo": "Demo",
+  "badge.low_res": "Baixa resolução",
+  "badge.watermark": "Marca d'água",
+  "copy.hero_title": "Desbloqueie vídeos musicais com IA",
+  "copy.hero_sub": "Envie sua faixa, veja um preview de 5s com marca d'água e libere o vídeo completo com créditos.",
+  "empty.no_videos": "Nenhum vídeo ainda",
+  "empty.hint": "Use a demo de 5s para testar antes de liberar o PRO.",
+  "paywall.what_you_get": "O que você ganha ao liberar",
+  "paywall.point_full": "Duração completa, sem limite",
+  "paywall.point_no_watermark": "Sem marca d'água, HD",
+  "paywall.point_multi_scene": "Coerência multi-cena",
+  "paywall.cost_label": "Custo",
+  "paywall.credits_help": "Como funcionam os créditos?",
+  "label.track": "Faixa",
+  "label.duration": "Duração",
+  "label.format": "Formato",
+  "badge.demo_disclaimer": "Preview demo · 5s · Marca d'água · Baixa resolução",
+  "copy.desire": "Libere o vídeo completo em HD, sem marca d'água e com múltiplas cenas.",
+  "cta.top_up": "Adicionar créditos",
+  "cta.buy_credits": "Comprar créditos",
+  "error.cooldown": "Limite diário de demo atingido. Tente novamente em {minutes} minutos.",
+  "error.upload": "Falha no upload. Tente novamente.",
+  "error.auth": "Você precisa entrar para rodar a demo.",
+  "copy.upload_title": "Envie seu áudio",
+  "copy.upload_sub": "MP3 ou WAV · limite {limit} · arraste, solte ou clique para selecionar.",
+  "state.processing": "Processando...",
+  "state.waiting_demo": "Aguardando demo…",
+  "state.preview_loading": "Gerando preview…",
+  "state.no_credits": "Você precisa de mais créditos para liberar.",
+  "hint.top_up": "Adicione créditos para liberar o vídeo completo.",
+  "hint.processing": "Estamos transcrevendo e criando seu preview.",
+  "paywall.balance": "Saldo",
+  "paywall.cost": "Custo",
+  "paywall.preview_label": "Seu preview de demo",
+  "credits.balance": "Créditos: {{count}}",
+  "credits.loading": "Carregando créditos...",
+  "credits.error": "Falha ao carregar créditos",
+  "demo.hook.title": "Seu hook criativo",
+  "demo.hook.style": "Estilo: {{style}}",
+  "demo.preview.title": "Seu preview de 5s",
+  "demo.preview.unlock": "Liberar vídeo completo",
+  "preview.hero.title": "Seu vídeo preview",
+  "preview.hero.subtitle": "5 segundos da sua música",
+  "preview.unlock.title": "Pronto para liberar?",
+  "preview.unlock.subtitle": "Tenha o vídeo completo sem marca d'água",
+  "preview.unlock.cta": "Liberar vídeo completo",
+  "preview.unlock.cost": "{{count}} créditos",
+  "preview.unlock.missing": "Faltam {{count}} créditos",
+  "preview.credits.needed": "{{count}} créditos necessários",
+  "preview.credits.available": "Você tem {{count}} créditos",
+  "preview.watermark.badge": "MARCA D'ÁGUA · DEMO",
+  "assets.title": "Biblioteca de Assets",
+  "assets.reuse_badge": "Reuso não consome créditos",
+  "assets.estimate_badge": "Estimado: {count} créditos",
+  "assets.status.generated": "Gerado",
+  "assets.status.reused": "Reutilizado",
+  "assets.status.needs_regen": "Precisa regen",
+  "assets.cta.reuse": "Reusar",
+  "assets.cta.regen": "Regenerar",
+  "assets.cta.regen_now": "Regenerar agora",
+  "assets.needs_regen.hint": "Este asset precisa ser regenerado",
+  "assets.cost.last": "Último custo: {count} créditos",
+  "story.title": "Storyboard",
+  "story.save": "Salvar storyboard",
+  "story.saved": "Salvo",
+  "story.duration": "Duração (s)",
+  "story.animate": "Animar",
+  "story.position": "Posição",
+  "story.snapshot.saved": "Snapshot salvo",
+  "story.snapshot.reused": "Re-render não necessário (sem mudanças)",
+  "story.snapshot.save": "Salvar snapshot",
+  "credits.topup.title": "Comprar créditos",
+  "credits.topup.amount": "Quantidade (créditos)",
+  "credits.topup.cta": "Adicionar {{count}} créditos",
+  "credits.topup.success": "Adicionados {count} créditos",
+  "render.config.title": "Configure seu vídeo",
+  "render.config.format": "Formato",
+  "render.config.duration": "Duração",
+  "render.config.scenes": "Número de cenas",
+  "render.config.style": "Prompt de estilo (opcional)",
+  "render.config.aspect": "Proporção",
+  "render.config.quality": "Qualidade",
+  "render.config.estimate": "Custo estimado: {{credits}} créditos",
+  "render.config.start": "Iniciar Pro Render",
+  "render.config.insufficient": "Faltam {{needed}} créditos",
+  "pix.title": "Pagar com PIX",
+  "pix.scan": "Escaneie o QR ou copie o código abaixo",
+  "pix.copy": "Copiar código PIX",
+  "pix.copied": "Copiado!",
+  "pix.awaiting": "Aguardando pagamento...",
+  "pix.confirmed": "Pagamento confirmado!",
+  "pix.expired": "Pagamento expirado. Tente novamente.",
+  "pix.timeout": "Tempo restante: {{time}}",
+  "pix.close": "Fechar",
+  "history.title": "Seus renders",
+  "history.empty": "Nenhum render ainda. Crie seu primeiro vídeo!",
+  "history.filter.all": "Todos",
+  "history.filter.pending": "Em progresso",
+  "history.filter.complete": "Concluídos",
+  "history.filter.failed": "Falhou",
+  "history.status.pending": "Pendente",
+  "history.status.processing": "Processando",
+  "history.status.complete": "Concluído",
+  "history.status.failed": "Falhou",
+  "history.action.download": "Download",
+  "history.action.retry": "Tentar de novo",
+  "history.action.details": "Detalhes",
+  "history.date": "Criado em {{date}}"
+  ,"nav.history": "Meus renders"
+  ,"nav.logout": "Sair"
+  
+  ,"wizard.title": "Gerador de Vídeos Musicais com IA"
+  ,"wizard.subtitle": "Transforme sua música em vídeos incríveis em 6 passos simples"
+  ,"wizard.credits": "créditos"
+  ,"wizard.instrumental": "(Instrumental / Sem fala detectada)"
+  
+  ,"wizard.step1.title": "Envie Seu Áudio"
+  ,"wizard.step1.subtitle": "Arraste e solte ou clique para selecionar"
+  ,"wizard.uploading": "Enviando..."
+  ,"wizard.drop_audio": "Solte seu áudio aqui"
+  ,"wizard.formats": "MP3, WAV, FLAC suportados (máx 15MB)"
+  ,"wizard.cost_label": "Custo"
+  ,"wizard.transcription": "transcrição"
+  ,"wizard.analysis": "análise"
+  
+  ,"wizard.step2.title": "Revisar Transcrição"
+  ,"wizard.step2.subtitle": "Confira as letras e segmentos detectados pela IA"
+  ,"wizard.change": "Trocar"
+  ,"wizard.analyzing": "Analisando seu áudio..."
+  ,"wizard.hook_detected": "REFRÃO DETECTADO"
+  ,"wizard.confirm_transcription": "Confirmar Transcrição"
+  
+  ,"wizard.step3.title": "Estilo e Formato"
+  ,"wizard.step3.subtitle": "Escolha como seu vídeo deve parecer"
+  ,"wizard.format": "Formato do Vídeo"
+  ,"wizard.style": "Estilo Visual"
+  ,"wizard.custom_prompt": "Prompt Personalizado"
+  ,"wizard.optional": "opcional"
+  ,"wizard.custom_prompt_placeholder": "Ex.: Atmosfera escura e sombria com chuva e luzes neon..."
+  ,"wizard.continue": "Continuar"
+  
+  ,"wizard.step4.title": "Frequência de Imagens"
+  ,"wizard.step4.subtitle": "Quantas imagens devemos gerar?"
+  ,"wizard.every_n_seconds": "A cada {n} segundos"
+  ,"wizard.images": "imagens"
+  ,"wizard.recommended": "Recomendado"
+  ,"wizard.total": "Total"
+  ,"wizard.generating": "Gerando imagens..."
+  ,"wizard.generate_images": "Gerar Imagens"
+  
+  ,"wizard.step5.title": "Revisar Imagens"
+  ,"wizard.step5.subtitle": "Edite, regenere ou envie imagens personalizadas"
+  ,"wizard.regenerate": "Regenerar"
+  ,"wizard.upload_custom": "Enviar Imagem"
+  ,"wizard.continue_to_render": "Continuar para Render"
+  
+  ,"wizard.step6.title": "Gerar Vídeo"
+  ,"wizard.step6.subtitle": "Revise e renderize seu vídeo final"
+  ,"wizard.summary": "Resumo"
+  ,"wizard.duration": "Duração"
+  ,"wizard.render_cost": "Custo do Render"
+  ,"wizard.rendering": "Renderizando..."
+  ,"wizard.generate_video": "Gerar Vídeo"
+  ,"wizard.back": "Voltar"
+  
+  ,"landing.badge": "Ferramenta #1 de Vídeos Musicais com IA"
+  ,"landing.title": "Gerador de Vídeos Musicais com IA"
+  ,"landing.subtitle": "Crie vídeos musicais profissionais para Suno, Udio e qualquer música gerada por IA. Sincronização perfeita, visuais impressionantes, criatividade ilimitada."
+  ,"landing.cta": "Começar Agora"
+  ,"landing.cta_demo": "Ver Demo"
+  ,"landing.trusted": "Usado por criadores no mundo todo"
+  
+  ,"landing.feature1.title": "Rápido de Verdade"
+  ,"landing.feature1.desc": "Gere um preview em minutos. Sem espera, sem configuração complicada."
+  ,"landing.feature2.title": "Sincronização Perfeita"
+  ,"landing.feature2.desc": "Nossa IA analisa ritmo, energia e estrutura para sincronizar visuais com sua música."
+  ,"landing.feature3.title": "Preview Inteligente"
+  ,"landing.feature3.desc": "Detectamos o refrão e geramos um preview curto para inspirar sua criatividade."
+  ,"landing.feature4.title": "Múltiplos Formatos"
+  ,"landing.feature4.desc": "Vertical, horizontal ou quadrado. Perfeito para TikTok, Instagram e YouTube."
+  ,"landing.feature5.title": "Criatividade IA"
+  ,"landing.feature5.desc": "Nossos modelos entendem música e visual para entregar vídeos artísticos e emocionais."
+  ,"landing.feature6.title": "Export HD"
+  ,"landing.feature6.desc": "Baixe em Full HD sem marca d'água. Compartilhe direto nas suas plataformas."
+  
+  ,"landing.ready.title": "Pronto para transformar sua música?"
+  ,"landing.ready.subtitle": "Junte-se a milhares de artistas criando vídeos incríveis com IA."
+}

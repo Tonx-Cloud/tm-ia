@@ -1,0 +1,66 @@
+import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { getSession } from '../_lib/auth.js'
+import { loadEnv } from '../_lib/env.js'
+import { spendCredits, getBalance, addCredits } from '../_lib/credits.js'
+import { PRICING } from '../_lib/pricing.js'
+import { withObservability } from '../_lib/observability.js'
+import { checkRateLimit } from '../_lib/rateLimit.js'
+
+export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+
+  const session = getSession(req)
+  if (!session) {
+    ctx.log('warn', 'auth.missing')
+    return res.status(401).json({ error: 'Auth required', code: 'UNAUTH', requestId: ctx.requestId })
+  }
+  ctx.userId = session.userId
+
+  const rateKey = `hook:${session.userId}`
+  const rate = checkRateLimit(req, { limit: 5, windowMs: 60_000, key: rateKey, ctx })
+  if (!rate.allowed) {
+    res.setHeader('Retry-After', String(rate.retryAfterSeconds))
+    return res.status(429).json({ error: 'Too many requests', retryAfter: rate.retryAfterSeconds, requestId: ctx.requestId })
+  }
+
+  try {
+    loadEnv()
+  } catch (err) {
+    ctx.log('error', 'env.missing', { message: (err as Error).message })
+    return res.status(500).json({ error: (err as Error).message, requestId: ctx.requestId })
+  }
+
+  const { transcription } = req.body as { transcription?: string }
+  if (!transcription) {
+    ctx.log('warn', 'demo.hook.invalid_body')
+    return res.status(400).json({ error: 'transcription required', requestId: ctx.requestId })
+  }
+
+  const cost = PRICING.ANALYSIS_HOOK // 1 credit
+
+  // Seed demo balance if empty
+  if (getBalance(session.userId) === 0) {
+    addCredits(session.userId, 50, 'initial')
+  }
+
+  // Check and spend credits
+  try {
+    spendCredits(session.userId, cost, 'analysis')
+  } catch (err) {
+    ctx.log('warn', 'hook.insufficient_credits', { balance: getBalance(session.userId), cost })
+    return res.status(402).json({ 
+      error: 'Insufficient credits', 
+      required: cost,
+      balance: getBalance(session.userId),
+      requestId: ctx.requestId 
+    })
+  }
+
+  // TODO: Replace with real AI hook generation
+  const hook = 'Feel the rhythm, live the moment'
+  const style = 'cinematic'
+  const balance = getBalance(session.userId)
+
+  ctx.log('info', 'demo.hook.ok', { hasTranscription: Boolean(transcription), cost, balance })
+  return res.status(200).json({ hook, style, cost, balance, requestId: ctx.requestId })
+})

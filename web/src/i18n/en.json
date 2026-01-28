@@ -1,0 +1,197 @@
+{
+  "nav.auto": "Auto (guided)",
+  "nav.projects": "Projects",
+  "nav.inspo": "Inspo",
+  "cta.create_demo": "Create demo",
+  "cta.view_paywall": "View paywall",
+  "cta.create_video": "Create video",
+  "cta.unlock_full": "Unlock Full Video",
+  "cta.retry_demo": "Retry demo",
+  "badge.demo": "Demo",
+  "badge.low_res": "Low-res",
+  "badge.watermark": "Watermark",
+  "copy.hero_title": "Unlock AI music videos",
+  "copy.hero_sub": "Upload your track, preview 5s with watermark, unlock the full video with credits.",
+  "empty.no_videos": "No videos yet",
+  "empty.hint": "Use the 5s demo to test before unlocking PRO.",
+  "paywall.what_you_get": "What you get when you unlock",
+  "paywall.point_full": "Full length, no cap",
+  "paywall.point_no_watermark": "No watermark, HD",
+  "paywall.point_multi_scene": "Multi-scene coherence",
+  "paywall.cost_label": "Cost",
+  "paywall.credits_help": "How credits work?",
+  "label.track": "Track",
+  "label.duration": "Duration",
+  "label.format": "Format",
+  "badge.demo_disclaimer": "Demo preview · 5s · Watermark · Low-res",
+  "copy.desire": "Unlock full-length, HD, no watermark, multi-scene visuals tailored to your track.",
+  "cta.top_up": "Top up",
+  "cta.buy_credits": "Buy credits",
+  "error.cooldown": "Daily demo limit reached. Try again in {minutes} minutes.",
+  "error.upload": "Upload failed. Please try again.",
+  "error.auth": "You need to sign in to run the demo.",
+  "copy.upload_title": "Upload your audio",
+  "copy.upload_sub": "MP3 or WAV · limit {limit} · drag, drop or click to select.",
+  "state.processing": "Processing...",
+  "state.waiting_demo": "Waiting for demo…",
+  "state.preview_loading": "Generating preview…",
+  "state.no_credits": "You need more credits to unlock.",
+  "hint.top_up": "Add credits to unlock the full video.",
+  "hint.processing": "We are transcribing and creating your preview.",
+  "paywall.balance": "Balance",
+  "paywall.cost": "Cost",
+  "paywall.preview_label": "Your demo preview",
+  "credits.balance": "Credits: {{count}}",
+  "credits.loading": "Loading credits...",
+  "credits.error": "Failed to load credits",
+  "demo.hook.title": "Your Creative Hook",
+  "demo.hook.style": "Style: {{style}}",
+  "demo.preview.title": "Your 5s Preview",
+  "demo.preview.unlock": "Unlock Full Video",
+  "preview.hero.title": "Your Video Preview",
+  "preview.hero.subtitle": "5 seconds of your masterpiece",
+  "preview.unlock.title": "Ready to unlock?",
+  "preview.unlock.subtitle": "Get your full video without watermark",
+  "preview.unlock.cta": "Unlock Full Video",
+  "preview.unlock.cost": "{{count}} credits",
+  "preview.unlock.missing": "You need {{count}} more credits",
+  "preview.credits.needed": "{{count}} credits needed",
+  "preview.credits.available": "You have {{count}} credits",
+  "preview.watermark.badge": "WATERMARK · DEMO",
+  "assets.title": "Asset Library",
+  "assets.reuse_badge": "Reuse costs 0 credits",
+  "assets.estimate_badge": "Estimated: {count} credits",
+  "assets.status.generated": "Generated",
+  "assets.status.reused": "Reused",
+  "assets.status.needs_regen": "Needs regen",
+  "assets.cta.reuse": "Reuse",
+  "assets.cta.regen": "Regenerate",
+  "assets.cta.regen_now": "Regenerate now",
+  "assets.needs_regen.hint": "This asset needs regeneration",
+  "assets.cost.last": "Last cost: {count} credits",
+  "story.title": "Storyboard",
+  "story.save": "Save storyboard",
+  "story.saved": "Saved",
+  "story.duration": "Duration (s)",
+  "story.animate": "Animate",
+  "story.position": "Position",
+  "story.snapshot.saved": "Snapshot saved",
+  "story.snapshot.reused": "Re-render not needed (unchanged)",
+  "story.snapshot.save": "Save snapshot",
+  "credits.topup.title": "Add credits",
+  "credits.topup.amount": "Amount (credits)",
+  "credits.topup.cta": "Add {{count}} credits",
+  "credits.topup.success": "Added {count} credits",
+  "render.config.title": "Configure Your Video",
+  "render.config.format": "Format",
+  "render.config.duration": "Duration",
+  "render.config.scenes": "Number of Scenes",
+  "render.config.style": "Style Prompt (optional)",
+  "render.config.aspect": "Aspect Ratio",
+  "render.config.quality": "Quality",
+  "render.config.estimate": "Estimated cost: {{credits}} credits",
+  "render.config.start": "Start Pro Render",
+  "render.config.insufficient": "You need {{needed}} more credits",
+  "pix.title": "Pay with PIX",
+  "pix.scan": "Scan QR Code or copy the code below",
+  "pix.copy": "Copy PIX Code",
+  "pix.copied": "Copied!",
+  "pix.awaiting": "Awaiting payment...",
+  "pix.confirmed": "Payment confirmed!",
+  "pix.expired": "Payment expired. Try again.",
+  "pix.timeout": "Time remaining: {{time}}",
+  "pix.close": "Close",
+  "history.title": "Your Renders",
+  "history.empty": "No renders yet. Create your first video!",
+  "history.filter.all": "All",
+  "history.filter.pending": "In Progress",
+  "history.filter.complete": "Completed",
+  "history.filter.failed": "Failed",
+  "history.status.pending": "Pending",
+  "history.status.processing": "Processing",
+  "history.status.complete": "Complete",
+  "history.status.failed": "Failed",
+  "history.action.download": "Download",
+  "history.action.retry": "Retry",
+  "history.action.details": "Details",
+  "history.date": "Created {{date}}"
+  ,"nav.history": "My Renders"
+  ,"nav.logout": "Log out"
+  
+  ,"wizard.title": "AI Music Video Generator"
+  ,"wizard.subtitle": "Turn your music into stunning videos in 6 simple steps"
+  ,"wizard.credits": "credits"
+  ,"wizard.instrumental": "(Instrumental / No speech detected)"
+  
+  ,"wizard.step1.title": "Upload Your Audio"
+  ,"wizard.step1.subtitle": "Drag & drop or click to select your music file"
+  ,"wizard.uploading": "Uploading..."
+  ,"wizard.drop_audio": "Drop your audio here"
+  ,"wizard.formats": "MP3, WAV, FLAC supported (max 15MB)"
+  ,"wizard.cost_label": "Cost"
+  ,"wizard.transcription": "transcription"
+  ,"wizard.analysis": "analysis"
+  
+  ,"wizard.step2.title": "Review Transcription"
+  ,"wizard.step2.subtitle": "Check the AI-detected lyrics and segments"
+  ,"wizard.change": "Change"
+  ,"wizard.analyzing": "Analyzing your audio..."
+  ,"wizard.hook_detected": "HOOK DETECTED"
+  ,"wizard.confirm_transcription": "Confirm Transcription"
+  
+  ,"wizard.step3.title": "Style & Format"
+  ,"wizard.step3.subtitle": "Choose how your video should look"
+  ,"wizard.format": "Video Format"
+  ,"wizard.style": "Visual Style"
+  ,"wizard.custom_prompt": "Custom Style Prompt"
+  ,"wizard.optional": "optional"
+  ,"wizard.custom_prompt_placeholder": "E.g.: Dark moody atmosphere with rain and neon lights..."
+  ,"wizard.continue": "Continue"
+  
+  ,"wizard.step4.title": "Image Frequency"
+  ,"wizard.step4.subtitle": "How many images should we generate?"
+  ,"wizard.every_n_seconds": "Every {n} seconds"
+  ,"wizard.images": "images"
+  ,"wizard.recommended": "Recommended"
+  ,"wizard.total": "Total"
+  ,"wizard.generating": "Generating images..."
+  ,"wizard.generate_images": "Generate Images"
+  
+  ,"wizard.step5.title": "Review Images"
+  ,"wizard.step5.subtitle": "Edit, regenerate or upload custom images"
+  ,"wizard.regenerate": "Regenerate"
+  ,"wizard.upload_custom": "Upload Custom"
+  ,"wizard.continue_to_render": "Continue to Render"
+  
+  ,"wizard.step6.title": "Generate Video"
+  ,"wizard.step6.subtitle": "Review and render your final video"
+  ,"wizard.summary": "Summary"
+  ,"wizard.duration": "Duration"
+  ,"wizard.render_cost": "Render Cost"
+  ,"wizard.rendering": "Rendering..."
+  ,"wizard.generate_video": "Generate Video"
+  ,"wizard.back": "Back"
+  
+  ,"landing.badge": "#1 AI Music Video Tool"
+  ,"landing.title": "AI Music Video Generator"
+  ,"landing.subtitle": "Create professional music videos for Suno, Udio, and any AI-generated music. Perfect sync, stunning visuals, unlimited creativity."
+  ,"landing.cta": "Get Started"
+  ,"landing.cta_demo": "Watch Demo"
+  ,"landing.trusted": "Trusted by creators worldwide"
+  
+  ,"landing.feature1.title": "Lightning Fast"
+  ,"landing.feature1.desc": "Generate a preview in minutes. No waiting, no complex setup."
+  ,"landing.feature2.title": "Perfect Sync"
+  ,"landing.feature2.desc": "Our AI analyzes rhythm, energy, and structure to match visuals to your music."
+  ,"landing.feature3.title": "Smart Preview"
+  ,"landing.feature3.desc": "We detect the hook and generate a short preview to spark your creativity."
+  ,"landing.feature4.title": "Multiple Formats"
+  ,"landing.feature4.desc": "Vertical, horizontal, or square. Perfect for TikTok, Instagram, and YouTube."
+  ,"landing.feature5.title": "AI Creativity"
+  ,"landing.feature5.desc": "Our models understand music and visuals to deliver artistic, emotionally engaging videos."
+  ,"landing.feature6.title": "HD Export"
+  ,"landing.feature6.desc": "Download in Full HD without watermarks. Share directly to your platforms."
+  
+  ,"landing.ready.title": "Ready to transform your music?"
+  ,"landing.ready.subtitle": "Join thousands of artists creating stunning videos with AI."
+}

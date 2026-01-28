@@ -1,0 +1,432 @@
+﻿{
+    "startedAt":  "2026-01-22T07:30:54",
+    "baseUrl":  "http://localhost:3006",
+    "mode":  "dev",
+    "tokenMasked":  "dev...",
+    "audioPath":  "D:\\tm-ia\\test.mp3",
+    "steps":  [
+                  {
+                      "name":  "health",
+                      "ok":  true,
+                      "status":  200,
+                      "ms":  1365,
+                      "error":  null,
+                      "requestId":  null,
+                      "body":  {
+                                   "ok":  true,
+                                   "ts":  1769077856178
+                               }
+                  },
+                  {
+                      "name":  "upload",
+                      "ok":  true,
+                      "status":  200,
+                      "ms":  1636,
+                      "error":  null,
+                      "requestId":  "da73535e-7484-4cdd-b7ba-10c10c33e0b7",
+                      "body":  {
+                                   "ok":  true,
+                                   "projectId":  "demo-1769077857924",
+                                   "filePath":  "C:\\Users\\hilto\\AppData\\Local\\Temp\\4584a3b9-7767-4370-8001-43ea408ac0b0-test.mp3",
+                                   "filename":  "test.mp3",
+                                   "size":  2680660,
+                                   "mime":  "audio/mpeg",
+                                   "requestId":  "da73535e-7484-4cdd-b7ba-10c10c33e0b7"
+                               }
+                  },
+                  {
+                      "name":  "transcribe",
+                      "ok":  true,
+                      "status":  200,
+                      "ms":  1571,
+                      "error":  null,
+                      "requestId":  null,
+                      "body":  {
+                                   "transcription":  "This is a sample transcription of your audio hook. Replace with real model when configured.",
+                                   "requestId":  "c5075fae-95d8-4e80-ae00-19b000f4c5a1"
+                               }
+                  },
+                  {
+                      "name":  "hook",
+                      "ok":  true,
+                      "status":  200,
+                      "ms":  1620,
+                      "error":  null,
+                      "requestId":  "b15ebbb5-1669-4413-a1f2-48546816ac75",
+                      "body":  {
+                                   "hook":  "Feel the rhythm, live the moment ✨",
+                                   "style":  "cinematic",
+                                   "requestId":  "b15ebbb5-1669-4413-a1f2-48546816ac75"
+                               }
+                  },
+                  {
+                      "name":  "preview",
+                      "ok":  true,
+                      "status":  200,
+                      "ms":  1518,
+                      "error":  null,
+                      "requestId":  "4bf3bafe-f9a9-4881-b7e3-de3c3106043d",
+                      "body":  {
+                                   "previewUrl":  "https://www.w3schools.com/html/mov_bbb.mp4",
+                                   "requestId":  "4bf3bafe-f9a9-4881-b7e3-de3c3106043d"
+                               }
+                  },
+                  {
+                      "name":  "assets-create",
+                      "ok":  true,
+                      "status":  200,
+                      "ms":  1586,
+                      "error":  null,
+                      "requestId":  null,
+                      "body":  {
+                                   "project":  {
+                                                   "id":  "360f2f2e-747c-4626-8815-002f24d66b49",
+                                                   "createdAt":  1769077864265,
+                                                   "assets":  [
+                                                                  {
+                                                                      "id":  "b0a4ccff-ab78-416a-8898-2cd95f8f86e8",
+                                                                      "projectId":  "360f2f2e-747c-4626-8815-002f24d66b49",
+                                                                      "prompt":  "Scene 1",
+                                                                      "status":  "generated",
+                                                                      "dataUrl":  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                                                                      "createdAt":  1769077864266
+                                                                  },
+                                                                  {
+                                                                      "id":  "41af6b67-bd88-43a3-91b9-7158593e8d69",
+                                                                      "projectId":  "360f2f2e-747c-4626-8815-002f24d66b49",
+                                                                      "prompt":  "Scene 2",
+                                                                      "status":  "generated",
+                                                                      "dataUrl":  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                                                                      "createdAt":  1769077864266
+                                                                  }
+                                                              ],
+                                                   "storyboard":  [
+                                                                      {
+                                                                          "assetId":  "b0a4ccff-ab78-416a-8898-2cd95f8f86e8",
+                                                                          "durationSec":  5,
+                                                                          "animate":  false
+                                                                      },
+                                                                      {
+                                                                          "assetId":  "41af6b67-bd88-43a3-91b9-7158593e8d69",
+                                                                          "durationSec":  5,
+                                                                          "animate":  false
+                                                                      }
+                                                                  ],
+                                                   "renders":  [
+
+                                                               ],
+                                                   "audioPath":  "C:\\Users\\hilto\\AppData\\Local\\Temp\\4584a3b9-7767-4370-8001-43ea408ac0b0-test.mp3"
+                                               },
+                                   "cost":  0,
+                                   "requestId":  "0b5125b2-9ca8-4ca1-a7bb-5c9ef55493af"
+                               }
+                  },
+                  {
+                      "name":  "credits-initial",
+                      "ok":  true,
+                      "status":  200,
+                      "ms":  1548,
+                      "error":  null,
+                      "requestId":  null,
+                      "body":  {
+                                   "balance":  170,
+                                   "recentEntries":  [
+                                                         {
+                                                             "id":  "d94e87e5-8980-4a60-8b86-0afd36c95acd",
+                                                             "userId":  "dev-user",
+                                                             "type":  "spend",
+                                                             "amount":  -30,
+                                                             "reason":  "pro_render",
+                                                             "projectId":  "b3505954-b4a5-492c-8c65-36168b02213e",
+                                                             "createdAt":  1769077813577
+                                                         },
+                                                         {
+                                                             "id":  "d0900d90-5c6c-46b3-9ad3-e80d863e9251",
+                                                             "userId":  "dev-user",
+                                                             "type":  "earn",
+                                                             "amount":  50,
+                                                             "reason":  "payment_pix",
+                                                             "createdAt":  1769038827935
+                                                         },
+                                                         {
+                                                             "id":  "48b1fe2a-686f-4c7f-aaa7-be00a5ed185e",
+                                                             "userId":  "dev-user",
+                                                             "type":  "earn",
+                                                             "amount":  100,
+                                                             "reason":  "payment_pix",
+                                                             "createdAt":  1769037258155
+                                                         },
+                                                         {
+                                                             "id":  "ccec4887-f711-4c7a-8d9a-e62e81a17253",
+                                                             "userId":  "dev-user",
+                                                             "type":  "earn",
+                                                             "amount":  50,
+                                                             "reason":  "initial",
+                                                             "createdAt":  1769036855118
+                                                         }
+                                                     ],
+                                   "requestId":  "95615f54-5521-4901-90ae-b48c34487396"
+                               }
+                  },
+                  {
+                      "name":  "payment-create",
+                      "ok":  true,
+                      "status":  200,
+                      "ms":  2953,
+                      "error":  null,
+                      "requestId":  null,
+                      "body":  {
+                                   "paymentId":  "1344048601",
+                                   "status":  "pending",
+                                   "qrBase64":  "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",
+                                   "qrCode":  "00020126580014br.gov.bcb.pix0136b76aa9c2-2ec4-4110-954e-ebfe34f05b61520400005303986540510.005802BR5910HIdKqDuZ226015RizNZnEDJ VREto62230519mpqrinter13440486016304739D",
+                                   "expiresAt":  1769164268142,
+                                   "provider":  "mp",
+                                   "requestId":  "b294d84e-11f8-45fd-af11-c1c8fa9a7360"
+                               }
+                  },
+                  {
+                      "name":  "payment-history",
+                      "ok":  true,
+                      "status":  200,
+                      "ms":  1509,
+                      "error":  null,
+                      "requestId":  null,
+                      "body":  {
+                                   "payments":  [
+                                                    {
+                                                        "paymentId":  "1344048601",
+                                                        "provider":  "mp",
+                                                        "status":  "pending",
+                                                        "amount":  10,
+                                                        "createdAt":  1769077868782,
+                                                        "userId":  "dev-user",
+                                                        "description":  "TM-IA Credits",
+                                                        "externalRef":  "dev-user:8892146e-ff33-46e5-80a9-876dbb0a3307",
+                                                        "qrBase64":  "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",
+                                                        "copyCode":  "00020126580014br.gov.bcb.pix0136b76aa9c2-2ec4-4110-954e-ebfe34f05b61520400005303986540510.005802BR5910HIdKqDuZ226015RizNZnEDJ VREto62230519mpqrinter13440486016304739D",
+                                                        "expiresAt":  1769164268142
+                                                    },
+                                                    {
+                                                        "paymentId":  "1344048597",
+                                                        "provider":  "mp",
+                                                        "status":  "pending",
+                                                        "amount":  10,
+                                                        "createdAt":  1769077808680,
+                                                        "userId":  "dev-user",
+                                                        "description":  "TM-IA Credits",
+                                                        "externalRef":  "dev-user:ecc726f0-b220-4c39-9031-d2ea6ec040e4",
+                                                        "qrBase64":  "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",
+                                                        "copyCode":  "00020126580014br.gov.bcb.pix0136b76aa9c2-2ec4-4110-954e-ebfe34f05b61520400005303986540510.005802BR5910HIdKqDuZ226015RizNZnEDJ VREto62230519mpqrinter134404859763042E78",
+                                                        "expiresAt":  1769164208042
+                                                    },
+                                                    {
+                                                        "paymentId":  "1325937516",
+                                                        "provider":  "mp",
+                                                        "status":  "pending",
+                                                        "amount":  10,
+                                                        "createdAt":  1769077741361,
+                                                        "userId":  "dev-user",
+                                                        "description":  "TM-IA Credits",
+                                                        "externalRef":  "dev-user:290f0b63-c476-4ad8-9300-6fded0edc1a5",
+                                                        "qrBase64":  "iVBORw0KGgoAAAANSUhEUgAABWQAAAVkAQMAAABpQ4TyAAAABlBMVEX///8AAABVwtN+AAAIxElEQVR42uzdUW6lMBIFUHbg/e/SO2A0Ulp5uG6ZdGs0UuDcj1bSjweH/JVcLh8iIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIvL2nGvmf//vzz/HMb7+++un5YN03fdNLx983+XrkuUulUFLS0tLS0tLS0tLS/sS7ex+vdz4+4P069fFl2fnX/+80PczlvslFS0tLS0tLS0tLS0t7dO1pYBM1dz4fE6pGL9LxO/rlooxGdNzJy0tLS0tLS0tLS0tLe3l2Z+l37gzLot0qVjMj6SlpaWlpaWlpaWlpaWNq2ypVbItB2vvZl7TS7UoLS0tLS0tLS0tLS3tm7UFPz/vlLfELYXmDO83rmuEo+yVK72b/9IjSktLS0tLS0tLS0tL+9u1uykl/8d//gczVWhpaWlpaWlpaWlpaX+jdlNZjusbnNfdcE0RuJlmUpf4/lpGS0tLS0tLS0tLS0v7RO0Iq3EpaUjkvD8W4Ahveub9c+0wSVpaWlpaWlpaWlpa2udr00DIGe50hg7LtmmyHguwfLD8qdpqk5aWlpaWlpaWlpaW9unaTddlM1YyFYvL2y/b5MqKXz2fbXNTWlpaWlpaWlpaWlrax2pLsdjcs4wqqcdZL/crRWVbvc78arS0tLS0tLS0tLS0tK/QbroflzdIvGVw5G4jXG69PHJ9SktLS0tLS0tLS0tL+x7tsrZWFudS/2Vb+i1vUJfuyncvf6DPh9PS0tLS0tLS0tLS0r5Ku1nnO68b19o+zaVObBoulzXCzxpzhr8cLS0tLS0tLS0tLS3tC7SfqHp0dd7+dnZPPMui4H44ZTuvhJaWlpaWlpaWlpaW9k3aZTWuXc47u9pxbnoyS2NmWkY88kwUWlpaWlpaWlpaWlral2h3j8g3Prd74GpjZplI0uyGK+9MS0tLS0tLS0tLS0v7Au1mp9osy34FtUyUXPoqa9mYbpou7ntEaWlpaWlpaWlpaWlpn6ZNI/vz4dQzH3u98Rx5n90y12QpV29KSVpaWlpaWlpaWlpa2qdpywD+BbX8NPIZay0qveR+EgotLS0tLS0tLS0tLe3LtIUywqSRZhUwn5O22wiX1/Rm+WP8w0wVWlpaWlpaWlpaWlraX6pNPZT5OOvRtVke3XJemupf1/TKeuC4rXlpaWlpaWlpaWlpaWmfpt13YqbbbTbRNQt7aSUvffe+iqSlpaWlpaWlpaWlpX2U9m6db25fbZQT034w+L+tHZfKkpaWlpaWlpaWlpaW9hXaZdGtzCY5w2Fp57Uxc9zVicv9yvvNXLjS0tLS0tLS0tLS0tK+Qlt2r6UZIenu9V3KqMnaV5lHSO6aNWlpaWlpaWlpaWlpaZ+vrZvZSsU48xzJ/LXdqJI0fjLXsbS0tLS0tLS0tLS0tO/RjmuDZBrKP3NjZhlusgydHKH/8gza20fS0tLS0tLS0tLS0tI+WJuuSDMjN+P+ZzkUu9SiM79p/nRb7tLS0tLS0tLS0tLS0j5N247YXzau5XuOPHhkM8H/DNvfZvgD0dLS0tLS0tLS0tLSvkW7DHVcfsqnW1/W5coOuV3FWD6oFejNTBVaWlpaWlpaWlpaWtqnaVPTZDtapOxZG3mtrqzazVJPfhafZ143pKWlpaWlpaWlpaWlfYk2tTs2U/g/55U000dSs+ZmVMkoG+tKHUtLS0tLS0tLS0tLS/tsbbt7rUwLGWEP3Lk5Iq0tJVvUXw/0p6WlpaWlpaWlpaWlfYC2LNgdYc/awru9e+mwPEon5l1j5qSlpaWlpaWlpaWlpX2Ndj8aMjVSjkBpZo60I/tTn2ZbkNLS0tLS0tLS0tLS0j5Y+1nXLU9cRoaM8BrpkpH31OUjruvok59Mj6SlpaWlpaWlpaWlpX2UduaDrRd3WtPb7HxrNtGVnXTNwt7NKdi0tLS0tLS0tLS0tLSP0p7XoY5tmTdyxZi3v40ASIe0neWUgPvVPVpaWlpaWlpaWlpa2odp52b3Wioby+2aE9jyMWy7js37bXu0tLS0tLS0tLS0tLTP06YrlobKdKfyks0J2mnHXXm1I6/z0dLS0tLS0tLS0tLSvknb8NrtamXmyOyqyDqlpKQuKN6fDUdLS0tLS0tLS0tLS/sc7eiaIXd9kG2H5V075hGmR55hOgotLS0tLS0tLS0tLe1btPlO8/PTvAC4XJLm8Y9uuMm56c7ctl7S0tLS0tLS0tLS0tI+UTvvzqr+/P4IQ/5HaJUc1+qw+TQfBvDzKSW0tLS0tLS0tLS0tLQP0JbHpuGPtepbvlFqx91CYakdR5j0T0tLS0tLS0tLS0tL+z5tGe+YDrE+jiMdqpanlDSHbN91Z26nlNDS0tLS0tLS0tLS0j5Ne7chLb1LHVWSnz3DeWrzusTXHMF90yNKS0tLS0tLS0tLS0v7KO3MXZKbdbl0eHadQVmePXITZrnV2FWRtLS0tLS0tLS0tLS0T9Om55TVvVlGPuavjW5P3ShFarqOlpaWlpaWlpaWlpb2jdpcw7VrdbOf7BiPBUhHqZW1v6Vt8zx/MNWflpaWlpaWlpaWlpb2Ydo0kWTfnXmGR1xefGngXPovy0Lh+ZMpJbS0tLS0tLS0tLS0tM/Ttp2YZTlvhDbLevfCqyMp2x1yaY2QlpaWlpaWlpaWlpb26dqyf63O6E+Az7s3LZrlbIAZztxu6k5aWlpaWlpaWlpaWto3aWcoIM9c8P1glv9mc1x9g3yXQUtLS0tLS0tLS0tL+zpt2hKXtXVNL71fqQ7PzTnX5Rvb3XC0tLS0tLS0tLS0tLRv0JYvjAzIxWLzQSpDl09/0nVJS0tLS0tLS0tLS0v7Bm1J89jy626tLh+A3VzydzUvLS0tLS0tLS0tLS3tr9cW/AzQ28W5dJ5amgqZ2jbz34GWlpaWlpaWlpaWlvYV2toqWdbbjq7Wa1olU2NmXgWcm1kntLS0tLS0tLS0tLS0r9CKiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiMiL8p8AAAD//7dbtwlcSY0AAAAAAElFTkSuQmCC",
+                                                        "copyCode":  "00020126580014br.gov.bcb.pix0136b76aa9c2-2ec4-4110-954e-ebfe34f05b61520400005303986540510.005802BR5910HIdKqDuZ226015RizNZnEDJ VREto62230519mpqrinter13259375166304177B",
+                                                        "expiresAt":  1769164140693
+                                                    },
+                                                    {
+                                                        "paymentId":  "1325934732",
+                                                        "provider":  "mp",
+                                                        "status":  "pending",
+                                                        "amount":  10,
+                                                        "createdAt":  1769039329251,
+                                                        "userId":  "dev-user",
+                                                        "description":  "TM-IA Credits",
+                                                        "externalRef":  "dev-user:f7f22abb-5f08-4ffa-b5a8-7afe31a56886",
+                                                        "qrBase64":  "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",
+                                                        "copyCode":  "00020126580014br.gov.bcb.pix0136b76aa9c2-2ec4-4110-954e-ebfe34f05b61520400005303986540510.005802BR5910HIdKqDuZ226015RizNZnEDJ VREto62230519mpqrinter13259347326304BDAB",
+                                                        "expiresAt":  1769125728734
+                                                    },
+                                                    {
+                                                        "paymentId":  "1325936138",
+                                                        "provider":  "mp",
+                                                        "status":  "pending",
+                                                        "amount":  10,
+                                                        "createdAt":  1769039278753,
+                                                        "userId":  "dev-user",
+                                                        "description":  "TM-IA Credits",
+                                                        "externalRef":  "dev-user:0aaa9510-98b7-456f-af08-03e906ce51ea",
+                                                        "qrBase64":  "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",
+                                                        "copyCode":  "00020126580014br.gov.bcb.pix0136b76aa9c2-2ec4-4110-954e-ebfe34f05b61520400005303986540510.005802BR5910HIdKqDuZ226015RizNZnEDJ VREto62230519mpqrinter13259361386304D586",
+                                                        "expiresAt":  1769125678027
+                                                    },
+                                                    {
+                                                        "paymentId":  "1325935916",
+                                                        "provider":  "mp",
+                                                        "status":  "confirmed",
+                                                        "amount":  5,
+                                                        "createdAt":  1769037920660,
+                                                        "userId":  "dev-user",
+                                                        "description":  "TM-IA Credits",
+                                                        "externalRef":  "dev-user:9f40f779-6b42-4a31-8a9b-8d33aadb777d",
+                                                        "qrBase64":  "iVBORw0KGgoAAAANSUhEUgAABWQAAAVkAQMAAABpQ4TyAAAABlBMVEX///8AAABVwtN+AAAIuklEQVR42uzdQXLjOBIFUN6A978lb4CJmZguS8ifILtr0VHg+wuHLYvUo3YZSCQOERERERERERERERERERERERERERERERERERF5e8ac67+vnmP8///nr9f+9+br12tfb57yc9nnW/76M/8jMWhpaWlpaWlpaWlpaV+hvcqf6WOn5/t84fx88+eP+rjlI6enalS0tLS0tLS0tLS0tLS7a38qt+nPn4+dSslS+n0VhqX4TNXhWa4tt6KlpaWlpaWlpaWlpX2pdjL+lI3pt883V1QpOae7XOHpaWlpaWlpaWlpaWlpaYOiLNOdof5L2qnN8ih9mncMWlpaWlpaWlpaWlraF2jLn0375OdvZ6kES93ZdmzWXsvf6BGlpaWlpaWlpaWlpaX907W1/vtXfvzjmSq0tLS0tLS0tLS0tLR/tnaRNH0kLfalnW/Xcr9b7cT8/dDS0tLS0tLS0tLS0v6x2jNMiqwreYvp/2coQ8fdCJLcjtnsn6OlpaWlpaWlpaWlpd1am0q/qXOyuT7xpk+cxpyk/svS7bnouqSlpaWlpaWlpaWlpd1PezfQv67ptXVneUs97Lo8wRlGlTz6WmlpaWlpaWlpaWlpaXfR5qKtrvO1I/tLI2V6yFSuprMBziftmLS0tLS0tLS0tLS0tFtpU3WYBvBnd50FmRf2zm4Syvi+6dV9fbS0tLS0tLS0tLS0tNtq7xbsmk1va3cpDNPAk6liPJ/NjKSlpaWlpaWlpaWlpd1Sm4u7824LW9r5Vr6H+lsZWpLmn9DS0tLS0tLS0tLS0r5Fu+imbJb40ppeulWaQ5LqzrRXjpaWlpaWlpaWlpaW9k3aaf2uOROtHTKSmzWP7wElteEyLQWWIwVoaWlpaWlpaWlpaWlfoM3kOs8xFXdt3VnOUxvdemBzDgAtLS0tLS0tLS0tLe17tJ+fcy76INtPLA2cbSVYWy/LP46bJT5aWlpaWlpaWlpaWtr9tGVxLp2TNvJo/7vuzCvM7W/L0KschU1LS0tLS0tLS0tLS/sm7RUo9frUJZlW8tKDl67LI3dx3hyFTUtLS0tLS0tLS0tLu5u2zA2pK37tfP/2xOvUrNmWiKXQXO7do6WlpaWlpaWlpaWl3U27GCNSF+zau5dx/2f5s/Rpnrmf83HXJS0tLS0tLS0tLS0t7R7aBwP480reCFP9r+N2b9t0yHbtybxZ3aOlpaWlpaWlpaWlpd1Nm3e5NaeopY1reWVwlHkl6S5TUZnbO2lpaWlpaWlpaWlpaffW3h2vdn43V07Hq43RH6CWJv233ZmlvKSlpaWlpaWlpaWlpX2VNq3fFeORF/HKil/dU5fnTbYPPmhpaWlpaWlpaWlpad+lHWG/W/2IMq9kWpdrblU2vTVjTpKAlpaWlpaWlpaWlpb2JdpaBJaNcOsK78yXlaElx/fw/rGoIvv2UFpaWlpaWlpaWlpa2i21qV8yFYHtZrbUXNnO6G9v9WRACS0tLS0tLS0tLS0t7ebadddlekseK7naJle+h2uxKY+WlpaWlpaWlpaWlvYV2jJQpO5ZS4tzBdXUhKnrMnVx/r2ZKrS0tLS0tLS0tLS0tHtop/W23P24OhgtdV2mQSbluxll3fDzy6ClpaWlpaWlpaWlpX2LNp2CvRgcOfIut3aLXTt4JDdwPj9tjZaWlpaWlpaWlpaWdivt1AeZZNNKXtowV1YBj/vTsqf/pj11tLS0tLS0tLS0tLS0e2sXpeSKUrawXYtCsy0g0+LhcjccLS0tLS0tLS0tLS3tptr1kdRp91quDs/uxLSmikzzT+57RGlpaWlpaWlpaWlpaTfTnuH6aYLImZ8gl4PXojBMI00W++xoaWlpaWlpaWlpaWlfoG2PTUv74vLkkjS05Mrnrt3JzmdnENDS0tLS0tLS0tLS0m6k/WykTFXkyB+x6Mm8Fv2c05vLkuF9wyUtLS0tLS0tLS0tLe1u2rbdcdrlVja4te2YzRyStIKYj2a7PwWblpaWlpaWlpaWlpZ2I23qsCxV5NUN6h+PWi+nKjIvKN63h9LS0tLS0tLS0tLS0m6pTTNHyhlr1+ImuZGynQ/ZjDlZXEtLS0tLS0tLS0tLS7u7Ns0SGWWOZKk7m9/SEl8y5mtHWfajpaWlpaWlpaWlpaV9hXZxVvV0qFrzaGmtLk0pWZwDcIaj3mhpaWlpaWlpaWlpaV+hvbpNarUwTK2Xd0NGmmGSD+en0NLS0tLS0tLS0tLSvkObx4hM63xpce4L2l6bniBVjA+nR9LS0tLS0tLS0tLS0m6lTQtxU9lYlvOuZYNkfa20Xo7l/JPzZnokLS0tLS0tLS0tLS3tVtrPO438OdMcksldRpCMspzXFp/leOzz2d49WlpaWlpaWlpaWlrarbTT7rW6cW1akis1Zuq6TE/fGo/H7Zi0tLS0tLS0tLS0tLT7aVNzZT5tLQ2EXC/THUfdU3eFzs50BPdFS0tLS0tLS0tLS0v7Em1ajcujSmqb5fRbGjqZT1GrVWRZMjxoaWlpaWlpaWlpaWnfpR3LWm/RB1mPZhuhCXOEiSRXV8IetLS0tLS0tLS0tLS0b9LeVZbTydhT2djUk6UWPUo/Z3uXJyMkaWlpaWlpaWlpaWlpN9KW4i+dh33mESS56zI96dUdj71qx6SlpaWlpaWlpaWlpX2Jtrk0kcsckitUgiNskxvdYW7NtbS0tLS0tLS0tLS0tC/Tli1x7RTH9dFs4+6B2m1yeVMeLS0tLS0tLS0tLS3tS7VpjmRqvfxEPZhhci2q188aczk9kpaWlpaWlpaWlpaW9h3atIXtOOqM/vF9Aluz8y2t6bUF6X3XJS0tLS0tLS0tLS0t7X7ajE8DIVOFd4addFcpDMuUktUWO1paWlpaWlpaWlpa2jdpb6eU5MbMI08VSa2X7f3KoQHn7eoeLS0tLS0tLS0tLS3tbloREREREREREREREREREREREREREREREREREXlR/hMAAP//sCQmqwYA3A4AAAAASUVORK5CYII=",
+                                                        "copyCode":  "00020126580014br.gov.bcb.pix0136b76aa9c2-2ec4-4110-954e-ebfe34f05b6152040000530398654045.005802BR5910HIdKqDuZ226015RizNZnEDJ VREto62230519mpqrinter132593591663047CA6",
+                                                        "expiresAt":  1769124320047,
+                                                        "confirmedAt":  1769038200000,
+                                                        "credited":  true,
+                                                        "creditedAt":  1769038827936
+                                                    },
+                                                    {
+                                                        "paymentId":  "mock-1769036864160",
+                                                        "provider":  "mock",
+                                                        "status":  "confirmed",
+                                                        "amount":  10,
+                                                        "createdAt":  1769036864160,
+                                                        "userId":  "dev-user",
+                                                        "description":  "TM-IA Credits",
+                                                        "copyCode":  "00020126480014BR.GOV.BCB.PIX0136mock-17690368641605204000053039865802BR5913TM-IA6008SAOPAULO62070503***6304MOCK",
+                                                        "qrBase64":  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                                                        "expiresAt":  1769038664160,
+                                                        "confirmedAt":  1769037258155,
+                                                        "credited":  true,
+                                                        "creditedAt":  1769037258155
+                                                    },
+                                                    {
+                                                        "paymentId":  "mock-1769036788321",
+                                                        "provider":  "mock",
+                                                        "status":  "pending",
+                                                        "amount":  1,
+                                                        "createdAt":  1769036788321,
+                                                        "userId":  "dev-user",
+                                                        "description":  "TM-IA Credits",
+                                                        "copyCode":  "00020126480014BR.GOV.BCB.PIX0136mock-17690367883215204000053039865802BR5913TM-IA6008SAOPAULO62070503***6304MOCK",
+                                                        "qrBase64":  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                                                        "expiresAt":  1769038588321
+                                                    },
+                                                    {
+                                                        "paymentId":  "mock-1769036515405",
+                                                        "provider":  "mock",
+                                                        "status":  "pending",
+                                                        "amount":  1,
+                                                        "createdAt":  1769036515405,
+                                                        "userId":  "dev-user",
+                                                        "description":  "TM-IA Credits",
+                                                        "copyCode":  "00020126480014BR.GOV.BCB.PIX0136mock-17690365154055204000053039865802BR5913TM-IA6008SAOPAULO62070503***6304MOCK",
+                                                        "qrBase64":  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                                                        "expiresAt":  1769038315405
+                                                    },
+                                                    {
+                                                        "paymentId":  "1344023819",
+                                                        "provider":  "mp",
+                                                        "status":  "pending",
+                                                        "amount":  1,
+                                                        "createdAt":  1769012357205,
+                                                        "userId":  "dev-user",
+                                                        "email":  "test_user@example.com",
+                                                        "description":  "AI Music Video credits",
+                                                        "externalRef":  "dev-user:6c72748f-d366-4ba8-b978-c910687a1563",
+                                                        "qrBase64":  "iVBORw0KGgoAAAANSUhEUgAABWQAAAVkAQMAAABpQ4TyAAAABlBMVEX///8AAABVwtN+AAAIrElEQVR42uzdUY6kOhIFUHbg/e+SHTCa0UhFOm446X7Skwqf+1Gq6kzg0H8hh8OHiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIjsnmvO+d9/Hdd1/8p5/zF98L8vTzf4+d79t49P79eeHYOWlpaWlpaWlpaWlnYLbQX8XPNDmd7v5zn3r9SXTJ/eHznK+yUVLS0tLS0tLS0tLS3t27Wlwqv15A+5fC/Vjh+V4FQx/v+mo1ybbkVLS0tLS0tLS0tLS7ujdir47kXgBz69UCkHp5KzrhbS0tLS0tLS0tLS0tLSNl9rCsjcjtn0S95fd8rHuiEtLS0tLS0tLS0tLe3e2getkuW3kRspS8dms0ZYLvvrHlFaWlpaWlpaWlpaWtrfrr3ykJF/+8dfz1ShpaWlpaWlpaWlpaX93do2Uzk4DXpMS3KpHTPvd0uLff8stLS0tLS0tLS0tLS0v1g78mrcYoRkO27kKjP625bKxVEBy3ehpaWlpaWlpaWlpaV9nzaVfufnfJEEPRbzRcoY/wrIk/5H3nZHS0tLS0tLS0tLS0v7fu16oH/FP6o7zzDQ/1gc5rYcUEJLS0tLS0tLS0tLS/tSbTs4sqzQ1Z1qpTHzOJppJqlcncrL+mVaWlpaWlpaWlpaWtp9tNOaXntiWnGna6ej2drGzGlj3XVd7TBJWlpaWlpaWlpaWlraLbTTMJL8QqmynJo1172b9USA1M/5vYqkpaWlpaWlpaWlpaV9i7YdMrJejSsF3/hc+5uePcp2ujTSJJWwtLS0tLS0tLS0tLS079cei8n8qQjMdeKxKCCnPXVpFfD7wh4tLS0tLS0tLS0tLe1Ltd/aJ49v56lNBWkuG2vDZSo0801paWlpaWlpaWlpaWnfrS0PGwWaUevpI9Pg/6t8Of82/uB4bFpaWlpaWlpaWlpa2ndo73caXR/k9Y1XKsG0TDfymW25J/OkpaWlpaWlpaWlpaXdRJsOos6LbkfeuNau0KVP10uB06oiLS0tLS0tLS0tLS3tPtpSO9YRJKUwrBVjWckbuXezPTd7uhUtLS0tLS0tLS0tLe0W2nZuSOnEPJeNmcdyLMlZXrzc5TweHIVNS0tLS0tLS0tLS0v7Pu1ijMh0z1F4ZUluBHc9pC23fE4fnLS0tLS0tLS0tLS0tJto05Jc+4hpEa+clt0Mf3zUmPlwdY+WlpaWlpaWlpaWlvZt2rzEd4SjsKs7fZp6N9MHeYZJau+kpaWlpaWlpaWlpaV9t7YcWD0+HzbKqt1611w+la3pq8yHr40wl5KWlpaWlpaWlpaWlvbd2tR6eb/xyIP/2xtM2rafM7d8XrS0tLS0tLS0tLS0tHtp08LeWR6WpvCn7XSL9zu7/XPTEJTjD6ZH0tLS0tLS0tLS0tLSvkA7bXC7yrMXrZJHqEBXMyiTNlWRfXsoLS0tLS0tLS0tLS3tK7WpXzIt5z06KPvMG9ymQZRleTBNTKGlpaWlpaWlpaWlpd1Ce90X2Mo8xwcnWZ9dLXouejIX1347BZuWlpaWlpaWlpaWlvZ92jJQ5MpFZZ5mcuUqsn2NaZ9drkAPWlpaWlpaWlpaWlraTbRl/S7tgWs2uOWuy2l1r1m/K2NJphqTlpaWlpaWlpaWlpZ2F23ehlZ3r5Uq8sOTujPL4JG2ND0/ezK/z1ShpaWlpaWlpaWlpaV9lXZqizxLO2a6omyOawaUPJj5n45Xo6WlpaWlpaWlpaWl3Uc7NUh+G9lft8Sl7W9l09u1bK4c3bW0tLS0tLS0tLS0tLT7aNcj9kc+2LrM/L9CAVlfPLVyptEntLS0tLS0tLS0tLS0m2jbxblRlt9yd+bUwNnM7W+HRKb70dLS0tLS0tLS0tLS7qOdhuiX38Zy+9u12MK2riLzZePLqBJaWlpaWlpaWlpaWtr3adMS31QTpkek57Tk+w3O8s7ThJPjWWhpaWlpaWlpaWlpad+iTWdV30u6dnh/nSg5PbEdIdketPadTEtLS0tLS0tLS0tL+z5tvrSdSHKGT68w16QZKzmtJZZlxO9HYdPS0tLS0tLS0tLS0r5Su569P92zPCxtZmuPUpvI0+SS40kVSUtLS0tLS0tLS0tL+yptPl6tnmm95rVjIMv9VlvsSncmLS0tLS0tLS0tLS3tBtp1FVncqby8ruYotWn72wiLgiMP+f+7mpeWlpaWlpaWlpaWlvY3atOlBV9H8Zc5ku3Z11fotXw+JJKWlpaWlpaWlpaWlnYDbTtG5DiOvDh35IGQ7bnZqXBNFePD6ZG0tLS0tLS0tLS0tLTv06YluTIGMv35UWiWP4/8aqm8zO2YtLS0tLS0tLS0tLS0W2jTVU2NWVb80mlrdaJkuznu/mcz7p+WlpaWlpaWlpaWlvbt2lK0jW5UyVQ2XvmwtPT/MNWnxbgG0dLS0tLS0tLS0tLSvl17lPW2vJmtnfR/5IW9dIpabsw8l/UpLS0tLS0tLS0tLS3tu7WLMSJ1Ya+clt14yrs8OAzg+oPpkbS0tLS0tLS0tLS0tO/TNlvdnh4NkMrQ/M7pf+kKpwnQ0tLS0tLS0tLS0tLuos3PPsNsktRmWdf58mj/uhuurO7Vm9LS0tLS0tLS0tLS0m6hvea029VGHvmY/23dXPmsHZOWlpaWlpaWlpaWlnYT7ZkLyGlLXMbXDsvF2x/5DdK1tLS0tLS0tLS0tLS0m2nLlrjxaA5JPkCtvlD6kc4BeDJOhZaWlpaWlpaWlpaWdgdtmRQ5DflPb1Af1h7clshTx2Y/PZKWlpaWlpaWlpaWlnYPbdq9lgrD6QS2dO2xvNV0kEAz0oSWlpaWlpaWlpaWlvbt2oyvx17nW7SPPfLMkbLpbeQSlpaWlpaWlpaWlpaWdhNts3utrNql9bs6VSS1Xk5vUFbyrjy5hJaWlpaWlpaWlpaWdgutiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIhslP8EAAD///pr8aG9562VAAAAAElFTkSuQmCC",
+                                                        "copyCode":  "00020126580014br.gov.bcb.pix0136b76aa9c2-2ec4-4110-954e-ebfe34f05b6152040000530398654041.005802BR5910HIdKqDuZ226015RizNZnEDJ VREto62230519mpqrinter13440238196304C8FC"
+                                                    },
+                                                    {
+                                                        "paymentId":  "34257313-4cc1-403d-87a3-fbcbd383f372",
+                                                        "provider":  "mock",
+                                                        "status":  "pending",
+                                                        "amount":  1,
+                                                        "createdAt":  1769012249169,
+                                                        "userId":  "dev-user",
+                                                        "email":  "test_user@example.com",
+                                                        "description":  "AI Music Video credits",
+                                                        "copyCode":  "00020126480014BR.GOV.BCB.PIX0114+55479999999990215PagamentoTeste5204000053039865401.005802BR5920AI Music Video SaaS6009SAOPAULO61080540900062070503***6304FFFF",
+                                                        "qrBase64":  "UElYOjM0MjU3MzEzLTRjYzEtNDAzZC04N2EzLWZiY2JkMzgzZjM3Mjox"
+                                                    },
+                                                    {
+                                                        "paymentId":  "8cdfbc36-1329-4951-858e-f39c5878923d",
+                                                        "provider":  "mock",
+                                                        "status":  "pending",
+                                                        "amount":  1,
+                                                        "createdAt":  1769012208646,
+                                                        "userId":  "dev-user",
+                                                        "description":  "AI Music Video credits",
+                                                        "copyCode":  "00020126480014BR.GOV.BCB.PIX0114+55479999999990215PagamentoTeste5204000053039865401.005802BR5920AI Music Video SaaS6009SAOPAULO61080540900062070503***6304FFFF",
+                                                        "qrBase64":  "UElYOjhjZGZiYzM2LTEzMjktNDk1MS04NThlLWYzOWM1ODc4OTIzZDox"
+                                                    },
+                                                    {
+                                                        "paymentId":  "a982b81a-a499-4e7f-9672-35b2cf27893f",
+                                                        "provider":  "mock",
+                                                        "status":  "pending",
+                                                        "amount":  1,
+                                                        "createdAt":  1769012159636,
+                                                        "userId":  "dev-user",
+                                                        "description":  "AI Music Video credits",
+                                                        "copyCode":  "00020126480014BR.GOV.BCB.PIX0114+55479999999990215PagamentoTeste5204000053039865401.005802BR5920AI Music Video SaaS6009SAOPAULO61080540900062070503***6304FFFF",
+                                                        "qrBase64":  "UElYOmE5ODJiODFhLWE0OTktNGU3Zi05NjcyLTM1YjJjZjI3ODkzZjox"
+                                                    },
+                                                    {
+                                                        "paymentId":  "6d5bc6ec-0ed4-42df-9669-25f2dfcbbd5d",
+                                                        "provider":  "mock",
+                                                        "status":  "pending",
+                                                        "amount":  1,
+                                                        "createdAt":  1769012121571,
+                                                        "userId":  "dev-user",
+                                                        "description":  "AI Music Video credits",
+                                                        "copyCode":  "00020126480014BR.GOV.BCB.PIX0114+55479999999990215PagamentoTeste5204000053039865401.005802BR5920AI Music Video SaaS6009SAOPAULO61080540900062070503***6304FFFF",
+                                                        "qrBase64":  "UElYOjZkNWJjNmVjLTBlZDQtNDJkZi05NjY5LTI1ZjJkZmNiYmQ1ZDox"
+                                                    }
+                                                ],
+                                   "requestId":  "3d9bd304-a26f-4b85-a804-efc4906f1a43"
+                               }
+                  },
+                  {
+                      "name":  "pro-config",
+                      "ok":  true,
+                      "status":  200,
+                      "ms":  1518,
+                      "error":  null,
+                      "requestId":  null,
+                      "body":  {
+                                   "configId":  "9a553bf5-49e7-4dba-a25b-cdc7015b8a17",
+                                   "estimatedCredits":  20,
+                                   "requestId":  "9f0e74a5-6290-4945-ba4f-024c7d334277"
+                               }
+                  },
+                  {
+                      "name":  "pro-render",
+                      "ok":  true,
+                      "status":  200,
+                      "ms":  1633,
+                      "error":  null,
+                      "requestId":  null,
+                      "body":  {
+                                   "ok":  true,
+                                   "cost":  30,
+                                   "balance":  140,
+                                   "renderId":  "ac25b226-ee98-412d-8ebd-4fc993595585",
+                                   "status":  "pending",
+                                   "requestId":  "bcf81f91-be16-4c00-a481-3e1faf0f8f43"
+                               }
+                  },
+                  {
+                      "name":  "render-status",
+                      "ok":  false,
+                      "status":  200,
+                      "ms":  1481,
+                      "error":  null,
+                      "requestId":  null,
+                      "body":  {
+                                   "renderId":  "ac25b226-ee98-412d-8ebd-4fc993595585",
+                                   "projectId":  "360f2f2e-747c-4626-8815-002f24d66b49",
+                                   "configId":  "9a553bf5-49e7-4dba-a25b-cdc7015b8a17",
+                                   "status":  "processing",
+                                   "progress":  10,
+                                   "createdAt":  1769077873486,
+                                   "updatedAt":  1769077873486,
+                                   "requestId":  "c15ef74c-d60f-436d-8afb-844040351447"
+                               }
+                  }
+              ],
+    "outputs":  {
+
+                },
+    "finishedAt":  "2026-01-22T07:31:34",
+    "ok":  false
+}
