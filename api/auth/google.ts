@@ -9,7 +9,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const clientId = process.env.GOOGLE_CLIENT_ID
+  const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim()
   if (!clientId) {
     // Return a user-friendly error that suggests using email/password
     return res.status(503).json({ 

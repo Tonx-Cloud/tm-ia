@@ -23,8 +23,8 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(405).json({ error: 'Method not allowed', requestId: ctx.requestId })
   }
 
-  const clientId = process.env.GOOGLE_CLIENT_ID
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET
+  const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim()
+  const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || '').trim()
 
   // Always return 200 - let frontend check 'configured' field
   // This prevents 500 errors when OAuth is simply not configured
