@@ -46,7 +46,8 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
   try {
     await new Promise<void>((resolve, reject) => {
-      const bb = Busboy({ headers: req.headers, limits: { fileSize: 25 * 1024 * 1024 } }) // 25MB limit
+      // NOTE: Keep in sync with /api/render/pro upload limits
+      const bb = Busboy({ headers: req.headers, limits: { fileSize: 60 * 1024 * 1024 } }) // 60MB limit
       
       bb.on('file', (name, file, info) => {
         if (name === 'audio') {
@@ -68,7 +69,10 @@ export default withObservability(async function handler(req: VercelRequest, res:
       req.pipe(bb)
     })
   } catch (err) {
-    return res.status(400).json({ error: 'Upload failed: ' + (err as Error).message })
+    const msg = (err as Error).message || String(err)
+    // Busboy uses 413 semantics for fileSize limits; mirror that for clarity.
+    const isTooLarge = /limit|too large|file size/i.test(msg)
+    return res.status(isTooLarge ? 413 : 400).json({ error: 'Upload failed: ' + msg })
   }
 
   if (!filePath || !fs.existsSync(filePath)) {
