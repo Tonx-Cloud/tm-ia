@@ -944,6 +944,32 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     }
   }
 
+  const handleAddScene = async () => {
+    if (!projectId || !token || !audio) return
+    setError(null)
+    try {
+      const res = await fetch('/api/assets/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          projectId,
+          segments,
+          style: visualStyle,
+          mood,
+          genre,
+          aspectRatio,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Falha ao adicionar cena')
+
+      if (data.asset) setAssets((prev) => [...prev, data.asset])
+      if (data.storyboardScene) setStoryboard((prev) => [...prev, data.storyboardScene])
+    } catch (err) {
+      setError((err as Error).message)
+    }
+  }
+
   const handleRender = async () => {
     if (!projectId || !token || assets.length === 0 || !audio) return
     
@@ -1959,6 +1985,29 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                 />
               )
             })}
+
+            {/* Add new scene */}
+            <button
+              className="btn-ghost"
+              onClick={handleAddScene}
+              style={{
+                minHeight: aspectRatio === '16:9' ? 140 : 220,
+                border: '2px dashed var(--border)',
+                borderRadius: 16,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                background: 'transparent',
+                cursor: 'pointer',
+                color: 'var(--text-muted)'
+              }}
+            >
+              <div style={{ fontSize: 28, color: 'var(--accent)' }}>＋</div>
+              <div style={{ fontWeight: 700, color: 'var(--text)' }}>Adicionar cena</div>
+              <div style={{ fontSize: 12 }}>A IA cria o prompt e gera a imagem</div>
+            </button>
           </div>
 
           {/* Render section */}
