@@ -573,6 +573,14 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
 
                   <button
                     className="btn-ghost"
+                    onClick={() => onAction?.('animate', asset.id)}
+                    style={{ padding: '10px 12px' }}
+                  >
+                    ✨ Animar simples
+                  </button>
+
+                  <button
+                    className="btn-ghost"
                     onClick={() => onAction?.('favorite', asset.id)}
                     style={{ padding: '10px 12px' }}
                   >
@@ -1146,6 +1154,17 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         setModalMode('view')
         break
 
+      case 'animate':
+        // Toggle simple animation flag for this storyboard item
+        setStoryboard((prev) => {
+          const next = [...prev]
+          const cur = next[assetIndex] as any
+          next[assetIndex] = { ...cur, animate: !cur?.animate }
+          void syncProjectEdits({ storyboard: next as any[] })
+          return next
+        })
+        break
+
       case 'favorite':
         setFavorites(prev => {
           const next = new Set(prev)
@@ -1207,10 +1226,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         await handleRegenerateAsset(assetId, assets[assetIndex].prompt)
         break
 
-      case 'animate':
-        // Not implemented yet (kept as disabled in UI)
-        setError('Animar ainda não está implementado nesta versão.')
-        break
+      // (animate case handled earlier)
     }
   }
 
@@ -1247,7 +1263,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     }
   }
 
-  const syncProjectEdits = async (opts: { assetsPatch?: Array<{ id: string; prompt: string }>; deletedAssetIds?: string[]; assetOrder?: string[] }) => {
+  const syncProjectEdits = async (opts: { storyboard?: any[]; assetsPatch?: Array<{ id: string; prompt: string }>; deletedAssetIds?: string[]; assetOrder?: string[] }) => {
     if (!projectId || !token) return
     try {
       await fetch('/api/assets', {

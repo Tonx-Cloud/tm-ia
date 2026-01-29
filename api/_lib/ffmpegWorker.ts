@@ -241,7 +241,8 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       if (options.crossfade && imageFiles.length > 1) {
         // Complex filtergraph for crossfade transitions
         const crossfadeDur = options.crossfadeDuration || 0.5
-        args = buildCrossfadeCommand(workDir, imageFiles, durations, audioInputPath, outputFile, filterString, crossfadeDur)
+        const animateFlags = project.storyboard.map((s) => !!s.animate)
+        args = buildCrossfadeCommand(workDir, imageFiles, durations, animateFlags, audioInputPath, outputFile, filterString, crossfadeDur)
       } else {
         // Simple concat demuxer approach
         const concatFile = path.join(workDir, 'input.txt')
@@ -362,6 +363,7 @@ function buildCrossfadeCommand(
   workDir: string,
   imageFiles: string[],
   durations: number[],
+  animateFlags: boolean[],
   audioInput: string,
   outputFile: string,
   baseFilters: string,
@@ -383,27 +385,47 @@ function buildCrossfadeCommand(
   // Add audio input
   inputs.push('-i', audioInput)
 
+  // Pre-process each still image into a normalized stream (scale/pad) and optional simple animation.
+  // This is required because xfade expects matching dimensions.
+  const fps = 30
+  const preLabels: string[] = []
+  for (let i = 0; i < imageFiles.length; i++) {
+    const dur = durations[i] || 5
+    const dFrames = Math.max(1, Math.round(dur * fps))
+    const label = `p${i}`
+
+    if (animateFlags?.[i]) {
+      // Simple Ken Burns zoom-in
+      filterParts.push(
+        `[${i}:v]${baseFilters},zoompan=z='min(zoom+0.0015,1.10)':d=${dFrames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${label}]`
+      )
+    } else {
+      filterParts.push(
+        `[${i}:v]${baseFilters},fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${label}]`
+      )
+    }
+
+    preLabels.push(label)
+  }
+
   // Build xfade chain
-  // [0:v][1:v]xfade=transition=fade:duration=0.5:offset=4.5[v01];
-  // [v01][2:v]xfade=transition=fade:duration=0.5:offset=9[v012]; etc.
-  
-  let prevLabel = '0:v'
-  let offset = durations[0] - crossfadeDuration
+  // [p0][p1]xfade=transition=fade:duration=0.5:offset=... [v1];
+  let prevLabel = preLabels[0]
+  let offset = (durations[0] || 5) - crossfadeDuration
 
   for (let i = 1; i < imageFiles.length; i++) {
     const newLabel = `v${i}`
     filterParts.push(
-      `[${prevLabel}][${i}:v]xfade=transition=fade:duration=${crossfadeDuration}:offset=${offset.toFixed(2)}[${newLabel}]`
+      `[${prevLabel}][${preLabels[i]}]xfade=transition=fade:duration=${crossfadeDuration}:offset=${offset.toFixed(2)}[${newLabel}]`
     )
     prevLabel = newLabel
     if (i < imageFiles.length - 1) {
-      offset += durations[i] - crossfadeDuration
+      offset += (durations[i] || 5) - crossfadeDuration
     }
   }
 
-  // Apply base filters (scale, watermark) to final video
   const finalLabel = prevLabel
-  filterParts.push(`[${finalLabel}]${baseFilters}[vout]`)
+  filterParts.push(`[${finalLabel}]format=yuv420p[vout]`)
 
   const filterComplex = filterParts.join(';')
   const audioStreamIndex = imageFiles.length
