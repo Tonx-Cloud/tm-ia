@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { t } from '@/i18n'
-import { uploadAudio, analyzeAudio, generateAssets, type Asset } from '@/lib/assetsApi'
+import { analyzeAudio, generateAssets, type Asset } from '@/lib/assetsApi'
 
 // --- Types ---
 type AudioFile = {
@@ -108,14 +108,16 @@ export function Dashboard({ onProjectReady }: Props = {}) {
         url
       })
 
-      // 2. Upload
-      const uploadResp = await uploadAudio(fileObj, token)
-      setProjectId(uploadResp.projectId)
+      // 2. Upload & Analyze (Combined)
+      // Removed standalone upload step as it's now integrated
+      // const uploadResp = await uploadAudio(fileObj, token)
+      // setProjectId(uploadResp.projectId)
       setUploading(false)
 
       // 3. Analyze
       setAnalyzing(true)
-      const analysis = await analyzeAudio(uploadResp.projectId, uploadResp.filePath, duration, token)
+      const analysis = await analyzeAudio(fileObj, duration, token)
+      setProjectId(analysis.projectId)
       
       // Update UI with real data
       if (analysis.transcription) {

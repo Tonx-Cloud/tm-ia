@@ -26,7 +26,7 @@ import { withObservability } from '../_lib/observability.js'
  * 
  * Returns estimated cost, current balance, and whether user can afford it
  */
-export default withObservability(function handler(req: VercelRequest, res: VercelResponse, ctx) {
+export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -58,7 +58,7 @@ export default withObservability(function handler(req: VercelRequest, res: Verce
     })
   }
 
-  const balance = getBalance(session.userId)
+  const balance = await getBalance(session.userId)
   let cost: number
   let breakdown: CostBreakdown | null = null
 

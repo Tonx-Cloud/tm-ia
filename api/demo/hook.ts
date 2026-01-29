@@ -39,19 +39,19 @@ export default withObservability(async function handler(req: VercelRequest, res:
   const cost = PRICING.ANALYSIS_HOOK // 1 credit
 
   // Seed demo balance if empty
-  if (getBalance(session.userId) === 0) {
-    addCredits(session.userId, 50, 'initial')
+  if ((await getBalance(session.userId)) === 0) {
+    await addCredits(session.userId, 50, 'initial')
   }
 
   // Check and spend credits
   try {
-    spendCredits(session.userId, cost, 'analysis')
+    await spendCredits(session.userId, cost, 'analysis')
   } catch (err) {
-    ctx.log('warn', 'hook.insufficient_credits', { balance: getBalance(session.userId), cost })
+    ctx.log('warn', 'hook.insufficient_credits', { balance: await getBalance(session.userId), cost })
     return res.status(402).json({ 
       error: 'Insufficient credits', 
       required: cost,
-      balance: getBalance(session.userId),
+      balance: await getBalance(session.userId),
       requestId: ctx.requestId 
     })
   }
@@ -59,7 +59,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   // TODO: Replace with real AI hook generation
   const hook = 'Feel the rhythm, live the moment'
   const style = 'cinematic'
-  const balance = getBalance(session.userId)
+  const balance = await getBalance(session.userId)
 
   ctx.log('info', 'demo.hook.ok', { hasTranscription: Boolean(transcription), cost, balance })
   return res.status(200).json({ hook, style, cost, balance, requestId: ctx.requestId })

@@ -19,12 +19,12 @@ export type CreateRenderJobOptions = {
   crossfadeDuration?: number
 }
 
-export function createRenderJob(
+export async function createRenderJob(
   userId: string,
   job: CreateRenderJobParams,
   options: CreateRenderJobOptions = {}
 ) {
-  const jobs = loadJobs(userId)
+  const jobs = await loadJobs(userId)
   const newJob: RenderJob = {
     ...job,
     status: 'pending',
@@ -33,7 +33,7 @@ export function createRenderJob(
     updatedAt: Date.now(),
   }
   jobs.push(newJob)
-  saveJobs(userId, jobs)
+  await saveJobs(userId, jobs)
 
   // Trigger async render with options
   const renderOptions: RenderOptions = {
@@ -47,22 +47,23 @@ export function createRenderJob(
   return newJob
 }
 
-export function getRenderJob(userId: string, renderId: string): RenderJob | null {
-  return loadJobs(userId).find((j) => j.renderId === renderId) ?? null
+export async function getRenderJob(userId: string, renderId: string): Promise<RenderJob | null> {
+  const jobs = await loadJobs(userId)
+  return jobs.find((j) => j.renderId === renderId) ?? null
 }
 
-export function listRenderJobs(userId: string, status?: RenderJobStatus, limit = 20) {
-  let jobs = loadJobs(userId)
+export async function listRenderJobs(userId: string, status?: RenderJobStatus, limit = 20) {
+  let jobs = await loadJobs(userId)
   if (status) jobs = jobs.filter((j) => j.status === status)
   return jobs.sort((a, b) => b.createdAt - a.createdAt).slice(0, limit)
 }
 
-export function deleteRenderJob(userId: string, renderId: string): boolean {
-  const jobs = loadJobs(userId)
+export async function deleteRenderJob(userId: string, renderId: string): Promise<boolean> {
+  const jobs = await loadJobs(userId)
   const idx = jobs.findIndex((j) => j.renderId === renderId)
   if (idx >= 0) {
     jobs.splice(idx, 1)
-    saveJobs(userId, jobs)
+    await saveJobs(userId, jobs)
     cleanupRenderJob(renderId)
     return true
   }

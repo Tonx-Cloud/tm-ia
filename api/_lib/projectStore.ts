@@ -1,9 +1,15 @@
-import fs from 'fs'
-import path from 'path'
-import os from 'os'
+import { createClient } from 'redis'
 import crypto from 'crypto'
 
-const STORE_PATH = path.join(os.tmpdir(), 'tm-ia_projects.json')
+// Use REDIS_URL from env
+const redisUrl = process.env.REDIS_URL
+const client = redisUrl ? createClient({ url: redisUrl }) : null
+
+if (client) {
+  client.on('error', (err) => console.error('Redis Client Error', err))
+  // Connect immediately (top-level await supported in Node 14+ ESM, or lazy connect)
+  if (!client.isOpen) client.connect().catch(console.error)
+}
 
 export type Asset = {
   id: string
@@ -12,6 +18,11 @@ export type Asset = {
   status: 'generated' | 'reused' | 'needs_regen'
   dataUrl: string
   createdAt: number
+  // Extended metadata
+  sceneNumber?: number
+  timeCode?: string
+  lyrics?: string
+  visualNotes?: string
 }
 
 export type StoryboardItem = {
@@ -39,21 +50,16 @@ export type Project = {
   renders: RenderRecord[]
 }
 
-function ensureStore(): Project[] {
-  try {
-    const raw = fs.readFileSync(STORE_PATH, 'utf-8')
-    return JSON.parse(raw) as Project[]
-  } catch {
-    return []
-  }
+// Fallback in-memory store for dev/build without Redis
+const MEMORY_STORE: Record<string, Project> = {}
+
+async function getRedis() {
+  if (!client) return null
+  if (!client.isOpen) await client.connect()
+  return client
 }
 
-function saveStore(projects: Project[]) {
-  fs.writeFileSync(STORE_PATH, JSON.stringify(projects, null, 2))
-}
-
-export function createProject(): Project {
-  const projects = ensureStore()
+export async function createProject(): Promise<Project> {
   const project: Project = {
     id: crypto.randomUUID(),
     createdAt: Date.now(),
@@ -61,32 +67,40 @@ export function createProject(): Project {
     storyboard: [],
     renders: [],
   }
-  projects.push(project)
-  saveStore(projects)
+  await upsertProject(project)
   return project
 }
 
-export function getProject(projectId: string): Project | null {
-  const projects = ensureStore()
-  return projects.find((p) => p.id === projectId) ?? null
+export async function getProject(projectId: string): Promise<Project | null> {
+  const redis = await getRedis()
+  if (redis) {
+    const data = await redis.get(`project:${projectId}`)
+    return data ? JSON.parse(data) : null
+  }
+  return MEMORY_STORE[projectId] || null
 }
 
-export function upsertProject(project: Project) {
-  const projects = ensureStore()
-  const idx = projects.findIndex((p) => p.id === project.id)
-  if (idx >= 0) projects[idx] = project
-  else projects.push(project)
-  saveStore(projects)
+export async function upsertProject(project: Project): Promise<void> {
+  const redis = await getRedis()
+  if (redis) {
+    // Expire in 7 days (604800 seconds) to manage cost
+    await redis.set(`project:${project.id}`, JSON.stringify(project), { EX: 604800 })
+  } else {
+    MEMORY_STORE[project.id] = project
+  }
 }
 
-export function addAssets(projectId: string, assets: Asset[]) {
-  const proj = getProject(projectId)
+export async function addAssets(projectId: string, assets: Asset[]): Promise<Project> {
+  const proj = await getProject(projectId)
   if (!proj) throw new Error('Project not found')
+  
   proj.assets.push(...assets)
+  
   // default storyboard entries
   assets.forEach((a) => {
     proj.storyboard.push({ assetId: a.id, durationSec: 5, animate: false })
   })
-  upsertProject(proj)
+  
+  await upsertProject(proj)
   return proj
 }

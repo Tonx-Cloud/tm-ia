@@ -142,9 +142,9 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
 
   // Create project and save audio path
-  const project = createProject()
+  const project = await createProject()
   project.audioPath = tmpPath
-  upsertProject(project)
+  await upsertProject(project)
 
   logger.info('upload.ok', { size, mime, projectId: project.id })
   // Normalize path to forward slashes for cross-platform compatibility

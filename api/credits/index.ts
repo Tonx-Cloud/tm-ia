@@ -4,7 +4,7 @@ import { addCredits, getBalance, getLedger } from '../_lib/credits.js'
 import { withObservability } from '../_lib/observability.js'
 import { createLogger } from '../_lib/logger.js'
 
-export default withObservability(function handler(req: VercelRequest, res: VercelResponse, ctx) {
+export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
@@ -16,13 +16,23 @@ export default withObservability(function handler(req: VercelRequest, res: Verce
   const logger = createLogger({ requestId: ctx.requestId, userId: session.userId })
 
   try {
-    // seed demo balance if empty (dev UX)
-    if (getBalance(session.userId) === 0) {
-      addCredits(session.userId, 50, 'initial')
+    let balance = await getBalance(session.userId)
+    
+    // HARDCODE override for Admin (Hilton) and friend (Felipe)
+    // This bypasses the ephemeral /tmp storage issue on Vercel
+    const isAdmin = session.email === 'hiltonsf@gmail.com'
+    const isFelipe = session.email.toLowerCase().includes('felipe')
+    
+    if (isAdmin || isFelipe) {
+      balance = 99999
+    } else if (balance === 0) {
+      // Seed demo balance if empty
+      await addCredits(session.userId, 50, 'initial')
+      balance = 50
     }
-    const balance = getBalance(session.userId)
-    const recentEntries = getLedger(session.userId, 10)
-    logger.info('credits.read', { balance, count: recentEntries.length })
+
+    const recentEntries = await getLedger(session.userId, 10)
+    logger.info('credits.read', { balance, count: recentEntries.length, email: session.email })
     return res.status(200).json({ balance, recentEntries, requestId: ctx.requestId })
   } catch (err) {
     logger.error('credits.read.error', { message: (err as Error).message })

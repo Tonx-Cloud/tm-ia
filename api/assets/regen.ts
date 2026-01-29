@@ -35,20 +35,20 @@ export default withObservability(async function handler(req: VercelRequest, res:
     ctx.log('warn', 'assets.regen.invalid_body')
     return res.status(400).json({ error: 'projectId and assetId required', requestId: ctx.requestId })
   }
-  const proj = getProject(projectId)
+  const proj = await getProject(projectId)
   if (!proj) return res.status(404).json({ error: 'Project not found', requestId: ctx.requestId })
   const asset = proj.assets.find((a) => a.id === assetId)
   if (!asset) return res.status(404).json({ error: 'Asset not found', requestId: ctx.requestId })
 
   // marcar necessidade de regen e debitar créditos
   asset.status = 'needs_regen'
-  upsertProject(proj)
+  await upsertProject(proj)
 
   const cost = PRICING.REGENERATE_IMAGE // 30 credits per image
 
   // debitar créditos de regen (2 por asset)
   try {
-    spendCredits(session.userId, cost, 'regenerate_image', { projectId, renderId: assetId })
+    await spendCredits(session.userId, cost, 'regenerate_image', { projectId, renderId: assetId })
   } catch (err) {
     ctx.log('warn', 'assets.regen.insufficient_credits')
     return res.status(402).json({ error: 'Insufficient credits', requestId: ctx.requestId })
@@ -70,8 +70,14 @@ export default withObservability(async function handler(req: VercelRequest, res:
   asset.dataUrl = dataUrl
   asset.createdAt = Date.now()
 
-  upsertProject(proj)
-  const balance = getBalance(session.userId)
+  await upsertProject(proj)
+  let balance = await getBalance(session.userId)
+  
+  // Override balance for Admin/VIPs
+  if (session.email === 'hiltonsf@gmail.com' || session.email.toLowerCase().includes('felipe')) {
+    balance = 99999
+  }
+
   ctx.log('info', 'assets.regen.ok', { projectId, assetId, cost, balance })
   return res.status(200).json({ project: proj, asset, cost, balance, requestId: ctx.requestId })
 })

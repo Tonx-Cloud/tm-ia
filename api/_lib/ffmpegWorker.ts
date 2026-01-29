@@ -34,14 +34,14 @@ const FORMAT_CONFIGS: Record<RenderFormat, FormatConfig> = {
 // Job Status Management
 // ============================================================================
 
-function updateJobStatus(
+async function updateJobStatus(
   userId: string,
   renderId: string,
   status: RenderJob['status'],
   outputUrl?: string,
   error?: string
 ) {
-  const jobs = loadJobs(userId)
+  const jobs = await loadJobs(userId)
   const idx = jobs.findIndex((j) => j.renderId === renderId)
   if (idx >= 0) {
     jobs[idx].status = status
@@ -50,17 +50,17 @@ function updateJobStatus(
     if (error) jobs[idx].error = error
     if (status === 'processing') jobs[idx].progress = 5
     if (status === 'complete') jobs[idx].progress = 100
-    saveJobs(userId, jobs)
+    await saveJobs(userId, jobs)
   }
 }
 
-function updateJobProgress(userId: string, renderId: string, progress: number) {
-  const jobs = loadJobs(userId)
+async function updateJobProgress(userId: string, renderId: string, progress: number) {
+  const jobs = await loadJobs(userId)
   const idx = jobs.findIndex((j) => j.renderId === renderId)
   if (idx >= 0 && jobs[idx].status === 'processing') {
     jobs[idx].progress = Math.min(99, Math.max(5, progress))
     jobs[idx].updatedAt = Date.now()
-    saveJobs(userId, jobs)
+    await saveJobs(userId, jobs)
   }
 }
 
@@ -163,14 +163,14 @@ function buildVideoFilters(options: RenderOptions): string[] {
 // Main Render Function
 // ============================================================================
 
-export function startFFmpegRender(userId: string, job: RenderJob, options: RenderOptions = {}) {
+export async function startFFmpegRender(userId: string, job: RenderJob, options: RenderOptions = {}) {
   // Update status to processing immediately
-  updateJobStatus(userId, job.renderId, 'processing')
+  await updateJobStatus(userId, job.renderId, 'processing')
 
   // Run in background (next tick) to not block the API response
   setTimeout(async () => {
     try {
-      const project = getProject(job.projectId)
+      const project = await getProject(job.projectId)
       if (!project) throw new Error('Project not found')
 
       if (!project.audioPath || !fs.existsSync(project.audioPath)) {
@@ -266,26 +266,26 @@ export function startFFmpegRender(userId: string, job: RenderJob, options: Rende
       let stderr = ''
       let lastProgress = 5
 
-      proc.stderr.on('data', (data) => {
+      proc.stderr.on('data', async (data) => {
         stderr += data.toString()
         
         // Parse and update progress
         const progress = parseFFmpegProgress(data.toString(), totalDurationSec)
         if (progress !== null && progress > lastProgress) {
           lastProgress = progress
-          updateJobProgress(userId, job.renderId, progress)
+          await updateJobProgress(userId, job.renderId, progress)
         }
       })
 
-      proc.on('close', (code) => {
+      proc.on('close', async (code) => {
         if (code === 0) {
           console.log('Render success:', outputFile)
           const downloadUrl = `${process.env.PUBLIC_BASE_URL || ''}/api/render/download?jobId=${job.renderId}`
-          updateJobStatus(userId, job.renderId, 'complete', downloadUrl)
+          await updateJobStatus(userId, job.renderId, 'complete', downloadUrl)
         } else {
           console.error('Render failed with code', code)
           console.error('FFmpeg stderr:', stderr.slice(-500))
-          updateJobStatus(
+          await updateJobStatus(
             userId,
             job.renderId,
             'failed',
@@ -295,13 +295,13 @@ export function startFFmpegRender(userId: string, job: RenderJob, options: Rende
         }
       })
 
-      proc.on('error', (err) => {
+      proc.on('error', async (err) => {
         console.error('FFmpeg spawn error:', err)
-        updateJobStatus(userId, job.renderId, 'failed', undefined, err.message)
+        await updateJobStatus(userId, job.renderId, 'failed', undefined, err.message)
       })
     } catch (err) {
       console.error('Render worker exception:', err)
-      updateJobStatus(userId, job.renderId, 'failed', undefined, (err as Error).message)
+      await updateJobStatus(userId, job.renderId, 'failed', undefined, (err as Error).message)
     }
   }, 100)
 }

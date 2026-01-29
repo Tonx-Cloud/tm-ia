@@ -36,19 +36,19 @@ export default withObservability(async function handler(req: VercelRequest, res:
   const cost = calculateTranscriptionCost(duration)
   
   // Seed demo balance if empty
-  if (getBalance(session.userId) === 0) {
-    addCredits(session.userId, 50, 'initial')
+  if ((await getBalance(session.userId)) === 0) {
+    await addCredits(session.userId, 50, 'initial')
   }
 
   // Check and spend credits
   try {
-    spendCredits(session.userId, cost, 'transcription')
+    await spendCredits(session.userId, cost, 'transcription')
   } catch (err) {
-    ctx.log('warn', 'transcribe.insufficient_credits', { balance: getBalance(session.userId), cost })
+    ctx.log('warn', 'transcribe.insufficient_credits', { balance: await getBalance(session.userId), cost })
     return res.status(402).json({ 
       error: 'Insufficient credits', 
       required: cost,
-      balance: getBalance(session.userId),
+      balance: await getBalance(session.userId),
       requestId: ctx.requestId 
     })
   }
@@ -56,7 +56,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   // TODO: Replace with real OpenAI Whisper transcription
   const transcription = 'This is a sample transcription of your audio hook. Replace with real model when configured.'
 
-  const balance = getBalance(session.userId)
+  const balance = await getBalance(session.userId)
   ctx.log('info', 'transcribe.ok', { filePath, duration, cost, balance })
 
   return res.status(200).json({ 

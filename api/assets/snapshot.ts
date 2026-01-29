@@ -29,7 +29,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   const { projectId } = req.body as { projectId?: string }
   if (!projectId) return res.status(400).json({ error: 'projectId required', requestId: ctx.requestId })
 
-  const proj = getProject(projectId)
+  const proj = await getProject(projectId)
   if (!proj) return res.status(404).json({ error: 'Project not found', requestId: ctx.requestId })
 
   const hash = snapshotHash(proj)
@@ -41,7 +41,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
   const renderId = crypto.randomUUID()
   proj.renders.push({ id: renderId, createdAt: Date.now(), status: 'ready', costCredits: 0, snapshotHash: hash })
-  upsertProject(proj)
+  await upsertProject(proj)
   ctx.log('info', 'assets.snapshot.saved', { projectId, renderId })
   return res.status(200).json({ ok: true, reused: false, renderId, cost: 0, snapshotHash: hash, requestId: ctx.requestId })
 })

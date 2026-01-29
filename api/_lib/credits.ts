@@ -1,35 +1,36 @@
+import { createClient } from 'redis'
 import crypto from 'crypto'
-import fs from 'fs'
-import path from 'path'
+
+// Reuse Redis client from projectStore logic or create new
+const redisUrl = process.env.REDIS_URL
+const client = redisUrl ? createClient({ url: redisUrl }) : null
+
+if (client) {
+  client.on('error', (err) => console.error('Redis Client Error', err))
+  if (!client.isOpen) client.connect().catch(console.error)
+}
 
 /**
  * Credit transaction reasons
  * @see docs/CREDITS_MODEL.md for pricing details
  */
 export type CreditReason =
-  // Earning credits
-  | 'initial'              // Initial demo balance
-  | 'purchase'             // Credit package purchase
-  | 'payment_pix'          // PIX payment (legacy)
-  | 'admin_adjust'         // Admin adjustment
-  | 'refund'               // Refund
-  
-  // Spending credits - API actions
-  | 'transcription'        // Audio transcription (per minute)
-  | 'analysis'             // Text analysis/hook generation
-  | 'generate_image'       // Generate new image
-  | 'regenerate_image'     // Regenerate existing image
-  | 'animate_image'        // Image animation (per second)
-  
-  // Spending credits - Render actions
-  | 'render'               // Final render (per minute)
-  | 'render_base'          // Legacy: base render
-  | 'pro_render'           // Legacy: pro render
-  | 'export_4k'            // 4K export premium
-  | 'remove_watermark'     // Watermark removal
-  
-  // Legacy
-  | 'demo_unlock'          // Demo unlock (legacy)
+  | 'initial'              
+  | 'purchase'             
+  | 'payment_pix'          
+  | 'admin_adjust'         
+  | 'refund'               
+  | 'transcription'        
+  | 'analysis'             
+  | 'generate_image'       
+  | 'regenerate_image'     
+  | 'animate_image'        
+  | 'render'               
+  | 'render_base'          
+  | 'pro_render'           
+  | 'export_4k'            
+  | 'remove_watermark'     
+  | 'demo_unlock'          
 
 export type CreditEntry = {
   id: string
@@ -47,40 +48,47 @@ export type CreditLedger = {
   entries: CreditEntry[]
 }
 
-function storePath(userId: string) {
-  return path.join(process.env.TMPDIR || process.env.TEMP || '/tmp', `credits_${userId}.json`)
+const MEMORY_LEDGERS: Record<string, CreditLedger> = {}
+
+async function getRedis() {
+  if (!client) return null
+  if (!client.isOpen) await client.connect()
+  return client
 }
 
-function loadLedger(userId: string): CreditLedger {
-  const p = storePath(userId)
-  try {
-    const raw = fs.readFileSync(p, 'utf-8')
-    const parsed = JSON.parse(raw) as CreditLedger
-    return {
-      balance: parsed.balance ?? 0,
-      entries: Array.isArray(parsed.entries) ? parsed.entries : [],
-    }
-  } catch {
-    return { balance: 0, entries: [] }
+async function loadLedger(userId: string): Promise<CreditLedger> {
+  const redis = await getRedis()
+  if (redis) {
+    const data = await redis.get(`credits:${userId}`)
+    if (data) return JSON.parse(data)
+  }
+  return MEMORY_LEDGERS[userId] || { balance: 0, entries: [] }
+}
+
+async function saveLedger(userId: string, ledger: CreditLedger) {
+  const redis = await getRedis()
+  if (redis) {
+    await redis.set(`credits:${userId}`, JSON.stringify(ledger))
+  } else {
+    MEMORY_LEDGERS[userId] = ledger
   }
 }
 
-function saveLedger(userId: string, ledger: CreditLedger) {
-  fs.writeFileSync(storePath(userId), JSON.stringify(ledger, null, 2))
+// NOTE: Changed to async!
+export async function getBalance(userId: string): Promise<number> {
+  const ledger = await loadLedger(userId)
+  return ledger.balance
 }
 
-export function getBalance(userId: string) {
-  return loadLedger(userId).balance
-}
-
-export function getLedger(userId: string, limit = 10) {
-  const { entries } = loadLedger(userId)
+// NOTE: Changed to async!
+export async function getLedger(userId: string, limit = 10): Promise<CreditEntry[]> {
+  const { entries } = await loadLedger(userId)
   return entries.slice(-limit).reverse()
 }
 
-export function addCredits(userId: string, amount: number, reason: CreditReason, meta?: Partial<CreditEntry>) {
+export async function addCredits(userId: string, amount: number, reason: CreditReason, meta?: Partial<CreditEntry>) {
   if (amount <= 0) throw new Error('amount must be positive')
-  const ledger = loadLedger(userId)
+  const ledger = await loadLedger(userId)
   const entry: CreditEntry = {
     id: crypto.randomUUID(),
     userId,
@@ -93,13 +101,13 @@ export function addCredits(userId: string, amount: number, reason: CreditReason,
   }
   ledger.balance += amount
   ledger.entries.push(entry)
-  saveLedger(userId, ledger)
+  await saveLedger(userId, ledger)
   return ledger.balance
 }
 
-export function spendCredits(userId: string, amount: number, reason: CreditReason, meta?: Partial<CreditEntry>) {
+export async function spendCredits(userId: string, amount: number, reason: CreditReason, meta?: Partial<CreditEntry>) {
   if (amount <= 0) throw new Error('amount must be positive')
-  const ledger = loadLedger(userId)
+  const ledger = await loadLedger(userId)
   if (ledger.balance < amount) throw new Error('Insufficient credits')
   const entry: CreditEntry = {
     id: crypto.randomUUID(),
@@ -113,6 +121,6 @@ export function spendCredits(userId: string, amount: number, reason: CreditReaso
   }
   ledger.balance -= amount
   ledger.entries.push(entry)
-  saveLedger(userId, ledger)
+  await saveLedger(userId, ledger)
   return ledger.balance
 }

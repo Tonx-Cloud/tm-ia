@@ -41,23 +41,23 @@ export default withObservability(async function handler(req: VercelRequest, res:
     }
     let projId = projectId
     if (!projId) {
-      const proj = createProject()
+      const proj = await createProject()
       projId = proj.id
       if (audioPath) {
         proj.audioPath = audioPath
-        upsertProject(proj)
+        await upsertProject(proj)
       }
     } else if (audioPath) {
-      const proj = getProject(projId)
+      const proj = await getProject(projId)
       if (proj) {
         proj.audioPath = audioPath
-        upsertProject(proj)
+        await upsertProject(proj)
       }
     }
 
     // seed demo credits if empty (dev)
-    if (getBalance(session.userId) === 0) {
-      addCredits(session.userId, 50, 'initial')
+    if ((await getBalance(session.userId)) === 0) {
+      await addCredits(session.userId, 50, 'initial')
     }
 
     const assets: Asset[] = prompts.map((prompt, idx) => {
@@ -83,7 +83,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
       }
     }
 
-    const proj = addAssets(projId!, assets)
+    const proj = await addAssets(projId!, assets)
     ctx.log('info', 'assets.add', { projectId: projId, count: assets.length })
     return res.status(200).json({ project: proj, cost, requestId: ctx.requestId })
   }
@@ -91,7 +91,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   if (req.method === 'GET') {
     const { projectId } = req.query as { projectId?: string }
     if (!projectId) return res.status(400).json({ error: 'projectId required', requestId: ctx.requestId })
-    const proj = getProject(projectId)
+    const proj = await getProject(projectId)
     if (!proj) return res.status(404).json({ error: 'Project not found', requestId: ctx.requestId })
     ctx.log('info', 'assets.get', { projectId })
     return res.status(200).json({ project: proj, requestId: ctx.requestId })
@@ -106,7 +106,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
     if (!projectId) return res.status(400).json({ error: 'projectId required', requestId: ctx.requestId })
     
-    const proj = getProject(projectId)
+    const proj = await getProject(projectId)
     if (!proj) return res.status(404).json({ error: 'Project not found', requestId: ctx.requestId })
     
     let updated = false
@@ -123,7 +123,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
        return res.status(400).json({ error: 'Nothing to update', requestId: ctx.requestId })
     }
 
-    upsertProject(proj)
+    await upsertProject(proj)
     ctx.log('info', 'assets.update', { projectId, updatedFields: { storyboard: !!storyboard, audioPath: !!audioPath } })
     return res.status(200).json({ project: proj, requestId: ctx.requestId })
   }

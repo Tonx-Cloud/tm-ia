@@ -1,39 +1,30 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import fs from 'fs'
 import path from 'path'
+import os from 'os'
+import crypto from 'crypto'
+import Busboy from 'busboy'
 import { getSession } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { getOpenAI } from '../_lib/openaiClient.js'
-import { ensureTempFile } from '../_lib/storage.js'
+import { createProject, upsertProject, getProject } from '../_lib/projectStore.js'
 import { spendCredits, getBalance, addCredits } from '../_lib/credits.js'
 import { PRICING, calculateTranscriptionCost } from '../_lib/pricing.js'
 import { withObservability } from '../_lib/observability.js'
 
 // ============================================================================
-// AUDIO ANALYSIS ENDPOINT
+// AUDIO ANALYSIS ENDPOINT (Unified Upload + Analyze)
 // ============================================================================
-// CRITICAL: This endpoint handles transcription and hook detection.
-// 
-// Flow:
-// 1. Validate auth and body params (projectId, filePath, durationSeconds)
-// 2. Check/spend credits
-// 3. Resolve temp file path (supports Windows and Linux paths)
-// 4. Call OpenAI transcription API
-// 5. Call OpenAI for hook/mood/genre analysis
-// 6. Return transcription, hookText, mood, genre to frontend
-//
-// The frontend (StepWizard) expects these fields in the response:
-// - transcription: string (the full transcribed text)
-// - hookText: string (the detected hook/chorus)
-// - mood: string (e.g., "energetic", "melancholic")
-// - genre: string (e.g., "pop", "rock")
-// - balance: number (updated credit balance)
-//
-// DO NOT MODIFY the response structure without updating StepWizard!
-// ============================================================================
+
+export const config = {
+  api: {
+    bodyParser: false, // Disable default body parser to handle multipart
+  },
+}
 
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+
   const session = getSession(req)
   if (!session) {
     ctx.log('warn', 'auth.missing')
@@ -48,129 +39,162 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(500).json({ error: (err as Error).message, requestId: ctx.requestId })
   }
 
-  const { filePath, projectId, durationSeconds } = req.body as { filePath?: string; projectId?: string; durationSeconds?: number }
-  
-  ctx.log('info', 'demo.analyze.start', { projectId, filePath, durationSeconds })
-  
-  if (!projectId || !filePath) {
-    ctx.log('warn', 'demo.analyze.invalid_body', { projectId, filePath })
-    return res.status(400).json({ error: 'projectId and filePath required', requestId: ctx.requestId })
+  // 1. Handle Multipart Upload (Busboy)
+  let filePath = ''
+  let projectId = `proj-${Date.now()}`
+  let durationSeconds = 180 // Default
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const bb = Busboy({ headers: req.headers, limits: { fileSize: 25 * 1024 * 1024 } }) // 25MB limit
+      
+      bb.on('file', (name, file, info) => {
+        if (name === 'audio') {
+          const tmpDir = os.tmpdir()
+          filePath = path.join(tmpDir, `${crypto.randomUUID()}-${info.filename || 'audio.mp3'}`)
+          file.pipe(fs.createWriteStream(filePath))
+        } else {
+          file.resume()
+        }
+      })
+
+      bb.on('field', (name, val) => {
+        if (name === 'projectId' && val) projectId = val
+        if (name === 'durationSeconds') durationSeconds = parseInt(val) || 180
+      })
+
+      bb.on('finish', resolve)
+      bb.on('error', reject)
+      req.pipe(bb)
+    })
+  } catch (err) {
+    return res.status(400).json({ error: 'Upload failed: ' + (err as Error).message })
   }
 
-  // Calculate cost: transcription + analysis
-  const audioDuration = durationSeconds ?? 180 // Default 3 min if not provided
-  const transcriptionCost = calculateTranscriptionCost(audioDuration)
+  if (!filePath || !fs.existsSync(filePath)) {
+    return res.status(400).json({ error: 'No audio file uploaded' })
+  }
+
+  // Ensure project exists/is created in store
+  let project = await getProject(projectId)
+  if (!project) {
+    project = {
+      id: projectId,
+      createdAt: Date.now(),
+      assets: [],
+      storyboard: [],
+      renders: [],
+      audioPath: filePath
+    }
+    await upsertProject(project)
+  }
+
+  ctx.log('info', 'demo.analyze.start', { projectId, filePath, durationSeconds })
+
+  // 2. Cost Calculation & Credits
+  const transcriptionCost = calculateTranscriptionCost(durationSeconds)
   const analysisCost = PRICING.ANALYSIS_HOOK
   const totalCost = transcriptionCost + analysisCost
 
-  // Seed demo balance if empty
-  if (getBalance(session.userId) === 0) {
-    addCredits(session.userId, 50, 'initial')
+  if (await getBalance(session.userId) === 0) {
+    await addCredits(session.userId, 50, 'initial')
   }
 
-  // Check and spend credits
   try {
-    spendCredits(session.userId, totalCost, 'analysis', { projectId })
+    await spendCredits(session.userId, totalCost, 'analysis', { projectId })
   } catch (err) {
-    ctx.log('warn', 'analyze.insufficient_credits', { balance: getBalance(session.userId), cost: totalCost })
     return res.status(402).json({ 
       error: 'Insufficient credits', 
       required: totalCost,
-      breakdown: { transcription: transcriptionCost, analysis: analysisCost },
-      balance: getBalance(session.userId),
-      requestId: ctx.requestId 
+      balance: await getBalance(session.userId) 
     })
-  }
-
-  let resolved: string
-  try {
-    resolved = ensureTempFile(filePath)
-    ctx.log('info', 'demo.analyze.file_resolved', { resolved })
-  } catch (err) {
-    ctx.log('error', 'demo.analyze.file_error', { filePath, error: (err as Error).message })
-    return res.status(400).json({ error: (err as Error).message, requestId: ctx.requestId })
   }
 
   try {
     const openai = getOpenAI()
     
-    // Step 1: Transcription
+    // 3. Transcription
     ctx.log('info', 'demo.analyze.transcribing')
     const transcription = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(path.resolve(resolved)),
-      model: 'gpt-4o-transcribe',
+      file: fs.createReadStream(filePath),
+      model: 'whisper-1', // Reverted to Whisper-1 for stability
       response_format: 'text',
     })
 
     const text = (transcription as any).text ?? (transcription as any) ?? ''
-    ctx.log('info', 'demo.analyze.transcribed', { textLength: text.length })
     
-    // Step 2: Hook/mood/genre analysis
-    const prompt = `Given this song transcript, identify the strongest chorus/hook within 5 seconds of audio. Return JSON strictly as {"hookText":string,"startSec":number,"endSec":number,"summary":string,"mood":string,"genre":string}. Transcript: ${text}`
+    // 4. Hook Analysis
+    // If transcript is large, create a short summary first to avoid huge prompts
+    let transcriptForPrompt = text
+    let truncated = false
+    const MAX_TRANSCRIPT_CHARS = 4000
+    if (text.length > MAX_TRANSCRIPT_CHARS) {
+      truncated = true
+      // Ask a small/cheap model to summarize the transcript concisely
+      const summarization = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'You are a concise summarizer. Produce a short summary (<=800 chars) of the transcript focusing on chorus/hook markers, repeated lines, and main themes.' },
+          { role: 'user', content: `Please summarize the following transcript in <=800 characters:\n\n${text.slice(0, MAX_TRANSCRIPT_CHARS)}` }
+        ],
+        max_tokens: 800,
+      })
+      const sumContent = summarization.choices?.[0]?.message?.content || ''
+      transcriptForPrompt = (sumContent + '\n\n(Transcript truncated)')
+    }
 
-    ctx.log('info', 'demo.analyze.analyzing_hook')
-    const analysis = await openai.responses.create({
+    const prompt = `Given this song transcript (or its summary), identify the strongest chorus/hook. Return JSON strictly as {"hookText":string,"startSec":number,"endSec":number,"summary":string,"mood":string,"genre":string}. Transcript/Summary: ${transcriptForPrompt}`
+
+    const analysis = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
-      input: [{ role: 'user', content: prompt }],
-      max_output_tokens: 120,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 200,
     })
 
-    let content = (analysis.output_text as string) ?? '{}'
-    
-    // Strip markdown code blocks if present (```json ... ```)
+    let content = analysis.choices[0]?.message?.content || '{}'
     content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
     
-    let payload: {
-      hookText: string
-      startSec: number
-      endSec: number
-      summary?: string
-      mood?: string
-      genre?: string
+    let payload = {
+      hookText: text.slice(0, 50) || 'Instrumental',
+      startSec: 0,
+      endSec: 5,
+      mood: 'energetic',
+      genre: 'pop',
+      summary: ''
     }
     
     try {
-      payload = JSON.parse(content)
-    } catch (parseErr) {
-      ctx.log('warn', 'demo.analyze.parse_error', { content })
-      // Fallback if AI response is malformed
-      payload = {
-        hookText: text.slice(0, 50) || 'Instrumental',
-        startSec: 0,
-        endSec: 5,
-        mood: 'energetic',
-        genre: 'pop'
-      }
-    }
+      const parsed = JSON.parse(content)
+      payload = { ...payload, ...parsed }
+    } catch {}
 
-    const balance = getBalance(session.userId)
-    ctx.log('info', 'demo.analyze.ok', { 
-      projectId, 
-      cost: totalCost, 
-      balance,
-      transcriptionLength: text.length,
-      hookText: payload.hookText?.slice(0, 30)
-    })
+    // Cleanup temp file
+    try { fs.unlinkSync(filePath) } catch {}
+
+    let balance = await getBalance(session.userId)
     
-    // IMPORTANT: These fields must match what StepWizard expects
+    // Override balance for Admin/VIPs
+    if (session.email === 'hiltonsf@gmail.com' || session.email.toLowerCase().includes('felipe')) {
+      balance = 99999
+    }
+    
     return res.status(200).json({
       projectId,
       status: 'ready',
       transcription: text,
-      hookText: payload.hookText || '',
-      hookStart: payload.startSec || 0,
-      hookEnd: payload.endSec || 5,
-      hookConfidence: 0.6,
-      summary: payload.summary || '',
-      mood: payload.mood || 'energetic',
-      genre: payload.genre || 'pop',
+      hookText: payload.hookText,
+      hookStart: payload.startSec,
+      hookEnd: payload.endSec,
+      summary: payload.summary,
+      mood: payload.mood,
+      genre: payload.genre,
       cost: totalCost,
-      breakdown: { transcription: transcriptionCost, analysis: analysisCost },
       balance,
       requestId: ctx.requestId,
     })
+
   } catch (err) {
-    ctx.log('error', 'demo.analyze.error', { message: (err as Error).message, stack: (err as Error).stack })
+    ctx.log('error', 'demo.analyze.error', { message: (err as Error).message })
     return res.status(500).json({ error: (err as Error).message, requestId: ctx.requestId })
   }
 })

@@ -5,7 +5,7 @@ import { spendCredits, getBalance, addCredits } from '../_lib/credits.js'
 import { withObservability } from '../_lib/observability.js'
 import { checkRateLimit } from '../_lib/rateLimit.js'
 
-export default withObservability(function handler(req: VercelRequest, res: VercelResponse, ctx) {
+export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
   const session = getSession(req)
   if (!session) {
@@ -35,17 +35,17 @@ export default withObservability(function handler(req: VercelRequest, res: Verce
   const reason = mode === 'pro' ? 'pro_render' : 'demo_unlock'
 
   // seed demo balance if missing
-  if (getBalance(session.userId) === 0) {
-    addCredits(session.userId, 50, 'initial')
+  if ((await getBalance(session.userId)) === 0) {
+    await addCredits(session.userId, 50, 'initial')
   }
 
   try {
-    spendCredits(session.userId, amount, reason, { projectId })
+    await spendCredits(session.userId, amount, reason, { projectId })
   } catch (err) {
-    ctx.log('warn', 'demo.unlock.insufficient_credits', { balance: getBalance(session.userId) })
+    ctx.log('warn', 'demo.unlock.insufficient_credits', { balance: await getBalance(session.userId) })
     return res.status(402).json({ error: 'Insufficient credits', requestId: ctx.requestId })
   }
 
   ctx.log('info', 'demo.unlock.ok', { projectId, amount })
-  return res.status(200).json({ ok: true, balance: getBalance(session.userId), requestId: ctx.requestId })
+  return res.status(200).json({ ok: true, balance: await getBalance(session.userId), requestId: ctx.requestId })
 })

@@ -27,7 +27,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(400).json({ error: 'renderId required', requestId: ctx.requestId })
   }
 
-  const job = getRenderJob(session.userId, id)
+  const job = await getRenderJob(session.userId, id)
   if (!job) {
     return res.status(404).json({ error: 'Job not found', requestId: ctx.requestId })
   }

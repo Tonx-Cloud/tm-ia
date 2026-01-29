@@ -1,6 +1,13 @@
-import fs from 'fs'
-import path from 'path'
-import os from 'os'
+import { createClient } from 'redis'
+
+// Reuse Redis client from projectStore logic or create new
+const redisUrl = process.env.REDIS_URL
+const client = redisUrl ? createClient({ url: redisUrl }) : null
+
+if (client) {
+  client.on('error', (err) => console.error('Redis Client Error', err))
+  if (!client.isOpen) client.connect().catch(console.error)
+}
 
 export type RenderJobStatus = 'pending' | 'processing' | 'complete' | 'failed'
 
@@ -16,21 +23,30 @@ export type RenderJob = {
   updatedAt: number
 }
 
-function storePath(userId: string) {
-  return path.join(os.tmpdir(), `render_jobs_${userId}.json`)
+const MEMORY_JOBS: Record<string, RenderJob[]> = {}
+
+async function getRedis() {
+  if (!client) return null
+  if (!client.isOpen) await client.connect()
+  return client
 }
 
-export function loadJobs(userId: string): RenderJob[] {
-  const p = storePath(userId)
-  try {
-    const raw = fs.readFileSync(p, 'utf-8')
-    const parsed = JSON.parse(raw) as RenderJob[]
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
+// NOTE: Changed to async
+export async function loadJobs(userId: string): Promise<RenderJob[]> {
+  const redis = await getRedis()
+  if (redis) {
+    const data = await redis.get(`jobs:${userId}`)
+    return data ? JSON.parse(data) : []
   }
+  return MEMORY_JOBS[userId] || []
 }
 
-export function saveJobs(userId: string, jobs: RenderJob[]) {
-  fs.writeFileSync(storePath(userId), JSON.stringify(jobs, null, 2))
+// NOTE: Changed to async
+export async function saveJobs(userId: string, jobs: RenderJob[]) {
+  const redis = await getRedis()
+  if (redis) {
+    await redis.set(`jobs:${userId}`, JSON.stringify(jobs), { EX: 86400 * 3 }) // 3 days retention
+  } else {
+    MEMORY_JOBS[userId] = jobs
+  }
 }

@@ -50,7 +50,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   if (rec.status === 'confirmed' && !rec.credited && rec.userId) {
     try {
       const credits = rec.amount * CREDIT_RATE
-      balance = addCredits(rec.userId, credits, 'payment_pix')
+      balance = await addCredits(rec.userId, credits, 'payment_pix')
       rec.credited = true
       rec.creditedAt = Date.now()
       savePayment(rec)

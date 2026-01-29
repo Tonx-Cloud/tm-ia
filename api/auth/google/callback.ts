@@ -7,7 +7,7 @@ import { signToken } from '../../_lib/auth.js'
 import { addCredits, getBalance } from '../../_lib/credits.js'
 
 // User storage path
-const DATA_DIR = path.join(process.cwd(), '.data')
+const DATA_DIR = process.env.NODE_ENV === 'production' ? '/tmp' : path.join(process.cwd(), '.data')
 const USERS_FILE = path.join(DATA_DIR, 'users.json')
 
 type User = {
@@ -35,7 +35,7 @@ function saveUsers(users: User[]) {
   fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2))
 }
 
-function findOrCreateUser(googleUser: { email: string; name?: string; picture?: string; sub: string }): User {
+async function findOrCreateUser(googleUser: { email: string; name?: string; picture?: string; sub: string }): Promise<User> {
   const users = loadUsers()
   
   // Find by Google ID first
@@ -68,7 +68,7 @@ function findOrCreateUser(googleUser: { email: string; name?: string; picture?: 
     saveUsers(users)
     
     // Give initial credits to new users
-    addCredits(user.id, 50, 'initial')
+    await addCredits(user.id, 50, 'initial')
   }
   
   return user
@@ -101,10 +101,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return redirectWithError(res, `Server configuration error: ${details}`)
   }
 
-  const clientId = process.env.GOOGLE_CLIENT_ID
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET
+  const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim()
+  const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || '').trim()
 
   if (!clientId || !clientSecret) {
+    console.error('Missing Google OAuth credentials')
     return redirectWithError(res, 'Google OAuth not configured on server')
   }
 
@@ -113,6 +114,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     (process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : 'https://tm-ia.vercel.app')
   
   const redirectUri = `${baseUrl}/api/auth/google/callback`
+  
+  console.log('Exchanging code for token:', { 
+    clientIdPrefix: clientId.substring(0, 10), 
+    redirectUri 
+  })
 
   try {
     // Exchange code for tokens
@@ -130,8 +136,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!tokenResponse.ok) {
       const err = await tokenResponse.text()
-      console.error('Token exchange failed:', err)
-      return redirectWithError(res, 'Failed to exchange authorization code')
+      console.error('Token exchange failed:', { status: tokenResponse.status, body: err })
+      return redirectWithError(res, `Failed to exchange authorization code: ${err.substring(0, 100)}`)
     }
 
     const tokens = await tokenResponse.json() as { access_token: string; id_token?: string }
@@ -158,12 +164,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Find or create user
-    const user = findOrCreateUser({
+    const user = await findOrCreateUser({
       email: googleUser.email,
       name: googleUser.name,
       picture: googleUser.picture,
       sub: googleUser.id
     })
+
+    // Special ADMIN CREDITS for hiltonsf@gmail.com
+    if (user.email === 'hiltonsf@gmail.com') {
+       // Ensure admin always has enough credits (top up if low)
+       const currentBalance = await getBalance(user.id)
+       if (currentBalance < 5000) {
+         await addCredits(user.id, 99999, 'admin_adjust')
+       }
+    }
 
     // Generate JWT
     const jwtToken = signToken({
@@ -175,7 +190,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     })
 
     // Get user's credit balance
-    const balance = getBalance(user.id)
+    const balance = await getBalance(user.id)
 
     // Parse state to get redirect URL
     let redirectPath = '/'

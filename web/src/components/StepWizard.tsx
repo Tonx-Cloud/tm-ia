@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Locale } from '@/i18n'
-import { uploadAudio, analyzeAudio, type Asset } from '@/lib/assetsApi'
+import { analyzeAudio, type Asset } from '@/lib/assetsApi'
 
 // ============================================================================
 // TYPES
@@ -694,8 +694,36 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [projectId, setProjectId] = useState<string | null>(null)
   const [segments, setSegments] = useState<Segment[]>([])
   const [hookText, setHookText] = useState('')
+  const [isEditingHook, setIsEditingHook] = useState(false)
   const [mood, setMood] = useState('')
   const [genre, setGenre] = useState('')
+  const [isPlaying, setIsPlaying] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+
+  // Audio Playback
+  const togglePlay = () => {
+    if (!audioRef.current && audio?.url) {
+      audioRef.current = new Audio(audio.url)
+      audioRef.current.onended = () => setIsPlaying(false)
+    }
+    
+    if (isPlaying) {
+      audioRef.current?.pause()
+    } else {
+      audioRef.current?.play()
+    }
+    setIsPlaying(!isPlaying)
+  }
+
+  // Cleanup audio on unmount or change
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current = null
+      }
+    }
+  }, [audio])
   
   // Step 2
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16')
@@ -791,26 +819,16 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         url
       })
 
-      // Step 3: Upload to server
-      console.log('[StepWizard] Uploading audio...')
-      const uploadResp = await uploadAudio(file, token)
-      console.log('[StepWizard] Upload complete:', uploadResp)
-      
-      if (!uploadResp.projectId || !uploadResp.filePath) {
-        throw new Error('Upload failed: missing projectId or filePath')
-      }
-      
-      setProjectId(uploadResp.projectId)
-      setUploading(false)
-      
-      // Step 4: Analyze audio (transcription + hook detection)
-      console.log('[StepWizard] Starting analysis...')
+      // Step 3: Analyze audio (Upload + Analyze in one go)
+      console.log('[StepWizard] Starting analysis (uploading)...')
       setAnalyzing(true)
       
-      const analysis = await analyzeAudio(uploadResp.projectId, uploadResp.filePath, duration, token)
+      const analysis = await analyzeAudio(file, duration, token)
       console.log('[StepWizard] Analysis complete:', analysis)
       
-      // Step 5: Update state with analysis results
+      setProjectId(analysis.projectId)
+      
+      // Step 4: Update state with analysis results
       const newSegments = createSegmentsFromTranscription(analysis.transcription || '', duration)
       console.log('[StepWizard] Created segments:', newSegments.length)
       
@@ -889,37 +907,43 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   }
 
   const handleRender = async () => {
-    if (!projectId || !token || assets.length === 0) return
+    if (!projectId || !token || assets.length === 0 || !audio) return
     
     setRendering(true)
     setRenderProgress(0)
     setError(null)
     
     try {
-      const totalDuration = audio?.duration || 180
+      const totalDuration = audio.duration
       
+      const configData = {
+        projectId,
+        config: {
+          format: aspectRatio === '9:16' ? 'vertical' : aspectRatio === '16:9' ? 'horizontal' : 'square',
+          duration: totalDuration,
+          scenesCount: assets.length,
+          aspectRatio,
+          quality: 'high'
+        },
+        renderOptions: {
+          format: aspectRatio === '9:16' ? 'vertical' : aspectRatio === '16:9' ? 'horizontal' : 'square',
+          watermark: false,
+          crossfade: true,
+          crossfadeDuration: 0.5
+        }
+      }
+
+      // Send Audio + Config (Re-upload strategy for serverless persistence)
+      const formData = new FormData()
+      formData.append('audio', audio.file)
+      formData.append('data', JSON.stringify(configData))
+
       const res = await fetch('/api/render/pro', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          projectId,
-          config: {
-            format: aspectRatio === '9:16' ? 'vertical' : aspectRatio === '16:9' ? 'horizontal' : 'square',
-            duration: totalDuration,
-            scenesCount: assets.length,
-            aspectRatio,
-            quality: 'high'
-          },
-          renderOptions: {
-            format: aspectRatio === '9:16' ? 'vertical' : aspectRatio === '16:9' ? 'horizontal' : 'square',
-            watermark: false,
-            crossfade: true,
-            crossfadeDuration: 0.5
-          }
-        })
+        body: formData
       })
       
       if (!res.ok) {
@@ -1302,9 +1326,21 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                     {audio.durationFmt} • {audio.size}
                   </div>
                 </div>
+                <button
+                  className="btn-ghost"
+                  onClick={togglePlay}
+                  style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  {isPlaying ? '⏸' : '▶'} {isPlaying ? 'Pausar' : 'Ouvir'}
+                </button>
                 <button 
                   className="btn-ghost" 
-                  onClick={() => { setAudio(null); setSegments([]); setHookText(''); }}
+                  onClick={() => { 
+                    setAudio(null); 
+                    setSegments([]); 
+                    setHookText('');
+                    if(isPlaying) togglePlay(); 
+                  }}
                   style={{ fontSize: 13 }}
                 >
                   Trocar
@@ -1360,17 +1396,59 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                       <div style={{ 
                         display: 'flex', 
                         alignItems: 'center', 
-                        gap: 8, 
-                        fontSize: 12, 
-                        color: 'var(--success)', 
-                        fontWeight: 600, 
+                        justifyContent: 'space-between',
                         marginBottom: 8 
                       }}>
-                        <span>🎯</span> HOOK DETECTADO
+                        <div style={{
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: 8, 
+                          fontSize: 12, 
+                          color: 'var(--success)', 
+                          fontWeight: 600
+                        }}>
+                          <span>🎯</span> REFRÃO (HOOK)
+                        </div>
+                        <button
+                          className="btn-ghost"
+                          onClick={() => setIsEditingHook(!isEditingHook)}
+                          style={{ fontSize: 11, padding: '2px 8px', height: 'auto' }}
+                        >
+                          {isEditingHook ? 'Cancelar' : 'Editar'}
+                        </button>
                       </div>
-                      <div style={{ fontSize: 18, fontWeight: 600, fontStyle: 'italic' }}>
-                        "{hookText}"
-                      </div>
+
+                      {isEditingHook ? (
+                         <div style={{ display: 'flex', gap: 8, flexDirection: 'column' }}>
+                           <textarea
+                             value={hookText}
+                             onChange={(e) => setHookText(e.target.value)}
+                             style={{
+                               width: '100%',
+                               padding: 10,
+                               borderRadius: 8,
+                               border: '1px solid var(--border)',
+                               background: 'rgba(0,0,0,0.2)',
+                               color: 'var(--text)',
+                               fontSize: 16,
+                               fontStyle: 'italic',
+                               minHeight: 80
+                             }}
+                           />
+                           <button 
+                             className="btn-primary" 
+                             style={{ alignSelf: 'flex-end', padding: '6px 12px', fontSize: 12 }}
+                             onClick={() => setIsEditingHook(false)}
+                           >
+                             Salvar
+                           </button>
+                         </div>
+                      ) : (
+                        <div style={{ fontSize: 18, fontWeight: 600, fontStyle: 'italic' }}>
+                          "{hookText}"
+                        </div>
+                      )}
+
                       <div style={{ 
                         display: 'flex', 
                         gap: 16, 

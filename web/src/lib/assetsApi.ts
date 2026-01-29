@@ -78,11 +78,16 @@ export async function uploadAudio(file: File, token: string): Promise<{ ok: bool
   return res.json()
 }
 
-export async function analyzeAudio(projectId: string, filePath: string, durationSeconds: number, token: string) {
+export async function analyzeAudio(file: File, durationSeconds: number, token: string, existingProjectId?: string) {
+  const formData = new FormData()
+  formData.append('audio', file)
+  formData.append('durationSeconds', String(durationSeconds))
+  if (existingProjectId) formData.append('projectId', existingProjectId)
+
   const res = await fetch(`${API}/api/demo/analyze`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ projectId, filePath, durationSeconds }),
+    headers: { Authorization: `Bearer ${token}` }, // Content-Type header is auto-set by browser for FormData
+    body: formData,
   })
 
   if (!res.ok) {

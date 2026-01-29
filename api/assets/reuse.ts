@@ -31,12 +31,12 @@ export default withObservability(async function handler(req: VercelRequest, res:
     ctx.log('warn', 'assets.reuse.invalid_body')
     return res.status(400).json({ error: 'projectId and assetId required', requestId: ctx.requestId })
   }
-  const proj = getProject(projectId)
+  const proj = await getProject(projectId)
   if (!proj) return res.status(404).json({ error: 'Project not found', requestId: ctx.requestId })
   const asset = proj.assets.find((a) => a.id === assetId)
   if (!asset) return res.status(404).json({ error: 'Asset not found', requestId: ctx.requestId })
   asset.status = 'reused'
-  upsertProject(proj)
+  await upsertProject(proj)
   ctx.log('info', 'assets.reuse.ok', { projectId, assetId })
   return res.status(200).json({ project: proj, requestId: ctx.requestId })
 })

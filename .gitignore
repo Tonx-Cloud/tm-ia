@@ -43,3 +43,5 @@ SOUL.md
 TOOLS.md
 USER.md
 ACTION_PLAN.md
+.vercel
+.env*.local
