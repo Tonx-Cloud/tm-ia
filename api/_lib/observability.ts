@@ -43,7 +43,9 @@ export function withObservability(handler: Handler) {
       const message = (err as Error).message || 'Unhandled error'
       ctx.log('error', 'request.error', { message, stack: (err as Error).stack })
       if (!res.headersSent) {
-        res.status(500).json({ error: 'Internal error', requestId })
+        // Return the message so the client can display something actionable.
+        // requestId is always included for correlation in logs.
+        res.status(500).json({ error: message, requestId })
       }
     }
   }

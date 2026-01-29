@@ -1006,8 +1006,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       })
       
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || 'Failed to generate')
+        const err = await res.json().catch(() => ({} as any))
+        const rid = err.requestId ? ` (id: ${err.requestId})` : ''
+        throw new Error((err.error || 'Failed to generate') + rid)
       }
       
       const data = await res.json()
