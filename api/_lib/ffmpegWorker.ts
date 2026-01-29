@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import os from 'os'
 import { spawn } from 'child_process'
+import { getFFmpegPath } from './ffmpegPath.js'
 import { getProject } from './projectStore.js'
 import { type RenderJob, loadJobs, saveJobs } from './jobStore.js'
 
@@ -167,10 +168,8 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
   // Update status to processing immediately
   await updateJobStatus(userId, job.renderId, 'processing')
 
-  // Run in background (next tick) to not block the API response
-  setTimeout(async () => {
-    try {
-      const project = await getProject(job.projectId)
+  try {
+    const project = await getProject(job.projectId)
       if (!project) throw new Error('Project not found')
 
       if (!project.audioPath || !fs.existsSync(project.audioPath)) {
@@ -259,9 +258,10 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         ]
       }
 
-      console.log('Running FFmpeg:', 'ffmpeg', args.join(' '))
+      const ffmpegPath = getFFmpegPath()
+      console.log('Running FFmpeg:', ffmpegPath, args.join(' '))
 
-      const proc = spawn('ffmpeg', args, { cwd: workDir })
+      const proc = spawn(ffmpegPath, args, { cwd: workDir })
 
       let stderr = ''
       let lastProgress = 5
@@ -277,33 +277,36 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         }
       })
 
-      proc.on('close', async (code) => {
-        if (code === 0) {
+      await new Promise<void>((resolve) => {
+        proc.on('close', async (code) => {
+          if (code === 0) {
           console.log('Render success:', outputFile)
           const downloadUrl = `${process.env.PUBLIC_BASE_URL || ''}/api/render/download?jobId=${job.renderId}`
-          await updateJobStatus(userId, job.renderId, 'complete', downloadUrl)
-        } else {
+            await updateJobStatus(userId, job.renderId, 'complete', downloadUrl)
+          } else {
           console.error('Render failed with code', code)
           console.error('FFmpeg stderr:', stderr.slice(-500))
-          await updateJobStatus(
-            userId,
-            job.renderId,
-            'failed',
-            undefined,
-            `FFmpeg exited with code ${code}. Log: ${stderr.slice(-200)}`
-          )
-        }
-      })
+            await updateJobStatus(
+              userId,
+              job.renderId,
+              'failed',
+              undefined,
+              `FFmpeg exited with code ${code}. Log: ${stderr.slice(-200)}`
+            )
+          }
+          resolve()
+        })
 
-      proc.on('error', async (err) => {
-        console.error('FFmpeg spawn error:', err)
-        await updateJobStatus(userId, job.renderId, 'failed', undefined, err.message)
+        proc.on('error', async (err) => {
+          console.error('FFmpeg spawn error:', err)
+          await updateJobStatus(userId, job.renderId, 'failed', undefined, err.message)
+          resolve()
+        })
       })
-    } catch (err) {
-      console.error('Render worker exception:', err)
-      await updateJobStatus(userId, job.renderId, 'failed', undefined, (err as Error).message)
-    }
-  }, 100)
+  } catch (err) {
+    console.error('Render worker exception:', err)
+    await updateJobStatus(userId, job.renderId, 'failed', undefined, (err as Error).message)
+  }
 }
 
 // ============================================================================

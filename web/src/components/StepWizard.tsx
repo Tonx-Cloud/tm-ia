@@ -221,7 +221,7 @@ function SceneCard({
     { id: 'expand', icon: '🔍', label: 'Ampliar' },
     { id: 'edit', icon: '✏️', label: 'Editar' },
     { id: 'regenerate', icon: '🔄', label: 'Regenerar', cost: 30 },
-    { id: 'animate', icon: '✨', label: 'Animar', cost: 50 },
+    { id: 'animate', icon: '✨', label: 'Animar (em breve)', disabled: true },
     { id: 'favorite', icon: isFavorite ? '⭐' : '☆', label: isFavorite ? 'Remover' : 'Favoritar' },
     { id: 'delete', icon: '🗑️', label: 'Excluir', danger: true },
   ]
@@ -1143,8 +1143,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         break
 
       case 'animate':
-        // Fase 9 - placeholder
-        setError('Animação estará disponível em breve! (Fase 9)')
+        // Not implemented yet (kept as disabled in UI)
+        setError('Animar ainda não está implementado nesta versão.')
         break
     }
   }
