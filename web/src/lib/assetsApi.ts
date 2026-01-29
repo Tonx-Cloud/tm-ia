@@ -35,6 +35,19 @@ export async function fetchBalance(token: string): Promise<BalanceResp> {
   return { balance: body.balance }
 }
 
+export async function createProject(name: string, token: string): Promise<{ ok: true; projectId: string; project: any }> {
+  const res = await fetch(`${API}/api/projects`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ name }),
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(body.error || 'Failed to create project')
+  }
+  return body
+}
+
 export async function unlockPreview(projectId: string, token: string, cost = 8) {
   const res = await fetch(`${API}/api/demo/unlock`, {
     method: 'POST',

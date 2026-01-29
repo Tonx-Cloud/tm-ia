@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Locale } from '@/i18n'
-import { analyzeAudio, type Asset } from '@/lib/assetsApi'
+import { analyzeAudio, createProject, type Asset } from '@/lib/assetsApi'
 
 // ============================================================================
 // TYPES
@@ -692,6 +692,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [analyzing, setAnalyzing] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [projectId, setProjectId] = useState<string | null>(null)
+  const [projectName, setProjectName] = useState<string>(() => localStorage.getItem('tm_project_name') || '')
   const [segments, setSegments] = useState<Segment[]>([])
   const [hookText, setHookText] = useState('')
   const [isEditingHook, setIsEditingHook] = useState(false)
@@ -789,6 +790,25 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       setError('Faça login para continuar')
       return
     }
+
+    // Ensure we have a projectId before doing anything else
+    let ensuredProjectId = projectId
+    if (!ensuredProjectId) {
+      const name = (projectName || file.name || 'Novo projeto').toString().trim()
+      try {
+        const created = await createProject(name, token)
+        ensuredProjectId = created.projectId
+        setProjectId(created.projectId)
+        setProjectName(name)
+        localStorage.setItem('tm_project_name', name)
+        localStorage.setItem('tm_project_id', created.projectId)
+      } catch (err) {
+        const message = (err as Error).message
+        setError(message)
+        onError?.(message)
+        return
+      }
+    }
     
     // Reset all states for new upload
     setError(null)
@@ -823,10 +843,11 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       console.log('[StepWizard] Starting analysis (uploading)...')
       setAnalyzing(true)
       
-      const analysis = await analyzeAudio(file, duration, token)
+      const analysis = await analyzeAudio(file, duration, token, ensuredProjectId || undefined)
       console.log('[StepWizard] Analysis complete:', analysis)
       
       setProjectId(analysis.projectId)
+      localStorage.setItem('tm_project_id', analysis.projectId)
       
       // Step 4: Update state with analysis results
       const newSegments = createSegmentsFromTranscription(analysis.transcription || '', duration)
@@ -1239,6 +1260,33 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       {/* ================================================================== */}
       {step === 1 && (
         <div className="card" style={{ padding: 24 }}>
+
+          {/* Project Name */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>
+              NOME DO PROJETO
+            </div>
+            <input
+              value={projectName}
+              onChange={(e) => {
+                setProjectName(e.target.value)
+                localStorage.setItem('tm_project_name', e.target.value)
+              }}
+              placeholder="Ex: Clipe - Minha Música"
+              style={{
+                width: '100%',
+                padding: '12px 14px',
+                borderRadius: 12,
+                border: '1px solid var(--border)',
+                background: 'var(--bg)',
+                color: 'var(--text)',
+                fontSize: 14,
+              }}
+            />
+            <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+              Esse nome será usado para criar o projeto antes do upload.
+            </div>
+          </div>
           
           {!audio ? (
             <>
