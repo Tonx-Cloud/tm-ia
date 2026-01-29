@@ -44,6 +44,7 @@ export type RenderRecord = {
 export type Project = {
   id: string
   createdAt: number
+  name?: string
   audioPath?: string
   assets: Asset[]
   storyboard: StoryboardItem[]

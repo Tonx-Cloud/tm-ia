@@ -10,7 +10,7 @@ import { getSession } from '../_lib/auth.js'
 import { withObservability } from '../_lib/observability.js'
 import { checkRateLimit } from '../_lib/rateLimit.js'
 import { createLogger } from '../_lib/logger.js'
-import { createProject, upsertProject } from '../_lib/projectStore.js'
+import { createProject, getProject, upsertProject } from '../_lib/projectStore.js'
 
 export const config = {
   api: {
@@ -58,7 +58,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(400).json({ error: 'Missing multipart boundary', requestId: ctx.requestId })
   }
 
-  const projectId = `demo-${Date.now()}`
+  let projectId = `demo-${Date.now()}`
   let gotAudio = false
   let size = 0
   let filename = 'audio'
@@ -76,6 +76,10 @@ export default withObservability(async function handler(req: VercelRequest, res:
         rejected = true
         reject(err)
       }
+
+      bb.on('field', (name: string, val: string) => {
+        if (name === 'projectId' && val) projectId = val
+      })
 
       bb.on('file', (fieldname: string, file: any, info: { filename: string; encoding: string; mimeType: string }) => {
         const { filename: incomingName, mimeType } = info
@@ -141,13 +145,19 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(400).json({ error: 'Audio file is required', requestId: ctx.requestId })
   }
 
-  // Create project and save audio path
-  const project = await createProject()
+  // Ensure project exists and save audio path under that projectId
+  let project = await getProject(projectId)
+  if (!project) {
+    project = await createProject()
+    // if caller provided a projectId but it didn't exist, keep the created id
+    projectId = project.id
+  }
+
   project.audioPath = tmpPath
   await upsertProject(project)
 
-  logger.info('upload.ok', { size, mime, projectId: project.id })
+  logger.info('upload.ok', { size, mime, projectId })
   // Normalize path to forward slashes for cross-platform compatibility
   const normalizedPath = tmpPath.replace(/\\/g, '/')
-  return res.status(200).json({ ok: true, projectId: project.id, filePath: normalizedPath, filename, size, mime, requestId: ctx.requestId })
+  return res.status(200).json({ ok: true, projectId, filePath: normalizedPath, filename, size, mime, requestId: ctx.requestId })
 })
