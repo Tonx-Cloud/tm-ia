@@ -35,15 +35,9 @@ export async function createRenderJob(
   jobs.push(newJob)
   await saveJobs(userId, jobs)
 
-  // Trigger async render with options
-  const renderOptions: RenderOptions = {
-    format: options.format || 'horizontal',
-    watermark: options.watermark ?? false,
-    crossfade: options.crossfade ?? false,
-    crossfadeDuration: options.crossfadeDuration ?? 0.5,
-  }
-  startFFmpegRender(userId, newJob, renderOptions)
-
+  // NOTE: we DO NOT start the render here.
+  // On Vercel serverless, work after the response is not reliable.
+  // Rendering is triggered by a separate invocation (/api/render/run).
   return newJob
 }
 

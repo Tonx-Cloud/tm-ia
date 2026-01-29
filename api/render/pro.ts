@@ -162,7 +162,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   // Determine render format
   const format: RenderFormat = renderOptions?.format || (cfg?.aspectRatio ? mapAspectRatioToFormat(cfg.aspectRatio) : 'horizontal')
 
-  const job = await createRenderJob(
+  await createRenderJob(
     session.userId,
     {
       renderId,
@@ -178,6 +178,35 @@ export default withObservability(async function handler(req: VercelRequest, res:
       crossfadeDuration: renderOptions?.crossfadeDuration ?? 0.5,
     }
   )
+
+  // Trigger render in a separate invocation (reliable on serverless)
+  try {
+    const jwtEnv = loadEnv() // already validated; includes JWT_SECRET
+    const host = (req.headers['x-forwarded-host'] as string) || (req.headers['host'] as string) || ''
+    const proto = ((req.headers['x-forwarded-proto'] as string) || 'https').split(',')[0]
+    const baseUrl = jwtEnv.PUBLIC_BASE_URL || (host ? `${proto}://${host}` : '')
+    if (baseUrl) {
+      fetch(`${baseUrl}/api/render/run`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-internal-render-secret': jwtEnv.JWT_SECRET,
+        },
+        body: JSON.stringify({
+          userId: session.userId,
+          renderId,
+          options: {
+            format,
+            watermark: renderOptions?.watermark ?? false,
+            crossfade: renderOptions?.crossfade ?? false,
+            crossfadeDuration: renderOptions?.crossfadeDuration ?? 0.5,
+          },
+        }),
+      }).catch(() => {})
+    }
+  } catch {
+    // best-effort
+  }
 
   ctx.log('info', 'render.pro.started', { projectId, amount, balance, renderId })
 
