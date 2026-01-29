@@ -74,7 +74,7 @@ export async function generateAssets(prompt: string, count: number, token: strin
   return (await res.json()) as GenerateResp
 }
 
-export async function uploadAudio(file: File, token: string): Promise<{ ok: boolean; projectId: string; filePath: string; filename: string; size: number; mime: string }> {
+export async function uploadAudio(file: File, token: string): Promise<{ ok: boolean; projectId: string; audioUrl?: string; filePath: string; filename: string; size: number; mime: string }> {
   const formData = new FormData()
   formData.append('audio', file)
 
@@ -92,21 +92,30 @@ export async function uploadAudio(file: File, token: string): Promise<{ ok: bool
 }
 
 export async function analyzeAudio(file: File, durationSeconds: number, token: string, existingProjectId?: string) {
-  const formData = new FormData()
-  formData.append('audio', file)
-  formData.append('durationSeconds', String(durationSeconds))
-  if (existingProjectId) formData.append('projectId', existingProjectId)
+  // Divide the context: upload audio first (Blob), then analyze by URL.
+  // This avoids 413 on the analysis endpoint and makes resume reliable.
+  const upload = await uploadAudio(file, token)
 
   const res = await fetch(`${API}/api/demo/analyze`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` }, // Content-Type header is auto-set by browser for FormData
-    body: formData,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      projectId: existingProjectId || upload.projectId,
+      durationSeconds,
+      audioUrl: upload.audioUrl,
+      audioFilename: upload.filename,
+      audioMime: upload.mime,
+    }),
   })
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error(err.error || 'Analysis failed')
   }
+
   return res.json() as Promise<{
     projectId: string
     status: string
@@ -117,6 +126,7 @@ export async function analyzeAudio(file: File, durationSeconds: number, token: s
     mood: string
     genre: string
     balance: number
+    audioUrl?: string
   }>
 }
 

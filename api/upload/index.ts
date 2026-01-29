@@ -11,6 +11,7 @@ import { withObservability } from '../_lib/observability.js'
 import { checkRateLimit } from '../_lib/rateLimit.js'
 import { createLogger } from '../_lib/logger.js'
 import { createProject, getProject, upsertProject } from '../_lib/projectStore.js'
+import { put } from '@vercel/blob'
 
 export const config = {
   api: {
@@ -18,7 +19,7 @@ export const config = {
   },
 }
 
-const MAX_FILE = 15 * 1024 * 1024 // 15MB audio
+const MAX_FILE = 200 * 1024 * 1024 // 200MB audio (uploads to Blob)
 
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   const logger = createLogger({ requestId: ctx.requestId })
@@ -145,19 +146,42 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(400).json({ error: 'Audio file is required', requestId: ctx.requestId })
   }
 
-  // Ensure project exists and save audio path under that projectId
+  // Ensure project exists
   let project = await getProject(projectId)
   if (!project) {
-    project = await createProject()
-    // if caller provided a projectId but it didn't exist, keep the created id
+    project = await createProject(session.userId)
     projectId = project.id
   }
 
-  project.audioPath = tmpPath
+  // Upload to Blob (so serverless can resume)
+  let audioUrl = ''
+  try {
+    const buf = fs.readFileSync(tmpPath)
+    const key = `audio/${projectId}/${crypto.randomUUID()}-${path.basename(filename)}`
+    const blob = await put(key, buf, { access: 'public', contentType: mime || undefined })
+    audioUrl = blob.url
+    project.audioUrl = audioUrl
+    project.audioFilename = filename
+    project.audioMime = mime
+  } catch (err) {
+    logger.warn('upload.blob_failed', { message: (err as Error).message })
+    // fallback: keep tmp path
+    project.audioPath = tmpPath
+  }
+
   await upsertProject(project)
 
-  logger.info('upload.ok', { size, mime, projectId })
+  logger.info('upload.ok', { size, mime, projectId, hasBlob: !!audioUrl })
   // Normalize path to forward slashes for cross-platform compatibility
   const normalizedPath = tmpPath.replace(/\\/g, '/')
-  return res.status(200).json({ ok: true, projectId, filePath: normalizedPath, filename, size, mime, requestId: ctx.requestId })
+  return res.status(200).json({
+    ok: true,
+    projectId,
+    audioUrl,
+    filePath: normalizedPath,
+    filename,
+    size,
+    mime,
+    requestId: ctx.requestId,
+  })
 })

@@ -4,6 +4,7 @@ import path from 'path'
 import os from 'os'
 import crypto from 'crypto'
 import Busboy from 'busboy'
+import { put } from '@vercel/blob'
 import { getSession } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { getOpenAI } from '../_lib/openaiClient.js'
@@ -18,7 +19,8 @@ import { withObservability } from '../_lib/observability.js'
 
 export const config = {
   api: {
-    bodyParser: false, // Disable default body parser to handle multipart
+    // Keep disabled so we can accept both: multipart (file) and JSON (audioUrl)
+    bodyParser: false,
   },
 }
 
@@ -39,44 +41,96 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(500).json({ error: (err as Error).message, requestId: ctx.requestId })
   }
 
-  // 1. Handle Multipart Upload (Busboy)
+  // 1) Accept either:
+  // - multipart/form-data (field: audio)
+  // - JSON body with { audioUrl }
   let filePath = ''
+  let audioUrl = ''
+  let audioFilename = 'audio.mp3'
+  let audioMime = ''
   let projectId = `proj-${Date.now()}`
   let durationSeconds = 180 // Default
 
-  try {
-    await new Promise<void>((resolve, reject) => {
-      // NOTE: Keep in sync with /api/render/pro upload limits
-      const bb = Busboy({ headers: req.headers, limits: { fileSize: 60 * 1024 * 1024 } }) // 60MB limit
-      
-      bb.on('file', (name, file, info) => {
-        if (name === 'audio') {
-          const tmpDir = os.tmpdir()
-          filePath = path.join(tmpDir, `${crypto.randomUUID()}-${info.filename || 'audio.mp3'}`)
-          file.pipe(fs.createWriteStream(filePath))
-        } else {
-          file.resume()
-        }
+  const contentType = String(req.headers['content-type'] || '')
+
+  // JSON path (audioUrl)
+  if (contentType.includes('application/json')) {
+    try {
+      const chunks: Buffer[] = []
+      for await (const chunk of req) chunks.push(Buffer.from(chunk))
+      const body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')
+      if (body.projectId) projectId = String(body.projectId)
+      if (body.durationSeconds) durationSeconds = parseInt(String(body.durationSeconds)) || 180
+      if (body.audioUrl) audioUrl = String(body.audioUrl)
+      if (body.audioFilename) audioFilename = String(body.audioFilename)
+      if (body.audioMime) audioMime = String(body.audioMime)
+    } catch {
+      return res.status(400).json({ error: 'Invalid JSON body', requestId: ctx.requestId })
+    }
+
+    if (!audioUrl) {
+      return res.status(400).json({ error: 'audioUrl required', requestId: ctx.requestId })
+    }
+
+    // Download to tmp for Whisper
+    try {
+      const resp = await fetch(audioUrl)
+      if (!resp.ok) throw new Error(`audioUrl download failed (${resp.status})`)
+      const tmpDir = os.tmpdir()
+      filePath = path.join(tmpDir, `${crypto.randomUUID()}-${audioFilename || 'audio.mp3'}`)
+      const buf = Buffer.from(await resp.arrayBuffer())
+      fs.writeFileSync(filePath, buf)
+    } catch (err) {
+      return res.status(400).json({ error: 'Failed to fetch audioUrl: ' + (err as Error).message, requestId: ctx.requestId })
+    }
+  } else {
+    // Multipart path (file upload)
+    try {
+      await new Promise<void>((resolve, reject) => {
+        // NOTE: Keep in sync with /api/render/pro upload limits
+        const bb = Busboy({ headers: req.headers, limits: { fileSize: 60 * 1024 * 1024 } }) // 60MB limit
+
+        bb.on('file', (name, file, info) => {
+          if (name === 'audio') {
+            const tmpDir = os.tmpdir()
+            audioFilename = info.filename || 'audio.mp3'
+            audioMime = info.mimeType || ''
+            filePath = path.join(tmpDir, `${crypto.randomUUID()}-${audioFilename}`)
+            file.pipe(fs.createWriteStream(filePath))
+          } else {
+            file.resume()
+          }
+        })
+
+        bb.on('field', (name, val) => {
+          if (name === 'projectId' && val) projectId = val
+          if (name === 'durationSeconds') durationSeconds = parseInt(val) || 180
+        })
+
+        bb.on('finish', resolve)
+        bb.on('error', reject)
+        req.pipe(bb)
       })
+    } catch (err) {
+      const msg = (err as Error).message || String(err)
+      const isTooLarge = /limit|too large|file size/i.test(msg)
+      return res.status(isTooLarge ? 413 : 400).json({ error: 'Upload failed: ' + msg, requestId: ctx.requestId })
+    }
 
-      bb.on('field', (name, val) => {
-        if (name === 'projectId' && val) projectId = val
-        if (name === 'durationSeconds') durationSeconds = parseInt(val) || 180
-      })
+    if (!filePath || !fs.existsSync(filePath)) {
+      return res.status(400).json({ error: 'No audio file uploaded', requestId: ctx.requestId })
+    }
 
-      bb.on('finish', resolve)
-      bb.on('error', reject)
-      req.pipe(bb)
-    })
-  } catch (err) {
-    const msg = (err as Error).message || String(err)
-    // Busboy uses 413 semantics for fileSize limits; mirror that for clarity.
-    const isTooLarge = /limit|too large|file size/i.test(msg)
-    return res.status(isTooLarge ? 413 : 400).json({ error: 'Upload failed: ' + msg })
-  }
-
-  if (!filePath || !fs.existsSync(filePath)) {
-    return res.status(400).json({ error: 'No audio file uploaded' })
+    // Upload to Blob so the project can be resumed later without re-uploading.
+    try {
+      const buf = fs.readFileSync(filePath)
+      const key = `audio/${projectId}/${crypto.randomUUID()}-${audioFilename || 'audio.mp3'}`
+      const blob = await put(key, buf, { access: 'public', contentType: audioMime || undefined })
+      audioUrl = blob.url
+    } catch (err) {
+      ctx.log('warn', 'demo.analyze.audio_blob_failed', { message: (err as Error).message })
+      // best-effort: continue without audioUrl
+    }
   }
 
   // Ensure project exists/is created in store
@@ -88,10 +142,15 @@ export default withObservability(async function handler(req: VercelRequest, res:
       assets: [],
       storyboard: [],
       renders: [],
-      audioPath: filePath
     }
-    await upsertProject(project)
   }
+
+  // Save audio reference for resume
+  project.audioPath = filePath // tmp (best-effort)
+  if (audioUrl) project.audioUrl = audioUrl
+  if (audioFilename) project.audioFilename = audioFilename
+  if (audioMime) project.audioMime = audioMime
+  await upsertProject(project)
 
   ctx.log('info', 'demo.analyze.start', { projectId, filePath, durationSeconds })
 
