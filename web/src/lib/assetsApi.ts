@@ -93,22 +93,55 @@ export async function uploadAudio(file: File, token: string): Promise<{ ok: bool
 
 export async function analyzeAudio(file: File, durationSeconds: number, token: string, existingProjectId?: string) {
   // Divide the context: upload audio first (Blob), then analyze by URL.
-  // This avoids 413 on the analysis endpoint and makes resume reliable.
+  // If Blob upload is not available (missing token) we fall back to multipart analyze.
   const upload = await uploadAudio(file, token)
+
+  // Preferred: analyze by URL
+  if (upload.audioUrl) {
+    const res = await fetch(`${API}/api/demo/analyze`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        projectId: existingProjectId || upload.projectId,
+        durationSeconds,
+        audioUrl: upload.audioUrl,
+        audioFilename: upload.filename,
+        audioMime: upload.mime,
+      }),
+    })
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.error || 'Analysis failed')
+    }
+
+    return res.json() as Promise<{
+      projectId: string
+      status: string
+      transcription: string
+      hookText: string
+      hookStart: number
+      hookEnd: number
+      mood: string
+      genre: string
+      balance: number
+      audioUrl?: string
+    }>
+  }
+
+  // Fallback: upload + analyze in one request
+  const formData = new FormData()
+  formData.append('audio', file)
+  formData.append('durationSeconds', String(durationSeconds))
+  formData.append('projectId', existingProjectId || upload.projectId)
 
   const res = await fetch(`${API}/api/demo/analyze`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      projectId: existingProjectId || upload.projectId,
-      durationSeconds,
-      audioUrl: upload.audioUrl,
-      audioFilename: upload.filename,
-      audioMime: upload.mime,
-    }),
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
   })
 
   if (!res.ok) {

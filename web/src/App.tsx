@@ -456,6 +456,7 @@ function App() {
             token={authToken}
             onOpenProject={(projectId) => {
               localStorage.setItem('tm_project_id', projectId)
+              localStorage.setItem('tm_resume_project', '1')
               setActiveSection('music-video')
             }}
           />

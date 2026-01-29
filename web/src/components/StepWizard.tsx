@@ -771,11 +771,16 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     }
   }
 
-  // Resume last project if present
+  // Resume last project ONLY when explicitly requested (e.g., user clicked a project card)
   useEffect(() => {
     if (!token || projectId) return
+    const resumeFlag = localStorage.getItem('tm_resume_project')
     const stored = localStorage.getItem('tm_project_id')
-    if (!stored) return
+    if (resumeFlag !== '1' || !stored) return
+
+    // clear flag so a "new project" doesn't auto-load the previous one
+    localStorage.removeItem('tm_resume_project')
+
     setProjectId(stored)
     fetchProject(stored, token)
       .then((resp) => {
