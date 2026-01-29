@@ -335,7 +335,7 @@ function SceneCard({
         </div>
       </div>
 
-      {/* Mobile-friendly: always show a single Edit button */}
+      {/* Mobile-friendly footer: move + edit image (actions inside modal) */}
       <div style={{
         padding: 10,
         borderTop: '1px solid var(--border)',
@@ -346,7 +346,22 @@ function SceneCard({
       }}>
         <button
           className="btn-ghost"
-          onClick={(e) => { e.stopPropagation(); onAction('edit', asset.id) }}
+          onClick={(e) => { e.stopPropagation(); onAction('moveLeft', asset.id) }}
+          disabled={index === 0}
+          title={index === 0 ? 'Primeira cena' : 'Mover para trás'}
+          style={{
+            padding: '10px 12px',
+            fontSize: 14,
+            minWidth: 52,
+            opacity: index === 0 ? 0.4 : 1
+          }}
+        >
+          ←
+        </button>
+
+        <button
+          className="btn-ghost"
+          onClick={(e) => { e.stopPropagation(); onAction('expand', asset.id) }}
           style={{
             flex: 1,
             padding: '10px 12px',
@@ -357,23 +372,22 @@ function SceneCard({
             gap: 8
           }}
         >
-          ✏️ Editar
+          ✏️ Editar imagem
         </button>
+
         <button
           className="btn-ghost"
-          onClick={(e) => { e.stopPropagation(); onAction('regenerate', asset.id) }}
-          title="Regenerar (30 💎)"
+          onClick={(e) => { e.stopPropagation(); onAction('moveRight', asset.id) }}
+          disabled={index === totalCount - 1}
+          title={index === totalCount - 1 ? 'Última cena' : 'Mover para frente'}
           style={{
             padding: '10px 12px',
-            fontSize: 13,
-            minWidth: 120,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            gap: 8
+            fontSize: 14,
+            minWidth: 52,
+            opacity: index === totalCount - 1 ? 0.4 : 1
           }}
         >
-          🔄 Regenerar
+          →
         </button>
       </div>
     </div>
@@ -392,9 +406,10 @@ type SceneModalProps = {
   onSetMode?: (mode: 'view' | 'edit') => void
   onSave?: (assetId: string, newPrompt: string) => void
   onRegenerate?: (assetId: string, newPrompt: string) => void
+  onAction?: (action: SceneAction, assetId: string) => void
 }
 
-function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenerate }: SceneModalProps) {
+function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenerate, onAction }: SceneModalProps) {
   const [editPrompt, setEditPrompt] = useState(asset?.prompt || '')
   const [isRegenerating, setIsRegenerating] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -533,13 +548,43 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 10,
+                  marginTop: 6
+                }}>
                   <button
                     className="btn-ghost"
                     onClick={() => onSetMode?.('edit')}
-                    style={{ padding: '10px 16px' }}
+                    style={{ padding: '10px 12px' }}
                   >
-                    ✏️ Editar
+                    ✏️ Editar prompt
+                  </button>
+
+                  <button
+                    className="btn-ghost"
+                    onClick={() => void handleRegenerate()}
+                    style={{ padding: '10px 12px' }}
+                    title="Regenerar (30 💎)"
+                  >
+                    🔄 Regenerar
+                  </button>
+
+                  <button
+                    className="btn-ghost"
+                    onClick={() => onAction?.('favorite', asset.id)}
+                    style={{ padding: '10px 12px' }}
+                  >
+                    ⭐ Favoritar
+                  </button>
+
+                  <button
+                    className="btn-ghost"
+                    onClick={() => { onClose(); onAction?.('delete', asset.id) }}
+                    style={{ padding: '10px 12px', color: '#ef4444' }}
+                  >
+                    🗑️ Excluir
                   </button>
                 </div>
               </>
@@ -1096,8 +1141,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         break
 
       case 'edit':
+        // "Editar imagem" opens the modal with actions; editing the prompt is inside.
         setModalAsset(assets[assetIndex])
-        setModalMode('edit')
+        setModalMode('view')
         break
 
       case 'favorite':
@@ -2200,6 +2246,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
               onSetMode={setModalMode}
               onSave={handleSavePrompt}
               onRegenerate={handleRegenerateAsset}
+              onAction={handleSceneAction}
             />
           )}
         </div>
