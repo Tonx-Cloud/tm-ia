@@ -14,6 +14,12 @@ export type Session = {
   role?: 'user' | 'admin'
 }
 
+export function isVipEmail(email: string | undefined | null) {
+  if (!email) return false
+  const lower = email.toLowerCase()
+  return lower === 'hiltonsf@gmail.com' || lower.includes('felipe')
+}
+
 export function getSession(req: VercelRequest): Session | null {
   const rawHeader = (req.headers['authorization'] ?? (req.headers as Record<string, unknown>)['Authorization']) as
     | string

@@ -117,16 +117,20 @@ export default withObservability(async function handler(req: VercelRequest, res:
     await addCredits(session.userId, 50, 'initial')
   }
 
-  try {
-    await spendCredits(session.userId, cost, 'generate_image', { projectId })
-  } catch (err) {
-    ctx.log('warn', 'assets.generate.insufficient_credits', { balance: await getBalance(session.userId) })
-    return res.status(402).json({ 
-      error: 'Insufficient credits', 
-      required: cost,
-      balance: await getBalance(session.userId),
-      requestId: ctx.requestId 
-    })
+  // VIP/admin bypass (shows 99999 credits on UI)
+  const vip = session.email === 'hiltonsf@gmail.com' || session.email.toLowerCase().includes('felipe')
+  if (!vip) {
+    try {
+      await spendCredits(session.userId, cost, 'generate_image', { projectId })
+    } catch (err) {
+      ctx.log('warn', 'assets.generate.insufficient_credits', { balance: await getBalance(session.userId) })
+      return res.status(402).json({ 
+        error: 'Insufficient credits', 
+        required: cost,
+        balance: await getBalance(session.userId),
+        requestId: ctx.requestId 
+      })
+    }
   }
 
   // Get resolution based on aspect ratio

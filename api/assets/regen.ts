@@ -47,11 +47,14 @@ export default withObservability(async function handler(req: VercelRequest, res:
   const cost = PRICING.REGENERATE_IMAGE // 30 credits per image
 
   // debitar créditos de regen (2 por asset)
-  try {
-    await spendCredits(session.userId, cost, 'regenerate_image', { projectId, renderId: assetId })
-  } catch (err) {
-    ctx.log('warn', 'assets.regen.insufficient_credits')
-    return res.status(402).json({ error: 'Insufficient credits', requestId: ctx.requestId })
+  const vip = session.email === 'hiltonsf@gmail.com' || session.email.toLowerCase().includes('felipe')
+  if (!vip) {
+    try {
+      await spendCredits(session.userId, cost, 'regenerate_image', { projectId, renderId: assetId })
+    } catch (err) {
+      ctx.log('warn', 'assets.regen.insufficient_credits')
+      return res.status(402).json({ error: 'Insufficient credits', requestId: ctx.requestId })
+    }
   }
 
   const finalPrompt = prompt || asset.prompt
