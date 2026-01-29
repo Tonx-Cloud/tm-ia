@@ -1,0 +1,259 @@
+{
+  "ts": "2026-01-29T20:00:22.702773Z",
+  "project": "tonx-cloud",
+  "region": "us-central1",
+  "prices": [
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "F0E3-4F53-A0FB",
+      "sku_description": "Commitment v1: E2 Cpu in Americas for 1 Year",
+      "region": "us-central1",
+      "usage_unit": "h",
+      "currency": "USD",
+      "unit_price": "0.013741301"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "B4E1-097C-1E0A",
+      "sku_description": "Commitment v1: E2 Cpu in Americas for 3 Year",
+      "region": "us-central1",
+      "usage_unit": "h",
+      "currency": "USD",
+      "unit_price": "0.009815215"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "8826-F8CF-0346",
+      "sku_description": "Commitment v1: E2 Ram in Americas for 1 Year",
+      "region": "us-central1",
+      "usage_unit": "GiBy.h",
+      "currency": "USD",
+      "unit_price": "0.001841823"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "D86D-BE56-C7EB",
+      "sku_description": "Commitment v1: E2 Ram in Americas for 3 Year",
+      "region": "us-central1",
+      "usage_unit": "GiBy.h",
+      "currency": "USD",
+      "unit_price": "0.001315588"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "3DEC-176C-6A76",
+      "sku_description": "Committed Use Discount Premium for E2 Custom Instance Core running in Americas",
+      "region": "us-central1",
+      "usage_unit": "h",
+      "currency": "USD",
+      "unit_price": "0.00049076"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "E5AD-6DC8-026D",
+      "sku_description": "Committed Use Discount Premium for E2 Custom Instance Ram running in Americas",
+      "region": "us-central1",
+      "usage_unit": "GiBy.h",
+      "currency": "USD",
+      "unit_price": "0.000065779"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "6552-620B-C9D5",
+      "sku_description": "DWS Defined Duration N1 Predefined Core running in Americas",
+      "region": "us-central1",
+      "usage_unit": "h",
+      "currency": "USD",
+      "unit_price": "0.031611"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "AD86-1CFC-0F32",
+      "sku_description": "DWS Defined Duration N1 Predefined Ram running in Americas",
+      "region": "us-central1",
+      "usage_unit": "GiBy.h",
+      "currency": "USD",
+      "unit_price": "0.004237"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "61C6-6F89-DCF4",
+      "sku_description": "E2 Custom Instance Core running in Americas",
+      "region": "us-central1",
+      "usage_unit": "h",
+      "currency": "USD",
+      "unit_price": "0.02290217"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "8D24-CB74-5E70",
+      "sku_description": "E2 Custom Instance Ram running in Americas",
+      "region": "us-central1",
+      "usage_unit": "GiBy.h",
+      "currency": "USD",
+      "unit_price": "0.003069707"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "CF4E-A0C7-E3BF",
+      "sku_description": "E2 Instance Core running in Americas",
+      "region": "us-central1",
+      "usage_unit": "h",
+      "currency": "USD",
+      "unit_price": "0.02181159"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "F449-33EC-A5EF",
+      "sku_description": "E2 Instance Ram running in Americas",
+      "region": "us-central1",
+      "usage_unit": "GiBy.h",
+      "currency": "USD",
+      "unit_price": "0.00292353"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "2E27-4F75-95CD",
+      "sku_description": "N1 Predefined Instance Core running in Americas",
+      "region": "us-central1",
+      "usage_unit": "h",
+      "currency": "USD",
+      "unit_price": "0.031611"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "6C71-E844-38BC",
+      "sku_description": "N1 Predefined Instance Ram running in Americas",
+      "region": "us-central1",
+      "usage_unit": "GiBy.h",
+      "currency": "USD",
+      "unit_price": "0.004237"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "1B35-7EB3-EEE9",
+      "sku_description": "Spot Preemptible E2 Custom Instance Core running in Iowa",
+      "region": "us-central1",
+      "usage_unit": "h",
+      "currency": "USD",
+      "unit_price": "0.01008"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "D45F-2D53-1247",
+      "sku_description": "Spot Preemptible E2 Custom Instance Ram running in Iowa",
+      "region": "us-central1",
+      "usage_unit": "GiBy.h",
+      "currency": "USD",
+      "unit_price": "0.001351"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "F179-E1EA-D97A",
+      "sku_description": "Spot Preemptible E2 Instance Core running in Americas",
+      "region": "us-central1",
+      "usage_unit": "h",
+      "currency": "USD",
+      "unit_price": "0.00959"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "9B1F-1E62-4061",
+      "sku_description": "Spot Preemptible E2 Instance Ram running in Americas",
+      "region": "us-central1",
+      "usage_unit": "GiBy.h",
+      "currency": "USD",
+      "unit_price": "0.001286"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "D498-1ECA-87C1",
+      "sku_description": "Spot Preemptible N1 Predefined Instance Core running in Americas",
+      "region": "us-central1",
+      "usage_unit": "h",
+      "currency": "USD",
+      "unit_price": "0.00933"
+    },
+    {
+      "service_display_name": "Compute Engine",
+      "service_name": "services/6F81-5844-456A",
+      "sku_id": "5451-0A15-0123",
+      "sku_description": "Spot Preemptible N1 Predefined Instance Ram running in Americas",
+      "region": "us-central1",
+      "usage_unit": "GiBy.h",
+      "currency": "USD",
+      "unit_price": "0.001195"
+    }
+  ],
+  "vertexModels": [
+    {
+      "name": "publishers/google/models/veo",
+      "display_name": "publishers/google/models/veo [NOT_FOUND]",
+      "publisher": "google",
+      "is_video_related": true
+    },
+    {
+      "name": "publishers/google/models/veo-2",
+      "display_name": "publishers/google/models/veo-2 [NOT_FOUND]",
+      "publisher": "google",
+      "is_video_related": true
+    },
+    {
+      "name": "publishers/google/models/veo-3",
+      "display_name": "publishers/google/models/veo-3 [NOT_FOUND]",
+      "publisher": "google",
+      "is_video_related": true
+    },
+    {
+      "name": "publishers/google/models/veo-3-fast",
+      "display_name": "publishers/google/models/veo-3-fast [NOT_FOUND]",
+      "publisher": "google",
+      "is_video_related": true
+    }
+  ],
+  "veoModels": [
+    {
+      "name": "publishers/google/models/veo",
+      "display_name": "publishers/google/models/veo [NOT_FOUND]",
+      "publisher": "google",
+      "is_video_related": true
+    },
+    {
+      "name": "publishers/google/models/veo-2",
+      "display_name": "publishers/google/models/veo-2 [NOT_FOUND]",
+      "publisher": "google",
+      "is_video_related": true
+    },
+    {
+      "name": "publishers/google/models/veo-3",
+      "display_name": "publishers/google/models/veo-3 [NOT_FOUND]",
+      "publisher": "google",
+      "is_video_related": true
+    },
+    {
+      "name": "publishers/google/models/veo-3-fast",
+      "display_name": "publishers/google/models/veo-3-fast [NOT_FOUND]",
+      "publisher": "google",
+      "is_video_related": true
+    }
+  ]
+}

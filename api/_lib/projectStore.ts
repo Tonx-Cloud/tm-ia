@@ -46,7 +46,11 @@ export type Project = {
   createdAt: number
   userId?: string
   name?: string
+  // Audio can be stored as a temporary file path (dev), a URL (prod), or inline base64 (fallback)
   audioPath?: string
+  audioDataBase64?: string
+  audioFilename?: string
+  audioMime?: string
   assets: Asset[]
   storyboard: StoryboardItem[]
   renders: RenderRecord[]

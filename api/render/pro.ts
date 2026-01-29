@@ -59,6 +59,8 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
   // Parse Multipart Body (Audio + JSON Config)
   let audioPath = ''
+  let audioFilename = ''
+  let audioMime = ''
   let jsonData: any = {}
 
   try {
@@ -68,7 +70,9 @@ export default withObservability(async function handler(req: VercelRequest, res:
       bb.on('file', (name, file, info) => {
         if (name === 'audio') {
           const tmpDir = os.tmpdir()
-          audioPath = path.join(tmpDir, `${crypto.randomUUID()}-${info.filename || 'audio.mp3'}`)
+          audioFilename = info.filename || 'audio.mp3'
+          audioMime = info.mimeType || ''
+          audioPath = path.join(tmpDir, `${crypto.randomUUID()}-${audioFilename}`)
           file.pipe(fs.createWriteStream(audioPath))
         } else {
           file.resume()
@@ -97,7 +101,9 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(400).json({ error: 'projectId required', requestId: ctx.requestId })
   }
 
-  // Update Project with new audio path if provided (Re-upload strategy)
+  // Update Project with audio. IMPORTANT on Vercel:
+  // /tmp is not shared between invocations, so we store audio inline (base64 fallback)
+  // to ensure render/run can access it.
   if (audioPath) {
     let project = await getProject(projectId)
     if (!project) {
@@ -105,17 +111,23 @@ export default withObservability(async function handler(req: VercelRequest, res:
       project = {
         id: projectId,
         createdAt: Date.now(),
-        assets: [], // This will be empty, which is bad. The client should ideally re-send assets too or we rely on them being there.
-                    // But if 'generate' succeeded recently, assets should be there (if same lambda).
-                    // If different lambda, assets are gone. This is a deeper issue.
-                    // For now, let's assume assets are safe or user just regenerated them.
+        assets: [],
         storyboard: [],
         renders: [],
-        audioPath
       }
-    } else {
-      project.audioPath = audioPath
     }
+
+    try {
+      const buf = fs.readFileSync(audioPath)
+      project.audioDataBase64 = Buffer.from(buf).toString('base64')
+      project.audioFilename = audioFilename || project.audioFilename
+      project.audioMime = audioMime || project.audioMime
+      // Keep audioPath for dev/debug only; do not rely on it in serverless.
+      project.audioPath = audioPath
+    } catch (err) {
+      ctx.log('warn', 'render.pro.audio_read_failed', { message: (err as Error).message })
+    }
+
     await upsertProject(project)
   }
 

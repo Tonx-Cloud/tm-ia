@@ -1,0 +1,5 @@
+google-cloud-billing>=1.14.0
+google-cloud-aiplatform>=1.60.0
+# Optional (only if you use --db-url)
+sqlalchemy>=2.0.0
+# plus a driver, e.g. psycopg[binary] for Postgres

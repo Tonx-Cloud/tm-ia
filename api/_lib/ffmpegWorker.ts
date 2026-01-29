@@ -175,7 +175,19 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
     const project = await getProject(job.projectId)
       if (!project) throw new Error('Project not found')
 
-      if (!project.audioPath || !fs.existsSync(project.audioPath)) {
+      // Audio may be inline base64 (prod) or a local tmp path (dev)
+      let audioInput = ''
+
+      if (project.audioDataBase64) {
+        const tmpDir = os.tmpdir()
+        const workAudio = path.join(tmpDir, `audio_${job.renderId}.bin`)
+        fs.writeFileSync(workAudio, project.audioDataBase64, 'base64')
+        audioInput = workAudio
+      } else if (project.audioPath && fs.existsSync(project.audioPath)) {
+        audioInput = project.audioPath
+      }
+
+      if (!audioInput) {
         throw new Error('Audio file missing')
       }
 
@@ -211,7 +223,7 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
 
       // 3. Build FFmpeg command based on whether crossfade is enabled
       const outputFile = path.join(workDir, 'output.mp4')
-      const audioInput = project.audioPath
+      const audioInputPath = audioInput
       const videoFilters = buildVideoFilters(options)
       const filterString = videoFilters.join(',')
 
@@ -220,7 +232,7 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       if (options.crossfade && imageFiles.length > 1) {
         // Complex filtergraph for crossfade transitions
         const crossfadeDur = options.crossfadeDuration || 0.5
-        args = buildCrossfadeCommand(workDir, imageFiles, durations, audioInput, outputFile, filterString, crossfadeDur)
+        args = buildCrossfadeCommand(workDir, imageFiles, durations, audioInputPath, outputFile, filterString, crossfadeDur)
       } else {
         // Simple concat demuxer approach
         const concatFile = path.join(workDir, 'input.txt')
@@ -246,7 +258,7 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
           '-f', 'concat',
           '-safe', '0',
           '-i', concatFile,
-          '-i', audioInput,
+          '-i', audioInputPath,
           '-vf', filterString,
           '-c:v', 'libx264',
           '-preset', 'fast',

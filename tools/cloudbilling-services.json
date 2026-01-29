@@ -1,0 +1,3236 @@
+﻿[
+    {
+        "name":  "services/0017-8C5E-5B91",
+        "serviceId":  "0017-8C5E-5B91",
+        "displayName":  "OpenLogic CentOS 7.8 (v20200922) - Security Hardened",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/002A-FAF7-9793",
+        "serviceId":  "002A-FAF7-9793",
+        "displayName":  "Single node file server",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0042-8437-FF55",
+        "serviceId":  "0042-8437-FF55",
+        "displayName":  "Adverity",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/005A-0B51-C56E",
+        "serviceId":  "005A-0B51-C56E",
+        "displayName":  "Metabase Data Visualization \u0026 BI Platform",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0069-3716-5463",
+        "serviceId":  "0069-3716-5463",
+        "displayName":  "Qubole Open Data Lake Platform",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/008F-652C-F842",
+        "serviceId":  "008F-652C-F842",
+        "displayName":  "Nventify Imagizer",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0094-29B1-96E7",
+        "serviceId":  "0094-29B1-96E7",
+        "displayName":  "Live Stream API",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0095-7665-C074",
+        "serviceId":  "0095-7665-C074",
+        "displayName":  "CIS (Center for Internet Security) CIS Microsoft Windows Server 2008 R2 Benchmark v3.0.1 Level 1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/00C7-CE6D-B98F",
+        "serviceId":  "00C7-CE6D-B98F",
+        "displayName":  "TigerGraph Inc. TigerGraph Developer Edition 2-6-3",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/00E4-BD19-6904",
+        "serviceId":  "00E4-BD19-6904",
+        "displayName":  "Commvault Backup \u0026 Recovery  BYOL",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0105-B240-3655",
+        "serviceId":  "0105-B240-3655",
+        "displayName":  "Load Balancer using NGINX (HTTP, Application, TCP)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0161-1616-FF1D",
+        "serviceId":  "0161-1616-FF1D",
+        "displayName":  "Google Maps Platform - Routes",
+        "businessEntityName":  "businessEntities/Maps"
+    },
+    {
+        "name":  "services/01BA-36F6-AA33",
+        "serviceId":  "01BA-36F6-AA33",
+        "displayName":  "Web Risk",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/01C8-1FC5-46AB",
+        "serviceId":  "01C8-1FC5-46AB",
+        "displayName":  "Tempered Networks Tempered Airwall Appliance v2.2.8",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/01D9-9574-AF68",
+        "serviceId":  "01D9-9574-AF68",
+        "displayName":  "CIS PostgreSQL 11 on CentOS Linux 7 Benchmark - Level 1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/01F9-FAF7-CFA5",
+        "serviceId":  "01F9-FAF7-CFA5",
+        "displayName":  "Word Dictionary API",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0226-575D-63AA",
+        "serviceId":  "0226-575D-63AA",
+        "displayName":  "osTicket Server Helpdesk Solution on Ubuntu Server 20.04",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0231-1FBA-4417",
+        "serviceId":  "0231-1FBA-4417",
+        "displayName":  "NVIDIA Gaming PC - Windows Server 2019",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0245-C3C9-3864",
+        "serviceId":  "0245-C3C9-3864",
+        "displayName":  "Geolocation API",
+        "businessEntityName":  "businessEntities/Maps"
+    },
+    {
+        "name":  "services/0296-B408-6B99",
+        "serviceId":  "0296-B408-6B99",
+        "displayName":  "MayaData Cloud File Gateway",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/029B-38E4-68C9",
+        "serviceId":  "029B-38E4-68C9",
+        "displayName":  "Apache Web Server + MySQL + phpMyadmin on Ubuntu Server 20.04",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/02DA-B362-D983",
+        "serviceId":  "02DA-B362-D983",
+        "displayName":  "Cloud Text-to-Speech API",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/02E3-5518-2F6D",
+        "serviceId":  "02E3-5518-2F6D",
+        "displayName":  "F5 Networks F5 Per-App VE  Advanced WAF  (PAYG, 200Mbps)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0314-C555-3A8D",
+        "serviceId":  "0314-C555-3A8D",
+        "displayName":  "SellOdoo",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/032C-45D7-ADF2",
+        "serviceId":  "032C-45D7-ADF2",
+        "displayName":  "OneLedger Mainnet Full Node",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/032C-E934-A7D6",
+        "serviceId":  "032C-E934-A7D6",
+        "displayName":  "ELK powered by MIRI",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0393-AA9E-2E8F",
+        "serviceId":  "0393-AA9E-2E8F",
+        "displayName":  "Aiven for Redis",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/039C-114D-082B",
+        "serviceId":  "039C-114D-082B",
+        "displayName":  "AERIS Aeris Integration Service",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/03C0-8240-4A98",
+        "serviceId":  "03C0-8240-4A98",
+        "displayName":  "Moodle: The Ultimate Learning Management System",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/03ED-D15C-9804",
+        "serviceId":  "03ED-D15C-9804",
+        "displayName":  "Cognosys Inc. nopCommerce on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0466-AA71-38DA",
+        "serviceId":  "0466-AA71-38DA",
+        "displayName":  "Intento Enterprise MT Hub",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0466-DD9E-0287",
+        "serviceId":  "0466-DD9E-0287",
+        "displayName":  "F5 BIG-IP Virtual Edition - GOOD  (PAYG, 10Gbps)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0483-6CB2-9ABB",
+        "serviceId":  "0483-6CB2-9ABB",
+        "displayName":  "Infoworks DataFoundry",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/04BF-4769-E87A",
+        "serviceId":  "04BF-4769-E87A",
+        "displayName":  "VMware Tanzu Greenplum BYOL",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/04C4-B046-D8B2",
+        "serviceId":  "04C4-B046-D8B2",
+        "displayName":  "Cloud Natural Language",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/04F6-A7A8-EDF4",
+        "serviceId":  "04F6-A7A8-EDF4",
+        "displayName":  "LNMP Stack With Webmin",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0530-033B-C90A",
+        "serviceId":  "0530-033B-C90A",
+        "displayName":  "Webmin GUI Admin Control Panel for CentOS Stream 9",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0544-F909-5498",
+        "serviceId":  "0544-F909-5498",
+        "displayName":  "flarum-08-09-2021",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0579-62CF-63C1",
+        "serviceId":  "0579-62CF-63C1",
+        "displayName":  "OpenCart",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0585-9FB4-1E3D",
+        "serviceId":  "0585-9FB4-1E3D",
+        "displayName":  "DataStax API (Dev)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/05C3-7D8F-2E8F",
+        "serviceId":  "05C3-7D8F-2E8F",
+        "displayName":  "Genymotion Device Image: Android 8.1 (oreo)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/05C5-45BF-8282",
+        "serviceId":  "05C5-45BF-8282",
+        "displayName":  "Citrix SD-WAN Standard Edition",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/05C5-F1A3-3EBA",
+        "serviceId":  "05C5-F1A3-3EBA",
+        "displayName":  "Calculated Systems Certified Nifi",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/05CF-B4FB-4E73",
+        "serviceId":  "05CF-B4FB-4E73",
+        "displayName":  "Proxy Server - Squid Proxy Cache on Windows 2016",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/060F-09D1-76BF",
+        "serviceId":  "060F-09D1-76BF",
+        "displayName":  "Ceph Cluster",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0648-8D63-9113",
+        "serviceId":  "0648-8D63-9113",
+        "displayName":  "Grafana Cloud",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0665-C160-E827",
+        "serviceId":  "0665-C160-E827",
+        "displayName":  "PostgreSQL 9.6",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/06DB-6849-B547",
+        "serviceId":  "06DB-6849-B547",
+        "displayName":  "Zabbix Proxy 5.0 - Appliance with SQLite3",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/06EF-B241-C096",
+        "serviceId":  "06EF-B241-C096",
+        "displayName":  "TYPO3 packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/06F5-38F6-036A",
+        "serviceId":  "06F5-38F6-036A",
+        "displayName":  "Prediction",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0773-E9BA-959C",
+        "serviceId":  "0773-E9BA-959C",
+        "displayName":  "NVIDIA GPU-Optimized VMI",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0776-5E2E-55E3",
+        "serviceId":  "0776-5E2E-55E3",
+        "displayName":  "Places API (New)",
+        "businessEntityName":  "businessEntities/Maps"
+    },
+    {
+        "name":  "services/0793-445D-C877",
+        "serviceId":  "0793-445D-C877",
+        "displayName":  "Cassandra",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/07AF-A280-7D4E",
+        "serviceId":  "07AF-A280-7D4E",
+        "displayName":  "PixStor Cloud - Balanced Tier",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0889-4E59-60BB",
+        "serviceId":  "0889-4E59-60BB",
+        "displayName":  "Kong Konnect Enterprise 2.5 (BYOL)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0895-7858-AB49",
+        "serviceId":  "0895-7858-AB49",
+        "displayName":  "Partner Demo Test WordPress",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/08B3-A6E6-BC4C",
+        "serviceId":  "08B3-A6E6-BC4C",
+        "displayName":  "Bitnami Trac Certified by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/08CB-3A3E-55D0",
+        "serviceId":  "08CB-3A3E-55D0",
+        "displayName":  "Moodle on CentOS 7",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/08CF-542F-79CD",
+        "serviceId":  "08CF-542F-79CD",
+        "displayName":  "Cudinator",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/08E2-8B5A-67A5",
+        "serviceId":  "08E2-8B5A-67A5",
+        "displayName":  "End-to-end Testing Cloud Marketplace Test VM Solution",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/08F1-4F44-8F77",
+        "serviceId":  "08F1-4F44-8F77",
+        "displayName":  "Orangehrm",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0907-76FC-2D82",
+        "serviceId":  "0907-76FC-2D82",
+        "displayName":  "Cognosys Inc. Wireshark on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/096B-2777-7034",
+        "serviceId":  "096B-2777-7034",
+        "displayName":  "Visual Studio 2017 Enterprise on Hardened Windows Server 2016",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/098B-FCB7-EA00",
+        "serviceId":  "098B-FCB7-EA00",
+        "displayName":  "Jenkins Server on Ubuntu Server 20.04",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/09B4-5C41-3168",
+        "serviceId":  "09B4-5C41-3168",
+        "displayName":  "Bitnami eXo Platform Certified by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/09EA-6B4A-550E",
+        "serviceId":  "09EA-6B4A-550E",
+        "displayName":  "PrestaShop on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0A07-96A6-8158",
+        "serviceId":  "0A07-96A6-8158",
+        "displayName":  "OpenVPN Access Server",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0A1B-8300-DD2F",
+        "serviceId":  "0A1B-8300-DD2F",
+        "displayName":  "dbX",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0A7C-45F4-3FA2",
+        "serviceId":  "0A7C-45F4-3FA2",
+        "displayName":  "Traffic Manager Standard Edition \u0026 WAF - 200 Mbps",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0A84-D90D-8FF5",
+        "serviceId":  "0A84-D90D-8FF5",
+        "displayName":  "Test Marketplace Procurable OP Full Solution",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0AA9-12E2-E3B3",
+        "serviceId":  "0AA9-12E2-E3B3",
+        "displayName":  "SAP HANA, express edition",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0AC2-4B25-C429",
+        "serviceId":  "0AC2-4B25-C429",
+        "displayName":  "Geocoding API",
+        "businessEntityName":  "businessEntities/Maps"
+    },
+    {
+        "name":  "services/0AD3-8373-BA0C",
+        "serviceId":  "0AD3-8373-BA0C",
+        "displayName":  "BigtreeCMS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0AE8-6817-BF80",
+        "serviceId":  "0AE8-6817-BF80",
+        "displayName":  "Apache Web Server with CentOS 8 Stream",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0B17-CB77-0CFB",
+        "serviceId":  "0B17-CB77-0CFB",
+        "displayName":  "wiki",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0B33-32A6-0195",
+        "serviceId":  "0B33-32A6-0195",
+        "displayName":  "WooCommerce",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0B3D-3970-6824",
+        "serviceId":  "0B3D-3970-6824",
+        "displayName":  "Magento on Ubuntu 16.04 LTS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0B66-A72A-124C",
+        "serviceId":  "0B66-A72A-124C",
+        "displayName":  "Dolibarr: Streamline Your Business on Ubuntu 16.04 lts and GCP",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0B9E-6C8C-DD9D",
+        "serviceId":  "0B9E-6C8C-DD9D",
+        "displayName":  "JENKINS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0BB0-D027-38CF",
+        "serviceId":  "0BB0-D027-38CF",
+        "displayName":  "PREDICTIVE ANALYTICS FRAMEWORK R HADOOP",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0BCC-06B3-2936",
+        "serviceId":  "0BCC-06B3-2936",
+        "displayName":  "FortiGate Next-Generation Firewall (PAYG)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0C02-7C8D-EF19",
+        "serviceId":  "0C02-7C8D-EF19",
+        "displayName":  "Nodejs",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0C29-4558-56A5",
+        "serviceId":  "0C29-4558-56A5",
+        "displayName":  "Active Directory Certificate Services PKI on Windows Server 2019",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0C76-2443-BB08",
+        "serviceId":  "0C76-2443-BB08",
+        "displayName":  "Twinword Text Analysis API Bundle",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0CDB-535D-F102",
+        "serviceId":  "0CDB-535D-F102",
+        "displayName":  "Ghost packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0CE3-7ECE-F8E8",
+        "serviceId":  "0CE3-7ECE-F8E8",
+        "displayName":  "Money Saver VM",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0CE5-D17E-5150",
+        "serviceId":  "0CE5-D17E-5150",
+        "displayName":  "Panzura Inc. Panzura Freedom Filer",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0D08-5400-B9BF",
+        "serviceId":  "0D08-5400-B9BF",
+        "displayName":  "Route Optimization API",
+        "businessEntityName":  "businessEntities/Maps"
+    },
+    {
+        "name":  "services/0D0B-A6D0-97CF",
+        "serviceId":  "0D0B-A6D0-97CF",
+        "displayName":  "Genymotion Device Image: Android 9.0",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0D19-EC86-35B0",
+        "serviceId":  "0D19-EC86-35B0",
+        "displayName":  "Cloud Data Fusion",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0D8A-2359-6554",
+        "serviceId":  "0D8A-2359-6554",
+        "displayName":  "RCC-WRF",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0D8E-1AE9-3C0D",
+        "serviceId":  "0D8E-1AE9-3C0D",
+        "displayName":  "MODX packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0DB2-DA22-4680",
+        "serviceId":  "0DB2-DA22-4680",
+        "displayName":  "Hammerspace Explorer",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0DB7-4F53-9E69",
+        "serviceId":  "0DB7-4F53-9E69",
+        "displayName":  "Sql Server 2016 Web on Windows Server 2016 ",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0DC6-1D65-6DAA",
+        "serviceId":  "0DC6-1D65-6DAA",
+        "displayName":  "Partner Demo Test WordPress",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0DCF-AFEF-00F3",
+        "serviceId":  "0DCF-AFEF-00F3",
+        "displayName":  "Windows Server 2016 Core Minimal OS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0DD1-1C43-950F",
+        "serviceId":  "0DD1-1C43-950F",
+        "displayName":  "Cavirin Systems Cavirin CyberPosture",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0DD7-0FEC-3F5B",
+        "serviceId":  "0DD7-0FEC-3F5B",
+        "displayName":  "TigerGraph Inc. TigerGraph Developer Edition 2.5.0",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0E0F-DA3F-B05F",
+        "serviceId":  "0E0F-DA3F-B05F",
+        "displayName":  "OrangeHRM-The Ultimate HR Management Solution",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0E58-DAEF-CFCC",
+        "serviceId":  "0E58-DAEF-CFCC",
+        "displayName":  "OrangeHRM on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0E68-026D-C6B6",
+        "serviceId":  "0E68-026D-C6B6",
+        "displayName":  "orbs-gamma-devkit",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0E69-0162-6B36",
+        "serviceId":  "0E69-0162-6B36",
+        "displayName":  "AI/ML development, training \u0026 inference using Python \u0026 Jupyter",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0E82-C9A8-76B7",
+        "serviceId":  "0E82-C9A8-76B7",
+        "displayName":  "typesetter",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0EC0-B489-B62B",
+        "serviceId":  "0EC0-B489-B62B",
+        "displayName":  "Auto Disbursement Demo auto-pay-demo",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0EC4-1F92-5D3A",
+        "serviceId":  "0EC4-1F92-5D3A",
+        "displayName":  "OPENEMR",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0F0F-56A0-A324",
+        "serviceId":  "0F0F-56A0-A324",
+        "displayName":  "openlitespeed-rails",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0F18-944B-FC22",
+        "serviceId":  "0F18-944B-FC22",
+        "displayName":  "Cloud Print Server on Windows Server 2019",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0F7B-E3A0-A883",
+        "serviceId":  "0F7B-E3A0-A883",
+        "displayName":  "NATS packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0F7C-A0C5-C2B7",
+        "serviceId":  "0F7C-A0C5-C2B7",
+        "displayName":  "NVIDIA GPU-Optimized TensorFlow VMI",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0FB0-A08E-55E6",
+        "serviceId":  "0FB0-A08E-55E6",
+        "displayName":  "Emotion Analysis API",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/0FFD-2C95-82EC",
+        "serviceId":  "0FFD-2C95-82EC",
+        "displayName":  "AbanteCart packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1002-DCF2-CCE5",
+        "serviceId":  "1002-DCF2-CCE5",
+        "displayName":  "MariaDB Server on Ubuntu 20.04 LTS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1009-EB12-B90A",
+        "serviceId":  "1009-EB12-B90A",
+        "displayName":  "pixstor solo - 5 TB",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/10A0-34D4-21F6",
+        "serviceId":  "10A0-34D4-21F6",
+        "displayName":  "WordPress Certified by Bitnami and Automattic",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/10C7-0687-DBD2",
+        "serviceId":  "10C7-0687-DBD2",
+        "displayName":  "SQL Server 2016 Standard on Windows Server 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/10ED-E1FF-CC33",
+        "serviceId":  "10ED-E1FF-CC33",
+        "displayName":  "NetScaler VPX Standard Edition - 1 Gbps",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1144-8BC5-52F6",
+        "serviceId":  "1144-8BC5-52F6",
+        "displayName":  "MayaScale Cloud",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1156-0F2E-624C",
+        "serviceId":  "1156-0F2E-624C",
+        "displayName":  "Introduction to LAMP Stack",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/116A-ED39-D1F0",
+        "serviceId":  "116A-ED39-D1F0",
+        "displayName":  "Database Migration",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1175-58AD-DF6F",
+        "serviceId":  "1175-58AD-DF6F",
+        "displayName":  "SQL Server 2016 Express on Hardened Windows Server 2016",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1195-B6D0-C1CE",
+        "serviceId":  "1195-B6D0-C1CE",
+        "displayName":  "Traffic Manager Standard Edition - 1 Gbps",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/11E3-2164-7ABB",
+        "serviceId":  "11E3-2164-7ABB",
+        "displayName":  "Webmin GUI Admin Control Panel for Ubuntu Server 18.04 LTS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/11F2-A380-6357",
+        "serviceId":  "11F2-A380-6357",
+        "displayName":  "Maps Elevation API",
+        "businessEntityName":  "businessEntities/Maps"
+    },
+    {
+        "name":  "services/12BA-A8F0-838E",
+        "serviceId":  "12BA-A8F0-838E",
+        "displayName":  "claire-auto-demo",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/12EC-8E8E-C397",
+        "serviceId":  "12EC-8E8E-C397",
+        "displayName":  "Ubuntu Server 20.04 Minimal OS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1302-8579-1C82",
+        "serviceId":  "1302-8579-1C82",
+        "displayName":  "Process Intelligence Platform",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1303-5374-2D11",
+        "serviceId":  "1303-5374-2D11",
+        "displayName":  "OpenLogic Rocky Linux 8.9 (v20231130)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1309-F64E-BAE8",
+        "serviceId":  "1309-F64E-BAE8",
+        "displayName":  "CIS (Center for Internet Security) CIS Red Hat Enterprise Linux 6 Benchmark - Level 1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1340-ED33-FA85",
+        "serviceId":  "1340-ED33-FA85",
+        "displayName":  "Fluxbb",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1348-FACC-9796",
+        "serviceId":  "1348-FACC-9796",
+        "displayName":  "TigerGraph Enterprise 3.0.5 (Single Server Ed.)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1394-64A3-F0C6",
+        "serviceId":  "1394-64A3-F0C6",
+        "displayName":  "Deep Learning VM",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/13B5-5C1A-2205",
+        "serviceId":  "13B5-5C1A-2205",
+        "displayName":  "Packer on Windows Server 2019",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/13B7-77B5-3D2B",
+        "serviceId":  "13B7-77B5-3D2B",
+        "displayName":  "Google Maps Platform Solar Service",
+        "businessEntityName":  "businessEntities/Maps"
+    },
+    {
+        "name":  "services/13D9-8CCC-D72C",
+        "serviceId":  "13D9-8CCC-D72C",
+        "displayName":  "InterSystems IRIS Data Platform",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/13E6-5294-D5FA",
+        "serviceId":  "13E6-5294-D5FA",
+        "displayName":  "PHP with Apache on CentOS 8 from Zend by Perforce (BYOL)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1429-16A3-08BC",
+        "serviceId":  "1429-16A3-08BC",
+        "displayName":  "Apache Tomcat: The Ultimate Web Server for Centos 7 and GCP",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1448-D63F-0DA7",
+        "serviceId":  "1448-D63F-0DA7",
+        "displayName":  "F5 BIG-IP Virtual Edition - BETTER  (PAYG, 25Mbps)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/144D-4907-2A21",
+        "serviceId":  "144D-4907-2A21",
+        "displayName":  "Chronicle",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/149C-F9EC-3994",
+        "serviceId":  "149C-F9EC-3994",
+        "displayName":  "Artifact Registry",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/14A2-8AB3-2E09",
+        "serviceId":  "14A2-8AB3-2E09",
+        "displayName":  "NodeSource N|Solid",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/14AB-CA19-9762",
+        "serviceId":  "14AB-CA19-9762",
+        "displayName":  "Elasticsearch Cluster (with replication)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/14BC-E05F-A9BB",
+        "serviceId":  "14BC-E05F-A9BB",
+        "displayName":  " Silk Platform",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/14E6-EF9E-CFBC",
+        "serviceId":  "14E6-EF9E-CFBC",
+        "displayName":  "Weka Machine Learning on Windows 2019",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/14E7-BA84-3B4D",
+        "serviceId":  "14E7-BA84-3B4D",
+        "displayName":  "DataStax Distribution of Apache Cassandra 8x5 Support",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/150C-D174-4C61",
+        "serviceId":  "150C-D174-4C61",
+        "displayName":  "StraaS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/152E-C115-5142",
+        "serviceId":  "152E-C115-5142",
+        "displayName":  "Cloud Run",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1535-C8C3-9833",
+        "serviceId":  "1535-C8C3-9833",
+        "displayName":  "Jenkins-automation",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1541-1D5B-F621",
+        "serviceId":  "1541-1D5B-F621",
+        "displayName":  "CloudLinux 7",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1550-BA40-4980",
+        "serviceId":  "1550-BA40-4980",
+        "displayName":  "WordPress",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/155F-CBED-DAC8",
+        "serviceId":  "155F-CBED-DAC8",
+        "displayName":  "Cognosys Inc. Team Foundation Server 2015 on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1566-7627-590B",
+        "serviceId":  "1566-7627-590B",
+        "displayName":  "Bitnami JasperReports Certified by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/158F-556F-4845",
+        "serviceId":  "158F-556F-4845",
+        "displayName":  "Active Directory Domain Controller 2019",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/160C-B1C2-FE08",
+        "serviceId":  "160C-B1C2-FE08",
+        "displayName":  "NetScaler VPX Standard Edition - 10 Mbps",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/162C-B75F-B587",
+        "serviceId":  "162C-B75F-B587",
+        "displayName":  "PostgreSQL packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1630-702E-DB71",
+        "serviceId":  "1630-702E-DB71",
+        "displayName":  "r-developer-suit",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/166A-0DE6-82B1",
+        "serviceId":  "166A-0DE6-82B1",
+        "displayName":  "Avantra",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/169F-7D34-4D47",
+        "serviceId":  "169F-7D34-4D47",
+        "displayName":  "Mediawiki: Collaborative Knowledge Management",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/16B8-3DDA-9F10",
+        "serviceId":  "16B8-3DDA-9F10",
+        "displayName":  "BigQuery Reservation API",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/16C1-D2F8-3542",
+        "serviceId":  "16C1-D2F8-3542",
+        "displayName":  "TensorFlow Serving packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1714-9C53-0C62",
+        "serviceId":  "1714-9C53-0C62",
+        "displayName":  "Joomla Server + MySQL Server + Apache + phpMyadmin on CentOS 8.3",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1748-5F88-6EB9",
+        "serviceId":  "1748-5F88-6EB9",
+        "displayName":  "Cognosys Inc. CrushFTP on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1749-9ED8-C6DC",
+        "serviceId":  "1749-9ED8-C6DC",
+        "displayName":  "Blockchain Node Engine",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1763-A91B-9ECE",
+        "serviceId":  "1763-A91B-9ECE",
+        "displayName":  "PARITY V2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/177D-86F1-48C9",
+        "serviceId":  "177D-86F1-48C9",
+        "displayName":  "Google Quickstart Simple pre-configured Debian VM",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1780-5EFE-7CFE",
+        "serviceId":  "1780-5EFE-7CFE",
+        "displayName":  "Wowza Media Systems Wowza Streaming Cloud",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/178D-0AAC-319C",
+        "serviceId":  "178D-0AAC-319C",
+        "displayName":  "Webmin GUI Admin Control Panel for Ubuntu Server 20.04 LTS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1819-2131-A20D",
+        "serviceId":  "1819-2131-A20D",
+        "displayName":  "Kafka Cluster (with replication)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/181E-332A-5B53",
+        "serviceId":  "181E-332A-5B53",
+        "displayName":  "ACTIVEMQ",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1830-9C37-5DEA",
+        "serviceId":  "1830-9C37-5DEA",
+        "displayName":  "Collabtive",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/183D-0753-AE77",
+        "serviceId":  "183D-0753-AE77",
+        "displayName":  "Topic Tagging API",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1844-152A-BC3A",
+        "serviceId":  "1844-152A-BC3A",
+        "displayName":  "Odoo packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1866-8E60-9018",
+        "serviceId":  "1866-8E60-9018",
+        "displayName":  "Airlock Gateway 7.7",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/18C2-E1D3-D7A1",
+        "serviceId":  "18C2-E1D3-D7A1",
+        "displayName":  "GitLab Community Edition",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/18FC-D122-7B50",
+        "serviceId":  "18FC-D122-7B50",
+        "displayName":  "CloudBees Jenkins Support",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1902-5DAC-9560",
+        "serviceId":  "1902-5DAC-9560",
+        "displayName":  "NVIDIA HPC SDK GPU-Optimized Image",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1934-AA85-20F9",
+        "serviceId":  "1934-AA85-20F9",
+        "displayName":  "Maps API",
+        "businessEntityName":  "businessEntities/Maps"
+    },
+    {
+        "name":  "services/194C-3B25-4709",
+        "serviceId":  "194C-3B25-4709",
+        "displayName":  "pytorch-kit",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1987-0190-5C09",
+        "serviceId":  "1987-0190-5C09",
+        "displayName":  "Class4 Voip/Sip switch ",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1992-3666-B975",
+        "serviceId":  "1992-3666-B975",
+        "displayName":  "Cloud Composer",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/19A9-7B30-50FC",
+        "serviceId":  "19A9-7B30-50FC",
+        "displayName":  "Bitnami Noalyss Certified by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1A35-C5C7-1D7C",
+        "serviceId":  "1A35-C5C7-1D7C",
+        "displayName":  "Drupal",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1A5E-92D8-5F05",
+        "serviceId":  "1A5E-92D8-5F05",
+        "displayName":  "Shape Defense",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1A7E-0F2E-A252",
+        "serviceId":  "1A7E-0F2E-A252",
+        "displayName":  "Cloud Optimization",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1A9B-03E7-519D",
+        "serviceId":  "1A9B-03E7-519D",
+        "displayName":  "Microsoft Web Application Proxy - ADFS WAP 2016 Server",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1AA8-AAB6-920F",
+        "serviceId":  "1AA8-AAB6-920F",
+        "displayName":  "End-to-end Testing Cloud Marketplace Test BYOL Solution",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1ABC-F3AF-9732",
+        "serviceId":  "1ABC-F3AF-9732",
+        "displayName":  "CIS (Center for Internet Security) CIS Microsoft Windows Server 2016 Benchmark v1.0.0 Level 2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1AD1-892F-A377",
+        "serviceId":  "1AD1-892F-A377",
+        "displayName":  "witfoo-precinct",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1AF9-4430-172E",
+        "serviceId":  "1AF9-4430-172E",
+        "displayName":  "NetApp Cloud Volumes Service",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1B17-0E4A-E355",
+        "serviceId":  "1B17-0E4A-E355",
+        "displayName":  "reCAPTCHA Enterprise",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1B18-3BA5-BC31",
+        "serviceId":  "1B18-3BA5-BC31",
+        "displayName":  "Nginx-High-Performance Web Server for Ubuntu 20.04 lts focal on",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1B1B-541D-F4B5",
+        "serviceId":  "1B1B-541D-F4B5",
+        "displayName":  "WordPress on Redhat linux 7 and GCP",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1B2D-0FE8-F57F",
+        "serviceId":  "1B2D-0FE8-F57F",
+        "displayName":  "Limesurvey: The Ultimate Survey Solution",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1B40-507E-1D91",
+        "serviceId":  "1B40-507E-1D91",
+        "displayName":  "sureline-public sureedge-windows-byol",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1B47-F2E0-E2AA",
+        "serviceId":  "1B47-F2E0-E2AA",
+        "displayName":  "Panzura Inc. Panzura Freedom Filer",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1B5E-5174-6680",
+        "serviceId":  "1B5E-5174-6680",
+        "displayName":  "Secure FTP Server on Windows 2019",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1B6C-F9CE-018F",
+        "serviceId":  "1B6C-F9CE-018F",
+        "displayName":  "Mediawiki With CentOS 8.3",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1BD3-107D-60B7",
+        "serviceId":  "1BD3-107D-60B7",
+        "displayName":  "QRadar Security Intelligence Platform Console v7.3.2 P1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1BDF-7F3C-8605",
+        "serviceId":  "1BDF-7F3C-8605",
+        "displayName":  "Redmine on PostgreSQL",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1C22-523C-CD6B",
+        "serviceId":  "1C22-523C-CD6B",
+        "displayName":  "MapTiler Cluster",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1C2D-8C78-EC58",
+        "serviceId":  "1C2D-8C78-EC58",
+        "displayName":  "Apigee",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1C46-E8A3-8CDF",
+        "serviceId":  "1C46-E8A3-8CDF",
+        "displayName":  "WordPress on Ubuntu 16.04 lts and GCP",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1C58-CF90-9614",
+        "serviceId":  "1C58-CF90-9614",
+        "displayName":  "Firebase Realtime Database",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1CB2-E83D-FE7E",
+        "serviceId":  "1CB2-E83D-FE7E",
+        "displayName":  "Active Directory Domain Controller 2016",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1CEE-5281-AC2E",
+        "serviceId":  "1CEE-5281-AC2E",
+        "displayName":  "Kong Enterprise 2.1 (BYOL)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1D18-DFE9-46A5",
+        "serviceId":  "1D18-DFE9-46A5",
+        "displayName":  "Expert System Cogito API Core",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1D49-C26A-6708",
+        "serviceId":  "1D49-C26A-6708",
+        "displayName":  "NGINX Plus Premium - CentOS 7",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1D5F-59A2-89EE",
+        "serviceId":  "1D5F-59A2-89EE",
+        "displayName":  "Reverse Geocoder Lite",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1D85-EB86-2067",
+        "serviceId":  "1D85-EB86-2067",
+        "displayName":  "Rakuten Symphony Symcloud Storage",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1D8C-8996-0F10",
+        "serviceId":  "1D8C-8996-0F10",
+        "displayName":  "Tidal Tools",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1D98-4621-6E15",
+        "serviceId":  "1D98-4621-6E15",
+        "displayName":  "Bitnami Liferay Certified by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1DA2-CE77-525A",
+        "serviceId":  "1DA2-CE77-525A",
+        "displayName":  "LAMP Stack",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1DB1-3CD3-35A3",
+        "serviceId":  "1DB1-3CD3-35A3",
+        "displayName":  "Translate",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1DC6-E5BD-A8F6",
+        "serviceId":  "1DC6-E5BD-A8F6",
+        "displayName":  "Anthos Sample Deployment on Google Cloud (Preview)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1DFB-9FD4-B295",
+        "serviceId":  "1DFB-9FD4-B295",
+        "displayName":  "SQL Server 2017 Express on Windows Server 2016",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1E0A-E060-C394",
+        "serviceId":  "1E0A-E060-C394",
+        "displayName":  "AISE PyTorch CPU Production",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1E4A-3DB6-A242",
+        "serviceId":  "1E4A-3DB6-A242",
+        "displayName":  "Selenoid",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1E68-F58E-696F",
+        "serviceId":  "1E68-F58E-696F",
+        "displayName":  "Singularity-community-31",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1E6F-B488-4621",
+        "serviceId":  "1E6F-B488-4621",
+        "displayName":  "RabbitMQ Cluster (with replication)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1EA9-446B-6CBF",
+        "serviceId":  "1EA9-446B-6CBF",
+        "displayName":  "Mautic packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1EBF-DF09-7B8F",
+        "serviceId":  "1EBF-DF09-7B8F",
+        "displayName":  "Cognosys Inc. SecuredSharepoint2016 Standard on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1EC9-D4D4-929A",
+        "serviceId":  "1EC9-D4D4-929A",
+        "displayName":  "Hardened Debian 9",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1ED8-3C3C-1F3C",
+        "serviceId":  "1ED8-3C3C-1F3C",
+        "displayName":  "NVIDIA Image for AI using GPUs - Optimized for TensorFlow",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1EE9-313A-4A96",
+        "serviceId":  "1EE9-313A-4A96",
+        "displayName":  "Effortlessly Manage Your Knowledge Base with Dokuwiki",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1F12-0A0C-1719",
+        "serviceId":  "1F12-0A0C-1719",
+        "displayName":  "Ionic Security, Inc. Ionic Machina",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1F14-4801-0E16",
+        "serviceId":  "1F14-4801-0E16",
+        "displayName":  "Cloud Scheduler",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1F19-3B91-C65D",
+        "serviceId":  "1F19-3B91-C65D",
+        "displayName":  "Mautic: The Ultimate Marketing Automation Platform",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1F26-88DA-ACC4",
+        "serviceId":  "1F26-88DA-ACC4",
+        "displayName":  "OmniSci Platform Enterprise Edition - P100",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1F75-5D3B-D9B6",
+        "serviceId":  "1F75-5D3B-D9B6",
+        "displayName":  "Bitnami JFrog Artifactory Open Source Certified by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1F7B-001C-9BEB",
+        "serviceId":  "1F7B-001C-9BEB",
+        "displayName":  "Dolibarr packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1F8C-FEBC-0765",
+        "serviceId":  "1F8C-FEBC-0765",
+        "displayName":  "Cloud2 GCP Marketplace Dev",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1FA9-5893-1647",
+        "serviceId":  "1FA9-5893-1647",
+        "displayName":  "Fivetran Data Pipelines",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1FAC-DED1-175E",
+        "serviceId":  "1FAC-DED1-175E",
+        "displayName":  "NetScaler VPX Premium Edition - 10 Mbps",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1FE5-352A-9323",
+        "serviceId":  "1FE5-352A-9323",
+        "displayName":  "Ruby Stack",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1FF1-FC11-1AC7",
+        "serviceId":  "1FF1-FC11-1AC7",
+        "displayName":  "vmware-sdwan",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/1FFD-5D9F-7D14",
+        "serviceId":  "1FFD-5D9F-7D14",
+        "displayName":  "Dshop e-commerce store",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2024-A713-F326",
+        "serviceId":  "2024-A713-F326",
+        "displayName":  "Fortinet FortiWeb Web Application Firewall WAF (BYOL)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2028-1B43-9116",
+        "serviceId":  "2028-1B43-9116",
+        "displayName":  "kafka",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/204E-C5D9-B176",
+        "serviceId":  "204E-C5D9-B176",
+        "displayName":  "Jenkins on Red Hat Enterprise Linux 7",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2059-F45F-A52D",
+        "serviceId":  "2059-F45F-A52D",
+        "displayName":  "CloudBees Core",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/206A-22FA-D734",
+        "serviceId":  "206A-22FA-D734",
+        "displayName":  "Transcode API",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/207B-3B25-1016",
+        "serviceId":  "207B-3B25-1016",
+        "displayName":  "Grafana",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/20AF-08BB-F4EB",
+        "serviceId":  "20AF-08BB-F4EB",
+        "displayName":  "OpenBiblio",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/20C2-794F-490B",
+        "serviceId":  "20C2-794F-490B",
+        "displayName":  "Panzura Inc. Panzura Freedom NAS - GCE",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/210D-F9A5-C051",
+        "serviceId":  "210D-F9A5-C051",
+        "displayName":  "Unravel for Dataproc",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2123-DACF-C407",
+        "serviceId":  "2123-DACF-C407",
+        "displayName":  "Modshield SB - Web Application Firewall",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2137-59FE-81AF",
+        "serviceId":  "2137-59FE-81AF",
+        "displayName":  "Openfire packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/213C-9623-1402",
+        "serviceId":  "213C-9623-1402",
+        "displayName":  "Places API",
+        "businessEntityName":  "businessEntities/Maps"
+    },
+    {
+        "name":  "services/2170-2565-29DF",
+        "serviceId":  "2170-2565-29DF",
+        "displayName":  "Progress Flowmon for Google Cloud",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2172-CD1A-453A",
+        "serviceId":  "2172-CD1A-453A",
+        "displayName":  "NetApp Intelligent Services",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2178-2D98-59E4",
+        "serviceId":  "2178-2D98-59E4",
+        "displayName":  "Traffic Manager Essential Edition - 300 Mbps",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/219D-FF8C-6861",
+        "serviceId":  "219D-FF8C-6861",
+        "displayName":  "Loadbalancer Enterprise GCP BYOL",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/21BE-4D27-C9C4",
+        "serviceId":  "21BE-4D27-C9C4",
+        "displayName":  "Apache Tomcat-The Ultimate Web Server for Ubuntu 18.04 lts bion",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/21DE-23B8-C28A",
+        "serviceId":  "21DE-23B8-C28A",
+        "displayName":  "Cloudup-ERP",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2219-D3C2-A06A",
+        "serviceId":  "2219-D3C2-A06A",
+        "displayName":  "Vertica Data Warehouse, Enterprise BYOL",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2232-FF32-1FEB",
+        "serviceId":  "2232-FF32-1FEB",
+        "displayName":  "Hardened Red Hat 7",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2282-F60B-CE6D",
+        "serviceId":  "2282-F60B-CE6D",
+        "displayName":  "CIS (Center for Internet Security) CIS CentOS Linux 6 Benchmark v2.0.2 Level 1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/228A-F5DD-C602",
+        "serviceId":  "228A-F5DD-C602",
+        "displayName":  "NGINX, Inc NGINX Plus - Ubuntu 18.04",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/22A0-3AED-707A",
+        "serviceId":  "22A0-3AED-707A",
+        "displayName":  "NetScaler Agent Service ",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/22AD-1716-F48F",
+        "serviceId":  "22AD-1716-F48F",
+        "displayName":  "F5 BIG-IP Virtual Edition - BETTER  (PAYG, 200Mbps)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/22AD-447C-4274",
+        "serviceId":  "22AD-447C-4274",
+        "displayName":  "RCC-Debian",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/22B7-64BF-4C9C",
+        "serviceId":  "22B7-64BF-4C9C",
+        "displayName":  "NVIDIA RTX Virtual Workstation - Windows Server 2016",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/22C2-A2F8-3601",
+        "serviceId":  "22C2-A2F8-3601",
+        "displayName":  "Tempered Networks Conductor v2.1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/22EC-D055-264B",
+        "serviceId":  "22EC-D055-264B",
+        "displayName":  "RubyRails",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/22F4-7CC6-4D1A",
+        "serviceId":  "22F4-7CC6-4D1A",
+        "displayName":  "SQL Server 2014 Express on Hardened Windows Server 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/233A-D9B7-58CE",
+        "serviceId":  "233A-D9B7-58CE",
+        "displayName":  "Human API",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2379-84F2-4450",
+        "serviceId":  "2379-84F2-4450",
+        "displayName":  "Sense Traffic Pulse™ and Cloud AutoML",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/238F-572F-F2D2",
+        "serviceId":  "238F-572F-F2D2",
+        "displayName":  "DiscrimiNAT Firewall",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2390-6FAC-BA70",
+        "serviceId":  "2390-6FAC-BA70",
+        "displayName":  "F5 Advanced WAF with LTM, IPI, and TC (PAYG, 16vCPU)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/23A0-49DD-A730",
+        "serviceId":  "23A0-49DD-A730",
+        "displayName":  "PIVOTX",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/23E9-7B02-460F",
+        "serviceId":  "23E9-7B02-460F",
+        "displayName":  "OroCRM VM",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/23EB-EABE-11C3",
+        "serviceId":  "23EB-EABE-11C3",
+        "displayName":  "Perforce Software Inc. OpenLogic AlmaLinux 8.3-beta-1 (v20210204)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2401-8234-89C6",
+        "serviceId":  "2401-8234-89C6",
+        "displayName":  "Shadowsocks VPN",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2458-028D-5ED0",
+        "serviceId":  "2458-028D-5ED0",
+        "displayName":  "Fortinet FortiADC Application Delivery Controller PAYG 1Gbps",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/24B7-B9B6-2270",
+        "serviceId":  "24B7-B9B6-2270",
+        "displayName":  "Simple pre-configured Debian VM",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/24E6-581D-38E5",
+        "serviceId":  "24E6-581D-38E5",
+        "displayName":  "BigQuery",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/251D-E8E2-38A4",
+        "serviceId":  "251D-E8E2-38A4",
+        "displayName":  "MySQL 5.6 on Ubuntu 14.04 LTS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2524-445E-1178",
+        "serviceId":  "2524-445E-1178",
+        "displayName":  "MediaWiki on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2539-BF8D-81F7",
+        "serviceId":  "2539-BF8D-81F7",
+        "displayName":  "WordPress on Server 2016 + PhpMyAdmin + MySQL",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/253F-1ADF-B066",
+        "serviceId":  "253F-1ADF-B066",
+        "displayName":  "MultiClusterIngress",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2556-4396-15B9",
+        "serviceId":  "2556-4396-15B9",
+        "displayName":  "Teradata VantageCloud Enterprise on Google Cloud",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/256F-92D0-D27D",
+        "serviceId":  "256F-92D0-D27D",
+        "displayName":  "Atomicorp Enterprise Ossec",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/25DB-618E-3F79",
+        "serviceId":  "25DB-618E-3F79",
+        "displayName":  "Cloud IDS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/25E7-0954-E177",
+        "serviceId":  "25E7-0954-E177",
+        "displayName":  "Abantecart on Ubuntu 16.04 LTS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2633-D310-1DB7",
+        "serviceId":  "2633-D310-1DB7",
+        "displayName":  "Xoops",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2652-9747-1793",
+        "serviceId":  "2652-9747-1793",
+        "displayName":  "Fortinet FortiADC Application Delivery Controller PAYG 10Gbps",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2662-232A-AC11",
+        "serviceId":  "2662-232A-AC11",
+        "displayName":  "Firebase Hosting",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2672-E413-ACAC",
+        "serviceId":  "2672-E413-ACAC",
+        "displayName":  "DataSunrise Database Security, Data Masking and Compliance",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2683-85F8-24F3",
+        "serviceId":  "2683-85F8-24F3",
+        "displayName":  "Swiftflow",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2697-7C19-877E",
+        "serviceId":  "2697-7C19-877E",
+        "displayName":  "Subversion",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/269F-34AC-5F7D",
+        "serviceId":  "269F-34AC-5F7D",
+        "displayName":  "SafeKit Mirror Cluster on CentOS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/26B7-A21A-4FAD",
+        "serviceId":  "26B7-A21A-4FAD",
+        "displayName":  "Barracuda CloudGen WAF (BYOL)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/26CA-A975-F471",
+        "serviceId":  "26CA-A975-F471",
+        "displayName":  "Dynamic AI Demo",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/270C-F7FA-E994",
+        "serviceId":  "270C-F7FA-E994",
+        "displayName":  "Nginx-High-Performance Web Server for Ubuntu 20.04 lts focal on",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2728-C9C3-4496",
+        "serviceId":  "2728-C9C3-4496",
+        "displayName":  "Places UI Kit",
+        "businessEntityName":  "businessEntities/Maps"
+    },
+    {
+        "name":  "services/278F-D51F-3660",
+        "serviceId":  "278F-D51F-3660",
+        "displayName":  "gloo-enterprise-subscription",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/27A6-BEA7-CB50",
+        "serviceId":  "27A6-BEA7-CB50",
+        "displayName":  "Redis Enterprise Cloud",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/27AE-4CA9-1FB5",
+        "serviceId":  "27AE-4CA9-1FB5",
+        "displayName":  "Tiny Tiny RSS packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/27CB-5FE3-02DF",
+        "serviceId":  "27CB-5FE3-02DF",
+        "displayName":  "MariaDB packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/280B-F53E-B8DB",
+        "serviceId":  "280B-F53E-B8DB",
+        "displayName":  "MariaDB-The Open Source Database for Ubuntu 20.04 lts focal on ",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2852-5DD1-BBD6",
+        "serviceId":  "2852-5DD1-BBD6",
+        "displayName":  "OroCommerce VM",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2855-49F0-89D5",
+        "serviceId":  "2855-49F0-89D5",
+        "displayName":  "carto-enterprise",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/285E-7B4D-F721",
+        "serviceId":  "285E-7B4D-F721",
+        "displayName":  "ResIOT OPEN GCP",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2864-C1BF-1429",
+        "serviceId":  "2864-C1BF-1429",
+        "displayName":  "NetScaler VPX Express - 20Mbps",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2872-9FA7-9E8C",
+        "serviceId":  "2872-9FA7-9E8C",
+        "displayName":  "Check Point CloudGuard Network Security Autoscaling (BYOL)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2874-4E6C-E59E",
+        "serviceId":  "2874-4E6C-E59E",
+        "displayName":  "OpenLogic AlmaLinux 8.9 (v20231201)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2892-9568-77CC",
+        "serviceId":  "2892-9568-77CC",
+        "displayName":  "IliasLMS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/28D5-7954-0B74",
+        "serviceId":  "28D5-7954-0B74",
+        "displayName":  "Plesk on Ubuntu - BYOL - Website \u0026 WordPress Platform",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/28D7-5455-635F",
+        "serviceId":  "28D7-5455-635F",
+        "displayName":  "Mautic: The Ultimate Marketing Automation Platform",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/28EA-68CA-3E1A",
+        "serviceId":  "28EA-68CA-3E1A",
+        "displayName":  "LAPP Stack",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/291F-5871-F804",
+        "serviceId":  "291F-5871-F804",
+        "displayName":  "Efficient Load Balancing with HAProxy on Redhat linux 7 and GCP",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/293B-D409-8EE0",
+        "serviceId":  "293B-D409-8EE0",
+        "displayName":  "Telecom Network Automation",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/297B-F000-7557",
+        "serviceId":  "297B-F000-7557",
+        "displayName":  "NVIDIA RTX Virtual Workstation - Ubuntu 18.04",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/29A0-EDAC-4862",
+        "serviceId":  "29A0-EDAC-4862",
+        "displayName":  "Hyperledger Fabric and Composer",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/29C1-832D-92FE",
+        "serviceId":  "29C1-832D-92FE",
+        "displayName":  "Aerospike Enterprise Edition with ACMv5",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/29C8-2050-2424",
+        "serviceId":  "29C8-2050-2424",
+        "displayName":  "Genomics",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/29E7-DA93-CA13",
+        "serviceId":  "29E7-DA93-CA13",
+        "displayName":  "Cloud Run Functions",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2A06-2FFD-D8DC",
+        "serviceId":  "2A06-2FFD-D8DC",
+        "displayName":  "DataStax Distribution of Apache Cassandra 24x7 Support",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2A1A-142F-94CB",
+        "serviceId":  "2A1A-142F-94CB",
+        "displayName":  "Node.js on Red Hat Enterprise Linux 7",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2A27-8988-64B8",
+        "serviceId":  "2A27-8988-64B8",
+        "displayName":  "Managed Service for Microsoft Active Directory",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2A50-F3DA-21A7",
+        "serviceId":  "2A50-F3DA-21A7",
+        "displayName":  "LABS.AI E.D.D.I - Open Source Chatbot Platform",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2A64-92E4-6871",
+        "serviceId":  "2A64-92E4-6871",
+        "displayName":  "Piwigo Gallery on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2AF2-C71B-98BC",
+        "serviceId":  "2AF2-C71B-98BC",
+        "displayName":  "Unleash Enterprise",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2B3B-023C-2F8F",
+        "serviceId":  "2B3B-023C-2F8F",
+        "displayName":  "InfluxDB Enterprise (Official Version)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2B4F-0A3F-37C9",
+        "serviceId":  "2B4F-0A3F-37C9",
+        "displayName":  "Joomla: The Ultimate CMS for Ubuntu 14.04 lts and GCP",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2B5C-ED7A-1A76",
+        "serviceId":  "2B5C-ED7A-1A76",
+        "displayName":  "PowerProtect DD Management Center (DDMC)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2B6A-4AB1-18B8",
+        "serviceId":  "2B6A-4AB1-18B8",
+        "displayName":  "MariaDB with Replication packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2BAB-AA10-2D98",
+        "serviceId":  "2BAB-AA10-2D98",
+        "displayName":  "phpBB on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2BCF-F8B8-7A17",
+        "serviceId":  "2BCF-F8B8-7A17",
+        "displayName":  "ThoughtSpot Search \u0026 AI-driven Analytics (BYOL)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2C3C-19A2-6493",
+        "serviceId":  "2C3C-19A2-6493",
+        "displayName":  "ScaiPlatform - Free Real-Time Business Intelligence \u0026 Analytics",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2C40-ECFA-CF91",
+        "serviceId":  "2C40-ECFA-CF91",
+        "displayName":  "EnterpriseDB EDB Postgres Enterprise",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2C5D-01E7-6B5B",
+        "serviceId":  "2C5D-01E7-6B5B",
+        "displayName":  "Unifier Medical Image Workflow Cloud Appliance \u0026 Archive (BYOL)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2C9B-CCA6-48C2",
+        "serviceId":  "2C9B-CCA6-48C2",
+        "displayName":  "Dolibarr",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2CCC-0870-9405",
+        "serviceId":  "2CCC-0870-9405",
+        "displayName":  "DokuWiki",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2D30-29F4-BA40",
+        "serviceId":  "2D30-29F4-BA40",
+        "displayName":  "Jenkins",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2D73-657F-C343",
+        "serviceId":  "2D73-657F-C343",
+        "displayName":  "Nginx",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2DD4-A2EB-B906",
+        "serviceId":  "2DD4-A2EB-B906",
+        "displayName":  "FlashGrid Cluster for Oracle RAC / SI Database (RH7)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2E1B-23BA-2D14",
+        "serviceId":  "2E1B-23BA-2D14",
+        "displayName":  "Couchbase Sync Gateway",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2E66-FA31-A0AB",
+        "serviceId":  "2E66-FA31-A0AB",
+        "displayName":  "Zencart",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2E6C-5FE3-D0D2",
+        "serviceId":  "2E6C-5FE3-D0D2",
+        "displayName":  "MariaDB Managed Database",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2E81-DB3E-82E2",
+        "serviceId":  "2E81-DB3E-82E2",
+        "displayName":  "Fleets",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2E8A-C97C-C946",
+        "serviceId":  "2E8A-C97C-C946",
+        "displayName":  "H2O.ai Driverless AI (BYOL)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2EC9-6E36-8614",
+        "serviceId":  "2EC9-6E36-8614",
+        "displayName":  "AutoML Neuton",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2ECC-231D-63E6",
+        "serviceId":  "2ECC-231D-63E6",
+        "displayName":  "vsrx Next Generation Firewall-BYOL",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2ED5-DE13-2295",
+        "serviceId":  "2ED5-DE13-2295",
+        "displayName":  "Redis Server on Ubuntu Server 20.04",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2EE0-C60B-AC2D",
+        "serviceId":  "2EE0-C60B-AC2D",
+        "displayName":  "CIS Debian Linux 9 Benchmark - Level 1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2EED-EE52-0BE2",
+        "serviceId":  "2EED-EE52-0BE2",
+        "displayName":  "cds-demo-2 CDS Test 1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2F03-0ADD-D7CE",
+        "serviceId":  "2F03-0ADD-D7CE",
+        "displayName":  "Pimcore packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2F16-616C-6696",
+        "serviceId":  "2F16-616C-6696",
+        "displayName":  "Twinword Inc. Language Scoring API",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2F4F-E8BA-6DBE",
+        "serviceId":  "2F4F-E8BA-6DBE",
+        "displayName":  "Couchbase Server and Sync Gateway (Hourly and Test Drive)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2FC7-259B-47C8",
+        "serviceId":  "2FC7-259B-47C8",
+        "displayName":  "Ansible Control Node Server on CentOS Stream 9",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/2FEA-DF04-685C",
+        "serviceId":  "2FEA-DF04-685C",
+        "displayName":  "Datashare",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3026-2FCF-11A2",
+        "serviceId":  "3026-2FCF-11A2",
+        "displayName":  "NetScaler VPX - Customer Licensed",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/302A-D56C-8C0C",
+        "serviceId":  "302A-D56C-8C0C",
+        "displayName":  "FME Platform",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/30B5-8919-D869",
+        "serviceId":  "30B5-8919-D869",
+        "displayName":  "MariaDB Cluster (with replication)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/30D7-9CCE-CC0B",
+        "serviceId":  "30D7-9CCE-CC0B",
+        "displayName":  "Cloudup Joomla  on Debian 9",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/30DD-FBBD-FC49",
+        "serviceId":  "30DD-FBBD-FC49",
+        "displayName":  "F5 Networks F5 Advanced WAF  (PAYG, 25Mbps)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/30E6-725A-DDFF",
+        "serviceId":  "30E6-725A-DDFF",
+        "displayName":  "Lamp With RedHat 7",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3100-DC74-AA0A",
+        "serviceId":  "3100-DC74-AA0A",
+        "displayName":  "5TB Hybrid Qumulo File System Instance",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/312C-0CA8-9AD4",
+        "serviceId":  "312C-0CA8-9AD4",
+        "displayName":  "OpenLogic CentOS 8.3 (v20210408)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3143-A712-DB14",
+        "serviceId":  "3143-A712-DB14",
+        "displayName":  "ASP.NET Framework",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/318A-1B95-C718",
+        "serviceId":  "318A-1B95-C718",
+        "displayName":  "Wildfly",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/318F-06D8-86E5",
+        "serviceId":  "318F-06D8-86E5",
+        "displayName":  "Etcd packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3197-F51E-A5C6",
+        "serviceId":  "3197-F51E-A5C6",
+        "displayName":  "SQL Server Enterprise on Linux-SQL Server 2017 on SUSE",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/31B7-A308-38F7",
+        "serviceId":  "31B7-A308-38F7",
+        "displayName":  "Anthos Policy Controller",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/31CC-3BCA-0225",
+        "serviceId":  "31CC-3BCA-0225",
+        "displayName":  "NGINX Plus Developer - CentOS 7",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/31F9-EB7E-D488",
+        "serviceId":  "31F9-EB7E-D488",
+        "displayName":  "F5 Networks F5 Advanced WAF  (PAYG, 1Gbps)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3203-AAF8-7D6F",
+        "serviceId":  "3203-AAF8-7D6F",
+        "displayName":  "Sense Traffic Pulse™ On-Demand Intelligent Video Analytics",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/321A-6E94-D996",
+        "serviceId":  "321A-6E94-D996",
+        "displayName":  "Limesurvey",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3225-23F0-4062",
+        "serviceId":  "3225-23F0-4062",
+        "displayName":  "Weka Machine Learning on Windows 2016",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3272-46BE-0A16",
+        "serviceId":  "3272-46BE-0A16",
+        "displayName":  "OmniSci Open Source Edition",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3281-85BA-FBC7",
+        "serviceId":  "3281-85BA-FBC7",
+        "displayName":  "NGINX, Inc NGINX Plus - CentOS 7",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/32FA-7E02-F2CF",
+        "serviceId":  "32FA-7E02-F2CF",
+        "displayName":  "Mautic",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3320-AA4D-A76B",
+        "serviceId":  "3320-AA4D-A76B",
+        "displayName":  "Sharepoint 2016 Standard on Windows 2016",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3329-665A-98D1",
+        "serviceId":  "3329-665A-98D1",
+        "displayName":  "Cognosys Inc. SQL Server Web 2017 on Linux - Ubuntu 16.04",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3332-5F27-A239",
+        "serviceId":  "3332-5F27-A239",
+        "displayName":  "Secured Bitcoin Node",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3377-D1B3-F030",
+        "serviceId":  "3377-D1B3-F030",
+        "displayName":  "HeidiSQL on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3382-87F8-BDD6",
+        "serviceId":  "3382-87F8-BDD6",
+        "displayName":  "Zype",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/33A8-1F13-1F5F",
+        "serviceId":  "33A8-1F13-1F5F",
+        "displayName":  "Bitnami Horde Groupware Webmail Certified by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/33C3-2389-DD71",
+        "serviceId":  "33C3-2389-DD71",
+        "displayName":  "Veritas NetBackup CloudPoint™ 9.1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3450-1C42-A427",
+        "serviceId":  "3450-1C42-A427",
+        "displayName":  "Parallelstore",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3465-A68C-BFDD",
+        "serviceId":  "3465-A68C-BFDD",
+        "displayName":  "CubeBackup for Google Workspace (Windows)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3476-7A9B-4BB2",
+        "serviceId":  "3476-7A9B-4BB2",
+        "displayName":  "NetScaler VPX Advanced Edition - 5 Gbps",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/347E-F249-649F",
+        "serviceId":  "347E-F249-649F",
+        "displayName":  "Alcide",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3489-9D82-BA1F",
+        "serviceId":  "3489-9D82-BA1F",
+        "displayName":  "GitLab CE packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3532-3451-41DD",
+        "serviceId":  "3532-3451-41DD",
+        "displayName":  "Docker Engine Community on Ubuntu 22.04",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3599-802B-7B7D",
+        "serviceId":  "3599-802B-7B7D",
+        "displayName":  "Genymotion Device Image: Android 8.0 (oreo)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/35A1-F5B2-64AC",
+        "serviceId":  "35A1-F5B2-64AC",
+        "displayName":  "CompilerWorks",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/35D1-EA12-99B4",
+        "serviceId":  "35D1-EA12-99B4",
+        "displayName":  "Node.js Server on Ubuntu Server 20.04",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/35E1-DAB0-927C",
+        "serviceId":  "35E1-DAB0-927C",
+        "displayName":  "CIS Microsoft Windows Server 2012 R2 Benchmark - Level 2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/35E5-EB7C-B747",
+        "serviceId":  "35E5-EB7C-B747",
+        "displayName":  "AtomicWP Cloud Workload Security for Docker",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3613-F1BA-9762",
+        "serviceId":  "3613-F1BA-9762",
+        "displayName":  "InterSystems Corporation InterSystems IRIS Community Edition",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/363B-8851-170D",
+        "serviceId":  "363B-8851-170D",
+        "displayName":  "Dataproc",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3645-6872-9A9F",
+        "serviceId":  "3645-6872-9A9F",
+        "displayName":  "ThingsBoard Professional Edition",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3652-B451-3BAD",
+        "serviceId":  "3652-B451-3BAD",
+        "displayName":  "PHP with nginx on CentOS 8 from Zend by Perforce (BYOL)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/365A-E1E3-A68D",
+        "serviceId":  "365A-E1E3-A68D",
+        "displayName":  "WordPress",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3662-F860-6F1E",
+        "serviceId":  "3662-F860-6F1E",
+        "displayName":  "BizStats AI",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3679-7487-549C",
+        "serviceId":  "3679-7487-549C",
+        "displayName":  "Roads API",
+        "businessEntityName":  "businessEntities/Maps"
+    },
+    {
+        "name":  "services/369D-5BAF-15B5",
+        "serviceId":  "369D-5BAF-15B5",
+        "displayName":  "LAMP packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/36A9-155B-23F0",
+        "serviceId":  "36A9-155B-23F0",
+        "displayName":  "API Gateway",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/36FE-7730-35F0",
+        "serviceId":  "36FE-7730-35F0",
+        "displayName":  "Hardened Ubuntu 18",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3713-C0CF-F8B1",
+        "serviceId":  "3713-C0CF-F8B1",
+        "displayName":  "JFrog DevOps Platform - Enterprise+",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/374C-DECC-02EE",
+        "serviceId":  "374C-DECC-02EE",
+        "displayName":  "KUSANAGI for GCP Business Edition",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/374E-72FC-1CD7",
+        "serviceId":  "374E-72FC-1CD7",
+        "displayName":  "CompilerWorks compilerworks-vm deployment",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3766-36FA-EC25",
+        "serviceId":  "3766-36FA-EC25",
+        "displayName":  "CDAP OSS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/376F-19D2-9B33",
+        "serviceId":  "376F-19D2-9B33",
+        "displayName":  "Microfusion Technology Co., Ltd AmigoCDN",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3770-CA6C-C2CC",
+        "serviceId":  "3770-CA6C-C2CC",
+        "displayName":  "CouchDB packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3785-C506-2C71",
+        "serviceId":  "3785-C506-2C71",
+        "displayName":  "Twinword Inc. Text Similarity API",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/37C5-5E37-E1FD",
+        "serviceId":  "37C5-5E37-E1FD",
+        "displayName":  "FileCatalyst Direct BYOL",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3819-1239-10F2",
+        "serviceId":  "3819-1239-10F2",
+        "displayName":  "Prodoscore",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/383C-822E-1651",
+        "serviceId":  "383C-822E-1651",
+        "displayName":  "SQL Server Standard 2017 on Linux - Ubuntu 16.04",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/385F-6611-B8E1",
+        "serviceId":  "385F-6611-B8E1",
+        "displayName":  "CloudyCluster HPC with Open OnDemand",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3899-9D87-394F",
+        "serviceId":  "3899-9D87-394F",
+        "displayName":  "Cognosys Inc. Node.js, .Net \u0026 PHP on Hardened Windows Server 2016",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/389C-63C8-763B",
+        "serviceId":  "389C-63C8-763B",
+        "displayName":  "Rill: The fastest way to BI.",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/38CD-7167-BB31",
+        "serviceId":  "38CD-7167-BB31",
+        "displayName":  "MANTIS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/38D6-709D-9035",
+        "serviceId":  "38D6-709D-9035",
+        "displayName":  "Techila Distributed Computing Engine Advanced Edition",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/38F3-2781-C94A",
+        "serviceId":  "38F3-2781-C94A",
+        "displayName":  "Bitnami Roller",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3915-A454-9E9F",
+        "serviceId":  "3915-A454-9E9F",
+        "displayName":  "BACKDROP CMS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/391E-94C0-AD8B",
+        "serviceId":  "391E-94C0-AD8B",
+        "displayName":  "Visual Studio Enterprise 2015 on Windows server 2012r2 and GCP",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/397C-4EF0-B6D5",
+        "serviceId":  "397C-4EF0-B6D5",
+        "displayName":  "Wordpress With CentOS 8 Stream",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3986-8652-1EE5",
+        "serviceId":  "3986-8652-1EE5",
+        "displayName":  "happierWork",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/39CF-B2C7-B39B",
+        "serviceId":  "39CF-B2C7-B39B",
+        "displayName":  "Bitnami package for Matomo",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3A1B-66C4-2BAE",
+        "serviceId":  "3A1B-66C4-2BAE",
+        "displayName":  "Pub/Sub Lite",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3A4F-889D-4358",
+        "serviceId":  "3A4F-889D-4358",
+        "displayName":  "Barracuda CloudGen Control Center",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3A5F-2184-34C4",
+        "serviceId":  "3A5F-2184-34C4",
+        "displayName":  "Apache Tomcat Server on Windows 2016",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3A6E-6254-84F7",
+        "serviceId":  "3A6E-6254-84F7",
+        "displayName":  "Python Django and Flask developer suit",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3A97-2B2F-4BCF",
+        "serviceId":  "3A97-2B2F-4BCF",
+        "displayName":  "NVIDIA Clara Train SDK on Google Cloud",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3AC0-080A-7AE4",
+        "serviceId":  "3AC0-080A-7AE4",
+        "displayName":  "Sharepoint 2016 Enterprise on Windows Server with Advanced Feat",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3AD0-854D-6328",
+        "serviceId":  "3AD0-854D-6328",
+        "displayName":  "witfoo-precinct-byol",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3AEB-2238-6EBB",
+        "serviceId":  "3AEB-2238-6EBB",
+        "displayName":  "PlanetScaleDB",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3AF2-6C62-2180",
+        "serviceId":  "3AF2-6C62-2180",
+        "displayName":  "SafeKit Mirror Cluster on Windows",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3AFC-B84F-8D20",
+        "serviceId":  "3AFC-B84F-8D20",
+        "displayName":  "Dace IT℠with Sense Traffic Pulse™ and Vertex AI",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3B09-28C6-811B",
+        "serviceId":  "3B09-28C6-811B",
+        "displayName":  "Aspera on Cloud",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3B13-68C5-D78D",
+        "serviceId":  "3B13-68C5-D78D",
+        "displayName":  "MongoDB Atlas",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3B57-AA24-BD14",
+        "serviceId":  "3B57-AA24-BD14",
+        "displayName":  "CIS (Center for Internet Security) CIS SUSE Linux Enterprise Server 11 Benchmark - Level 1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3B6F-D925-520E",
+        "serviceId":  "3B6F-D925-520E",
+        "displayName":  "Veeam Backup for Google Cloud",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3B92-CF6C-1603",
+        "serviceId":  "3B92-CF6C-1603",
+        "displayName":  "Optimized LEMP Stack PHP 7",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3B97-EF29-7DF0",
+        "serviceId":  "3B97-EF29-7DF0",
+        "displayName":  "Maven Wave Partners LLC Datasim",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3BA6-A219-F3D0",
+        "serviceId":  "3BA6-A219-F3D0",
+        "displayName":  "Z-Stream",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3BC5-17B3-3834",
+        "serviceId":  "3BC5-17B3-3834",
+        "displayName":  "SQL Server 2017 Express on Windows Server 2019",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3BE5-FBA4-1B83",
+        "serviceId":  "3BE5-FBA4-1B83",
+        "displayName":  "Application Integration",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3C02-AF97-2288",
+        "serviceId":  "3C02-AF97-2288",
+        "displayName":  "AppViewX Inc AppViewX-CLM-v2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3C05-E81F-652C",
+        "serviceId":  "3C05-E81F-652C",
+        "displayName":  "Cognosys Inc. Django on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3C1E-9C4C-C482",
+        "serviceId":  "3C1E-9C4C-C482",
+        "displayName":  "Oncore!DOCS, Powered by Nextcloud",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3C29-F0F9-87C0",
+        "serviceId":  "3C29-F0F9-87C0",
+        "displayName":  "Aqua Cloud Native Security Platform",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3C58-66D1-EF70",
+        "serviceId":  "3C58-66D1-EF70",
+        "displayName":  "Firebase Data Connect",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3C7A-53A6-9F02",
+        "serviceId":  "3C7A-53A6-9F02",
+        "displayName":  "CIS (Center for Internet Security) CIS Red Hat Enterprise Linux 7 Benchmark v2.1.1 Level 1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3CEF-4445-C395",
+        "serviceId":  "3CEF-4445-C395",
+        "displayName":  "AISE PyTorch NVidia GPU Production",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3CF3-868F-55CF",
+        "serviceId":  "3CF3-868F-55CF",
+        "displayName":  "RCC-CFD",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3D57-32A3-4B3D",
+        "serviceId":  "3D57-32A3-4B3D",
+        "displayName":  "F5 Networks F5 Advanced WAF (PAYG, 16vCPU)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3D69-DDBE-870C",
+        "serviceId":  "3D69-DDBE-870C",
+        "displayName":  "OpenLogic CentOS 7.9 (v20201124)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3D6D-5232-9B28",
+        "serviceId":  "3D6D-5232-9B28",
+        "displayName":  "Striim Inc. SMSGC (BiDirectional)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3D8D-40F8-D932",
+        "serviceId":  "3D8D-40F8-D932",
+        "displayName":  "NGINX Plus with NGINX App Protect - Premium (Ubuntu 18.04)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3DA5-0DA1-FF9B",
+        "serviceId":  "3DA5-0DA1-FF9B",
+        "displayName":  "Ghost",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3DAD-299B-0D94",
+        "serviceId":  "3DAD-299B-0D94",
+        "displayName":  "Backup and DR Service",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3DAD-B96D-BE09",
+        "serviceId":  "3DAD-B96D-BE09",
+        "displayName":  "Anthos Service Mesh",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3DD4-CF86-6A20",
+        "serviceId":  "3DD4-CF86-6A20",
+        "displayName":  "Eyeblue Cloud Storage",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3DEE-5B87-9006",
+        "serviceId":  "3DEE-5B87-9006",
+        "displayName":  "Veritas NetBackup™",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3DF4-C6C6-8693",
+        "serviceId":  "3DF4-C6C6-8693",
+        "displayName":  "StreamSets Data Collector",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3DF6-D30F-D298",
+        "serviceId":  "3DF6-D30F-D298",
+        "displayName":  "Grakn KGMS - BYOL",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3E18-D392-EB4B",
+        "serviceId":  "3E18-D392-EB4B",
+        "displayName":  "Apache Cassandra Cluster on Ubuntu Server 20.04",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3E23-BCDA-E488",
+        "serviceId":  "3E23-BCDA-E488",
+        "displayName":  "Jenkins on Ubuntu 14.04 LTS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3E65-A14D-E29F",
+        "serviceId":  "3E65-A14D-E29F",
+        "displayName":  "Firebase Auth",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3E75-81AB-455A",
+        "serviceId":  "3E75-81AB-455A",
+        "displayName":  "NVIDIA CloudXR Introductory Offer - WinServer 2019",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3E96-D66A-E61C",
+        "serviceId":  "3E96-D66A-E61C",
+        "displayName":  "Tiki Wiki CMS Groupware packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3EC3-D648-6149",
+        "serviceId":  "3EC3-D648-6149",
+        "displayName":  "CloudBees Accelerator",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3EDE-C677-FFF7",
+        "serviceId":  "3EDE-C677-FFF7",
+        "displayName":  "Check Point CloudGuard Network Security High Availability (PAYG)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3F0D-AED6-1E33",
+        "serviceId":  "3F0D-AED6-1E33",
+        "displayName":  "Silver Peak Unity Orchestrator",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3F7D-6DF5-9FEA",
+        "serviceId":  "3F7D-6DF5-9FEA",
+        "displayName":  " Secured Postgresql on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3F95-DF13-A2A5",
+        "serviceId":  "3F95-DF13-A2A5",
+        "displayName":  "Denodo Platform 8.0 VDP on Linux",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3FA1-C3F5-E701",
+        "serviceId":  "3FA1-C3F5-E701",
+        "displayName":  "SQL Server 2016 AlwaysOn Failover Cluster Instance (Beta)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3FB4-B70B-0252",
+        "serviceId":  "3FB4-B70B-0252",
+        "displayName":  "JFrog DevOps Platform - Pro - 30 Day Free Trial",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/3FE2-BB4E-CED4",
+        "serviceId":  "3FE2-BB4E-CED4",
+        "displayName":  "Bitnami SugarCRM Certified by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4089-A91B-B72C",
+        "serviceId":  "4089-A91B-B72C",
+        "displayName":  "Striim Inc. Striim for Google Database Migration",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/40CE-9169-6DA6",
+        "serviceId":  "40CE-9169-6DA6",
+        "displayName":  "Nginx-High-Performance Web Server for Ubuntu 20.04 lts focal on",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/40F3-89AA-983F",
+        "serviceId":  "40F3-89AA-983F",
+        "displayName":  "Docker Engine Community on CentOS Stream 9",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/413D-88D9-5C4E",
+        "serviceId":  "413D-88D9-5C4E",
+        "displayName":  "Docker CE With Centos 8.3",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/414C-A0E2-DB63",
+        "serviceId":  "414C-A0E2-DB63",
+        "displayName":  "Evidian IDaaS (Identity as a Service)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4166-7588-63FC",
+        "serviceId":  "4166-7588-63FC",
+        "displayName":  "Hardened Debian 10",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/416E-3D72-AFFB",
+        "serviceId":  "416E-3D72-AFFB",
+        "displayName":  "Instant CMS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/418F-BB2F-1D34",
+        "serviceId":  "418F-BB2F-1D34",
+        "displayName":  "Qualys Virtual Scanner Appliance",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/41DA-1FFA-98FF",
+        "serviceId":  "41DA-1FFA-98FF",
+        "displayName":  "Aqua Enterprise Security Platform",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4230-B23B-D4F1",
+        "serviceId":  "4230-B23B-D4F1",
+        "displayName":  "IP PBX using FreePBX Solution on Debian (VoIP)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4252-F221-8339",
+        "serviceId":  "4252-F221-8339",
+        "displayName":  "Document Warehouse",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4291-7B20-3ABB",
+        "serviceId":  "4291-7B20-3ABB",
+        "displayName":  "QRadar Security Intelligence Platform App Host v7.3.2 P1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/42BE-D2BF-F64F",
+        "serviceId":  "42BE-D2BF-F64F",
+        "displayName":  "Zync",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/42BF-9E52-C353",
+        "serviceId":  "42BF-9E52-C353",
+        "displayName":  "NVIDIA Gaming PC - Windows Server 2016",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/42C7-D3D4-DAFC",
+        "serviceId":  "42C7-D3D4-DAFC",
+        "displayName":  "Drupal packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/42EC-B246-4DFF",
+        "serviceId":  "42EC-B246-4DFF",
+        "displayName":  "Apache Web Server with Ubuntu 20.04 LTS",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4314-52BD-45A2",
+        "serviceId":  "4314-52BD-45A2",
+        "displayName":  "Bugzilla on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4360-24FD-4AF5",
+        "serviceId":  "4360-24FD-4AF5",
+        "displayName":  "CentOS GUI Linux",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/43A1-A9F8-BBC1",
+        "serviceId":  "43A1-A9F8-BBC1",
+        "displayName":  "SQL Server Web 2017 on Linux - Redhat 7.3",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/43CD-C804-82C7",
+        "serviceId":  "43CD-C804-82C7",
+        "displayName":  "JRuby packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4424-E3CF-5E09",
+        "serviceId":  "4424-E3CF-5E09",
+        "displayName":  "DataStax Apache Cassandra for GCP supported by DataStax",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4437-AF74-B567",
+        "serviceId":  "4437-AF74-B567",
+        "displayName":  "NetScaler VPX Advanced Edition - 3 Gbps",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/446A-CA88-1AB7",
+        "serviceId":  "446A-CA88-1AB7",
+        "displayName":  "Weberp",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4482-1174-7AA2",
+        "serviceId":  "4482-1174-7AA2",
+        "displayName":  "Aiven for PostgreSQL",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4490-6188-E13C",
+        "serviceId":  "4490-6188-E13C",
+        "displayName":  "SQL Server 2016 Enterprise on Windows Server 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/44A5-F054-C4BD",
+        "serviceId":  "44A5-F054-C4BD",
+        "displayName":  "Corezoid Actor Engine",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/44A9-6770-9247",
+        "serviceId":  "44A9-6770-9247",
+        "displayName":  "HashiCorp Consul packaged by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/44BC-E53F-C50E",
+        "serviceId":  "44BC-E53F-C50E",
+        "displayName":  "Confluent Cloud for Apache Kafka",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/44CB-146C-90FB",
+        "serviceId":  "44CB-146C-90FB",
+        "displayName":  "GitLab Community Edition on Ubuntu 24.04",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4528-FDD0-A2A0",
+        "serviceId":  "4528-FDD0-A2A0",
+        "displayName":  "Cloud Workstations",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4550-691F-6425",
+        "serviceId":  "4550-691F-6425",
+        "displayName":  "Custom Search",
+        "businessEntityName":  "businessEntities/Search"
+    },
+    {
+        "name":  "services/4566-601F-7787",
+        "serviceId":  "4566-601F-7787",
+        "displayName":  "Dolibarr",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/461A-6B97-2B0C",
+        "serviceId":  "461A-6B97-2B0C",
+        "displayName":  "Silk Platform - 6 compute nodes",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4639-9F57-5C3D",
+        "serviceId":  "4639-9F57-5C3D",
+        "displayName":  "Internet Information Server with Windows 2019",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4644-091A-AA6D",
+        "serviceId":  "4644-091A-AA6D",
+        "displayName":  "Banyan Access Tier",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4660-B24B-A53B",
+        "serviceId":  "4660-B24B-A53B",
+        "displayName":  "Django on Red Hat Enterprise Linux 7",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/46AE-CC50-E00E",
+        "serviceId":  "46AE-CC50-E00E",
+        "displayName":  "Barracuda CloudGen WAF (PAYG)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/46C3-FE9C-2926",
+        "serviceId":  "46C3-FE9C-2926",
+        "displayName":  "Javascript Developer Kit",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/46C4-2A5F-0579",
+        "serviceId":  "46C4-2A5F-0579",
+        "displayName":  "WordPress on Server 2019 + PhpMyAdmin + MySQL",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/46C7-987B-9FAC",
+        "serviceId":  "46C7-987B-9FAC",
+        "displayName":  "NetApp Cloud Volumes API (Dev)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/46C7-B8CB-DDAA",
+        "serviceId":  "46C7-B8CB-DDAA",
+        "displayName":  "Elastifile Cloud File System",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4703-1E93-F241",
+        "serviceId":  "4703-1E93-F241",
+        "displayName":  "LumApps",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4716-FC59-E926",
+        "serviceId":  "4716-FC59-E926",
+        "displayName":  "hMail Mail Server Windows 2016 (IMAP, SMTP, POP3)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4742-5D99-A73B",
+        "serviceId":  "4742-5D99-A73B",
+        "displayName":  "Ubuntu GUI Linux 22.04 (Jammy Jellyfish) on GCP (Google Cloud)",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/47A3-9108-559A",
+        "serviceId":  "47A3-9108-559A",
+        "displayName":  "jitsi",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/47AE-F82D-1F61",
+        "serviceId":  "47AE-F82D-1F61",
+        "displayName":  "Loadbalancer.org Enterprise GCP R20",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/47C2-D59C-2006",
+        "serviceId":  "47C2-D59C-2006",
+        "displayName":  "Joomla on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4801-2221-E5BF",
+        "serviceId":  "4801-2221-E5BF",
+        "displayName":  "Test migrated products saas-test",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4829-EDC9-24E7",
+        "serviceId":  "4829-EDC9-24E7",
+        "displayName":  "Partner Demo Test thiagolacerda-subs-test",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4877-2FCF-6D92",
+        "serviceId":  "4877-2FCF-6D92",
+        "displayName":  "Bitnami ELK Certified by Bitnami",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4895-550E-D14E",
+        "serviceId":  "4895-550E-D14E",
+        "displayName":  "Terraform on Windows Server 2019",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4898-56E6-BF9F",
+        "serviceId":  "4898-56E6-BF9F",
+        "displayName":  "gbick-vm-price-ingestion-test-free-1",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4898-7F3B-F8BB",
+        "serviceId":  "4898-7F3B-F8BB",
+        "displayName":  "AXI AI SAP EasyConnect",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/48AF-C246-A6B6",
+        "serviceId":  "48AF-C246-A6B6",
+        "displayName":  "Kong",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/48DA-485B-58AE",
+        "serviceId":  "48DA-485B-58AE",
+        "displayName":  "Cloud Media Translation API",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/48DE-82D8-64BC",
+        "serviceId":  "48DE-82D8-64BC",
+        "displayName":  "STRIIM",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4910-4B6E-2FB1",
+        "serviceId":  "4910-4B6E-2FB1",
+        "displayName":  "Reblaze",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/49A4-06D7-2505",
+        "serviceId":  "49A4-06D7-2505",
+        "displayName":  "SQL Server 2014 Express on Hardened Windows Server 2016",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/49BA-D8AD-D705",
+        "serviceId":  "49BA-D8AD-D705",
+        "displayName":  "CentOS 8.3",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/49CF-0570-7CED",
+        "serviceId":  "49CF-0570-7CED",
+        "displayName":  "DBcloudbin for SQLServer Pay-As-You-Go",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4A04-E266-EA27",
+        "serviceId":  "4A04-E266-EA27",
+        "displayName":  "pixstor solo - 100 TB",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4A20-C52F-7029",
+        "serviceId":  "4A20-C52F-7029",
+        "displayName":  "Denodo Technologies Inc. Denodo Platform 7.0 Free Trial Bring Your Own License on Windows",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4A40-16E8-DE2D",
+        "serviceId":  "4A40-16E8-DE2D",
+        "displayName":  "Actifio GO",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4A49-43DC-15FF",
+        "serviceId":  "4A49-43DC-15FF",
+        "displayName":  "Trac on Windows - Project Management Tool",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4A57-7492-0338",
+        "serviceId":  "4A57-7492-0338",
+        "displayName":  "Acquia Drupal 7 on Windows 2012 R2",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4A95-1928-A345",
+        "serviceId":  "4A95-1928-A345",
+        "displayName":  "Symfony",
+        "businessEntityName":  "businessEntities/GCP"
+    },
+    {
+        "name":  "services/4AAE-E33E-51B2",
+        "serviceId":  "4AAE-E33E-51B2",
+        "displayName":  "Bitnami package for Subversion",
+        "businessEntityName":  "businessEntities/GCP"
+    }
+]
