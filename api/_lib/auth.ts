@@ -5,6 +5,7 @@ import { loadJwtEnv } from './env.js'
 const isDevEnv = () =>
   process.env.NODE_ENV === 'development' ||
   process.env.VERCEL_ENV === 'development' ||
+  process.env.VERCEL_ENV === 'preview' ||
   process.env.VERCEL_DEV === '1'
 
 export type Session = {
