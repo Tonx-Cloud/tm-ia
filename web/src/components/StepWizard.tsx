@@ -42,6 +42,7 @@ type StoryboardScene = {
   lyrics: string
   prompt: string
   visualNotes: string
+  animate?: boolean
 }
 
 // ============================================================================
@@ -573,19 +574,61 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
 
                   <button
                     className="btn-ghost"
-                    onClick={() => onAction?.('animate', asset.id)}
-                    style={{ padding: '10px 12px' }}
-                  >
-                    ✨ Animar simples
-                  </button>
-
-                  <button
-                    className="btn-ghost"
                     onClick={() => onAction?.('favorite', asset.id)}
                     style={{ padding: '10px 12px' }}
                   >
                     ⭐ Favoritar
                   </button>
+
+                  <div style={{
+                    gridColumn: '1 / -1',
+                    marginTop: 6,
+                    paddingTop: 10,
+                    borderTop: '1px solid var(--border)'
+                  }}>
+                    <div style={{
+                      fontSize: 12,
+                      color: 'var(--text-muted)',
+                      marginBottom: 8,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}>
+                      <span>ANIMAÇÃO (SIMPLES)</span>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                        {scene?.animate ? 'Ativada' : 'Desativada'}
+                      </span>
+                    </div>
+
+                    <button
+                      className={scene?.animate ? 'btn-primary' : 'btn-ghost'}
+                      onClick={() => onAction?.('animate', asset.id)}
+                      style={{ width: '100%', padding: '12px 12px', marginBottom: 10 }}
+                    >
+                      ✨ Animar simples
+                    </button>
+
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: 10,
+                      opacity: scene?.animate ? 1 : 0.45,
+                      pointerEvents: scene?.animate ? 'auto' : 'none'
+                    }}>
+                      <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13 }}>
+                        <input type="checkbox" checked readOnly />
+                        Zoom suave
+                      </label>
+                      <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13 }}>
+                        <input type="checkbox" checked={false} readOnly />
+                        Pan (em breve)
+                      </label>
+                    </div>
+
+                    <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                      Dica: ative a animação e gere o vídeo. (Em breve: escolher o tipo)
+                    </div>
+                  </div>
 
                   <button
                     className="btn-ghost"
