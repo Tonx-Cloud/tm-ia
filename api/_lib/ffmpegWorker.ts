@@ -5,6 +5,7 @@ import { spawn } from 'child_process'
 import { getFFmpegPath } from './ffmpegPath.js'
 import { getProject } from './projectStore.js'
 import { type RenderJob, loadJobs, saveJobs } from './jobStore.js'
+import { put } from '@vercel/blob'
 
 // ============================================================================
 // Types
@@ -316,9 +317,17 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       await new Promise<void>((resolve) => {
         proc.on('close', async (code) => {
           if (code === 0) {
-          console.log('Render success:', outputFile)
-          const downloadUrl = `${process.env.PUBLIC_BASE_URL || ''}/api/render/download?jobId=${job.renderId}`
-            await updateJobStatus(userId, job.renderId, 'complete', downloadUrl)
+            console.log('Render success:', outputFile)
+            try {
+              const buf = fs.readFileSync(outputFile)
+              const key = `renders/${job.projectId}/${job.renderId}.mp4`
+              const blob = await put(key, buf, { access: 'public', contentType: 'video/mp4' })
+              await updateJobStatus(userId, job.renderId, 'complete', blob.url)
+            } catch (err) {
+              // fallback: keep local path (may expire)
+              const downloadUrl = `${process.env.PUBLIC_BASE_URL || ''}/api/render/download?jobId=${job.renderId}`
+              await updateJobStatus(userId, job.renderId, 'complete', downloadUrl, `Blob upload failed: ${(err as Error).message}`)
+            }
           } else {
           console.error('Render failed with code', code)
           console.error('FFmpeg stderr:', stderr.slice(-500))

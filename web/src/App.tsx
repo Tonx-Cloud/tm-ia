@@ -71,7 +71,7 @@ function PlaceholderSection({ title, description, icon }: { title: string; descr
 // PROJECTS SECTION
 // ============================================================================
 
-function ProjectsSection({ token }: { token: string }) {
+function ProjectsSection({ token, onOpenProject }: { token: string; onOpenProject: (projectId: string) => void }) {
   const [projects, setProjects] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -141,12 +141,28 @@ function ProjectsSection({ token }: { token: string }) {
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 24 }}>Meus Projetos</h1>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
         {projects.map((project) => (
-          <div key={project.id} className="card" style={{ padding: 16 }}>
-            <div style={{ fontWeight: 600 }}>{project.name}</div>
+          <button
+            key={project.id}
+            className="card"
+            onClick={() => onOpenProject(project.id)}
+            style={{
+              padding: 16,
+              textAlign: 'left',
+              cursor: 'pointer',
+              background: 'var(--panel)',
+              border: '1px solid var(--border)',
+              borderRadius: 16,
+              color: 'inherit'
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>{project.name}</div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-              {new Date(project.createdAt).toLocaleDateString()}
+              {new Date(project.createdAt).toLocaleDateString()} • {project.assetsCount ?? 0} cenas
             </div>
-          </div>
+            <div style={{ marginTop: 10, fontSize: 13, color: 'var(--accent)' }}>
+              Abrir / Continuar →
+            </div>
+          </button>
         ))}
       </div>
     </div>
@@ -435,7 +451,15 @@ function App() {
         )
       
       case 'projects':
-        return <ProjectsSection token={authToken} />
+        return (
+          <ProjectsSection
+            token={authToken}
+            onOpenProject={(projectId) => {
+              localStorage.setItem('tm_project_id', projectId)
+              setActiveSection('music-video')
+            }}
+          />
+        )
       
       case 'history':
         return <HistorySection token={authToken} />

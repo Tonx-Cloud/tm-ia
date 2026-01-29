@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Locale } from '@/i18n'
-import { analyzeAudio, createProject, type Asset } from '@/lib/assetsApi'
+import { analyzeAudio, createProject, fetchProject, type Asset } from '@/lib/assetsApi'
 
 // ============================================================================
 // TYPES
@@ -771,6 +771,24 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     }
   }
 
+  // Resume last project if present
+  useEffect(() => {
+    if (!token || projectId) return
+    const stored = localStorage.getItem('tm_project_id')
+    if (!stored) return
+    setProjectId(stored)
+    fetchProject(stored, token)
+      .then((resp) => {
+        const proj = resp.project
+        if (proj?.assets?.length) {
+          setAssets(proj.assets)
+          setStoryboard((proj.storyboard as any) || [])
+          setStep(3)
+        }
+      })
+      .catch(() => {})
+  }, [token, projectId])
+
   // Fetch balance
   useEffect(() => {
     if (token) {
@@ -1033,7 +1051,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           
           if (status.status === 'complete') {
             clearInterval(pollInterval)
-            setVideoUrl(`/api/render/download?renderId=${jobId}`)
+            setVideoUrl(status.outputUrl || `/api/render/download?renderId=${jobId}`)
             setRendering(false)
           } else if (status.status === 'failed') {
             clearInterval(pollInterval)
@@ -1054,7 +1072,15 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   }
 
   const handleDownload = async () => {
-    if (!videoUrl || !token) return
+    if (!videoUrl) return
+
+    // If it's a direct URL (Blob), open/download without auth header.
+    if (/^https?:\/\//i.test(videoUrl)) {
+      window.open(videoUrl, '_blank')
+      return
+    }
+
+    if (!token) return
     
     try {
       const res = await fetch(videoUrl, {

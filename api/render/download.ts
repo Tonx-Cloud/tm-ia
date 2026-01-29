@@ -50,6 +50,12 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(400).json({ error: 'Job not ready', status: job.status, requestId: ctx.requestId })
   }
 
+  // If the job output is a Blob URL, redirect.
+  if (job.outputUrl && /^https?:\/\//i.test(job.outputUrl)) {
+    ctx.log('info', 'download.redirect', { renderId: id })
+    return res.status(302).setHeader('Location', job.outputUrl).end()
+  }
+
   // Construct file path
   const tmpDir = os.tmpdir()
   const workDir = path.join(tmpDir, `render_${id}`)
