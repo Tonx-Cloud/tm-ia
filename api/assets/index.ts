@@ -98,10 +98,13 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
 
   if (req.method === 'PATCH') {
-    const { projectId, storyboard, audioPath } = req.body as { 
+    const { projectId, storyboard, audioPath, assetOrder, deletedAssetIds, assets: assetsPatch } = req.body as { 
       projectId?: string
       storyboard?: any[]
-      audioPath?: string 
+      audioPath?: string
+      assetOrder?: string[]
+      deletedAssetIds?: string[]
+      assets?: Array<{ id: string; prompt?: string }>
     }
 
     if (!projectId) return res.status(400).json({ error: 'projectId required', requestId: ctx.requestId })
@@ -110,12 +113,52 @@ export default withObservability(async function handler(req: VercelRequest, res:
     if (!proj) return res.status(404).json({ error: 'Project not found', requestId: ctx.requestId })
     
     let updated = false
+
+    // Update storyboard directly
     if (storyboard) {
       proj.storyboard = storyboard
       updated = true
     }
+
+    // Update audio
     if (audioPath) {
       proj.audioPath = audioPath
+      updated = true
+    }
+
+    // Patch asset prompts
+    if (assetsPatch && assetsPatch.length > 0) {
+      for (const upd of assetsPatch) {
+        const a = proj.assets.find((x) => x.id === upd.id)
+        if (a && typeof upd.prompt === 'string') a.prompt = upd.prompt
+      }
+      updated = true
+    }
+
+    // Delete assets
+    if (deletedAssetIds && deletedAssetIds.length > 0) {
+      proj.assets = proj.assets.filter((a) => !deletedAssetIds.includes(a.id))
+      proj.storyboard = proj.storyboard.filter((s) => !deletedAssetIds.includes((s as any).assetId))
+      updated = true
+    }
+
+    // Reorder assets + storyboard to match assetOrder
+    if (assetOrder && assetOrder.length > 0) {
+      const byId = new Map(proj.assets.map((a) => [a.id, a] as const))
+      const sbByAsset = new Map((proj.storyboard as any[]).map((s) => [s.assetId, s] as const))
+
+      const newAssets = assetOrder.map((id) => byId.get(id)).filter(Boolean) as any[]
+      // append any missing (safety)
+      for (const a of proj.assets) {
+        if (!assetOrder.includes(a.id)) newAssets.push(a)
+      }
+      proj.assets = newAssets
+
+      const newStoryboard = assetOrder.map((id) => sbByAsset.get(id)).filter(Boolean)
+      for (const s of proj.storyboard as any[]) {
+        if (!assetOrder.includes(s.assetId)) newStoryboard.push(s)
+      }
+      proj.storyboard = newStoryboard as any
       updated = true
     }
 
@@ -124,7 +167,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
     }
 
     await upsertProject(proj)
-    ctx.log('info', 'assets.update', { projectId, updatedFields: { storyboard: !!storyboard, audioPath: !!audioPath } })
+    ctx.log('info', 'assets.update', { projectId, updatedFields: { storyboard: !!storyboard, audioPath: !!audioPath, assets: !!assetsPatch?.length, deletedAssetIds: !!deletedAssetIds?.length, assetOrder: !!assetOrder?.length } })
     return res.status(200).json({ project: proj, requestId: ctx.requestId })
   }
 

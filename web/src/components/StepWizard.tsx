@@ -1081,7 +1081,11 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           setError('Você precisa de pelo menos 1 cena')
           return
         }
-        setAssets(prev => prev.filter(a => a.id !== assetId))
+        setAssets(prev => {
+          const next = prev.filter(a => a.id !== assetId)
+          void syncProjectEdits({ deletedAssetIds: [assetId], assetOrder: next.map(a => a.id) })
+          return next
+        })
         setStoryboard(prev => prev.filter((_, i) => i !== assetIndex))
         break
 
@@ -1090,6 +1094,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           setAssets(prev => {
             const next = [...prev]
             ;[next[assetIndex - 1], next[assetIndex]] = [next[assetIndex], next[assetIndex - 1]]
+            void syncProjectEdits({ assetOrder: next.map(a => a.id) })
             return next
           })
           setStoryboard(prev => {
@@ -1105,6 +1110,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           setAssets(prev => {
             const next = [...prev]
             ;[next[assetIndex], next[assetIndex + 1]] = [next[assetIndex + 1], next[assetIndex]]
+            void syncProjectEdits({ assetOrder: next.map(a => a.id) })
             return next
           })
           setStoryboard(prev => {
@@ -1159,10 +1165,24 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     }
   }
 
+  const syncProjectEdits = async (opts: { assetsPatch?: Array<{ id: string; prompt: string }>; deletedAssetIds?: string[]; assetOrder?: string[] }) => {
+    if (!projectId || !token) return
+    try {
+      await fetch('/api/assets', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ projectId, ...opts }),
+      })
+    } catch {
+      // best-effort; UI state is source of truth for now
+    }
+  }
+
   const handleSavePrompt = (assetId: string, newPrompt: string) => {
     setAssets(prev => prev.map(a => 
       a.id === assetId ? { ...a, prompt: newPrompt } : a
     ))
+    void syncProjectEdits({ assetsPatch: [{ id: assetId, prompt: newPrompt }] })
   }
 
   // ============================================================================
