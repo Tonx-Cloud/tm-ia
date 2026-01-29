@@ -213,18 +213,8 @@ function SceneCard({
   onAction 
 }: SceneCardProps) {
   const [isHovered, setIsHovered] = useState(false)
-  const [showActions, setShowActions] = useState(false)
 
-  const actions: { id: SceneAction; icon: string; label: string; danger?: boolean; disabled?: boolean; cost?: number }[] = [
-    { id: 'moveLeft', icon: '←', label: 'Mover', disabled: index === 0 },
-    { id: 'moveRight', icon: '→', label: 'Mover', disabled: index === totalCount - 1 },
-    { id: 'expand', icon: '🔍', label: 'Ampliar' },
-    { id: 'edit', icon: '✏️', label: 'Editar' },
-    { id: 'regenerate', icon: '🔄', label: 'Regenerar', cost: 30 },
-    { id: 'animate', icon: '✨', label: 'Animar (em breve)', disabled: true },
-    { id: 'favorite', icon: isFavorite ? '⭐' : '☆', label: isFavorite ? 'Remover' : 'Favoritar' },
-    { id: 'delete', icon: '🗑️', label: 'Excluir', danger: true },
-  ]
+  // Actions moved into the Scene modal / footer buttons (mobile-friendly)
 
   return (
     <div
@@ -240,8 +230,8 @@ function SceneCard({
           ? '0 12px 40px rgba(180, 59, 255, 0.2), 0 4px 12px rgba(0,0,0,0.3)' 
           : '0 2px 8px rgba(0,0,0,0.2)',
       }}
-      onMouseEnter={() => { setIsHovered(true); setShowActions(true) }}
-      onMouseLeave={() => { setIsHovered(false); setShowActions(false) }}
+      onMouseEnter={() => { setIsHovered(true) }}
+      onMouseLeave={() => { setIsHovered(false) }}
     >
       {/* Image Container */}
       <div style={{
@@ -345,88 +335,46 @@ function SceneCard({
         </div>
       </div>
 
-      {/* Action Bar - appears on hover */}
+      {/* Mobile-friendly: always show a single Edit button */}
       <div style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: 'linear-gradient(transparent, rgba(0,0,0,0.95))',
-        padding: '40px 8px 8px',
-        opacity: showActions ? 1 : 0,
-        transform: showActions ? 'translateY(0)' : 'translateY(10px)',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        pointerEvents: showActions ? 'auto' : 'none'
+        padding: 10,
+        borderTop: '1px solid var(--border)',
+        display: 'flex',
+        gap: 8,
+        alignItems: 'center',
+        justifyContent: 'space-between'
       }}>
-        {/* Primary Actions Row */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 4,
-          marginBottom: 6
-        }}>
-          {actions.slice(0, 4).map((action) => (
-            <button
-              key={action.id}
-              onClick={(e) => { e.stopPropagation(); onAction(action.id, asset.id) }}
-              disabled={action.disabled}
-              title={action.label + (action.cost ? ` (${action.cost} 💎)` : '')}
-              style={{
-                width: 36,
-                height: 36,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: action.disabled ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.1)',
-                border: 'none',
-                borderRadius: 8,
-                cursor: action.disabled ? 'not-allowed' : 'pointer',
-                fontSize: 16,
-                opacity: action.disabled ? 0.3 : 1,
-                transition: 'all 0.2s'
-              }}
-            >
-              {action.icon}
-            </button>
-          ))}
-        </div>
-
-        {/* Secondary Actions Row */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 4
-        }}>
-          {actions.slice(4).map((action) => (
-            <button
-              key={action.id}
-              onClick={(e) => { e.stopPropagation(); onAction(action.id, asset.id) }}
-              disabled={action.disabled}
-              title={action.label + (action.cost ? ` (${action.cost} 💎)` : '')}
-              style={{
-                width: 36,
-                height: 36,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: action.danger 
-                  ? 'rgba(239, 68, 68, 0.2)' 
-                  : action.cost 
-                    ? 'rgba(180, 59, 255, 0.2)' 
-                    : 'rgba(255,255,255,0.1)',
-                border: action.cost ? '1px solid rgba(180, 59, 255, 0.3)' : 'none',
-                borderRadius: 8,
-                cursor: action.disabled ? 'not-allowed' : 'pointer',
-                fontSize: 14,
-                opacity: action.disabled ? 0.3 : 1,
-                transition: 'all 0.2s',
-                color: action.danger ? '#ef4444' : 'inherit'
-              }}
-            >
-              {action.icon}
-            </button>
-          ))}
-        </div>
+        <button
+          className="btn-ghost"
+          onClick={(e) => { e.stopPropagation(); onAction('edit', asset.id) }}
+          style={{
+            flex: 1,
+            padding: '10px 12px',
+            fontSize: 13,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 8
+          }}
+        >
+          ✏️ Editar
+        </button>
+        <button
+          className="btn-ghost"
+          onClick={(e) => { e.stopPropagation(); onAction('regenerate', asset.id) }}
+          title="Regenerar (30 💎)"
+          style={{
+            padding: '10px 12px',
+            fontSize: 13,
+            minWidth: 120,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: 8
+          }}
+        >
+          🔄 Regenerar
+        </button>
       </div>
     </div>
   )
@@ -441,11 +389,12 @@ type SceneModalProps = {
   scene?: StoryboardScene | null
   mode: 'view' | 'edit'
   onClose: () => void
+  onSetMode?: (mode: 'view' | 'edit') => void
   onSave?: (assetId: string, newPrompt: string) => void
   onRegenerate?: (assetId: string, newPrompt: string) => void
 }
 
-function SceneModal({ asset, scene, mode, onClose, onSave, onRegenerate }: SceneModalProps) {
+function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenerate }: SceneModalProps) {
   const [editPrompt, setEditPrompt] = useState(asset?.prompt || '')
   const [isRegenerating, setIsRegenerating] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -557,13 +506,13 @@ function SceneModal({ asset, scene, mode, onClose, onSave, onRegenerate }: Scene
             flexDirection: 'column',
             gap: 16
           }}>
-            {mode === 'view' && scene && (
+            {mode === 'view' && (
               <>
                 <div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>TIMECODE</div>
-                  <div style={{ fontSize: 16, fontWeight: 600 }}>{scene.timeCode}</div>
+                  <div style={{ fontSize: 16, fontWeight: 600 }}>{scene?.timeCode || '-'}</div>
                 </div>
-                {scene.lyrics && scene.lyrics !== '[instrumental]' && (
+                {scene?.lyrics && scene.lyrics !== '[instrumental]' && (
                   <div>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>LETRA</div>
                     <div style={{ fontSize: 14, fontStyle: 'italic' }}>"{scene.lyrics}"</div>
@@ -582,6 +531,16 @@ function SceneModal({ asset, scene, mode, onClose, onSave, onRegenerate }: Scene
                   }}>
                     {asset.prompt}
                   </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                  <button
+                    className="btn-ghost"
+                    onClick={() => onSetMode?.('edit')}
+                    style={{ padding: '10px 16px' }}
+                  >
+                    ✏️ Editar
+                  </button>
                 </div>
               </>
             )}
@@ -2237,7 +2196,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
               asset={modalAsset}
               scene={storyboard[assets.findIndex(a => a.id === modalAsset.id)]}
               mode={modalMode}
-              onClose={() => setModalAsset(null)}
+              onClose={() => { setModalAsset(null); setModalMode('view') }}
+              onSetMode={setModalMode}
               onSave={handleSavePrompt}
               onRegenerate={handleRegenerateAsset}
             />
