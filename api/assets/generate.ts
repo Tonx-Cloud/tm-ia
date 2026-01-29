@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { getSession } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { getGemini } from '../_lib/geminiClient.js'
-import { addAssets, getProject, type Asset } from '../_lib/projectStore.js'
+import { addAssets, getProject, createProject, type Asset } from '../_lib/projectStore.js'
 import { spendCredits, getBalance, addCredits } from '../_lib/credits.js'
 import { getActionCost } from '../_lib/pricing.js'
 import { withObservability } from '../_lib/observability.js'
@@ -24,6 +24,13 @@ type GenerateRequest = {
   genre: string
   aspectRatio: '9:16' | '16:9' | '1:1'
   frequency: number // seconds per image
+}
+
+// Legacy payload (older web client)
+type LegacyGenerateRequest = {
+  prompt: string
+  count: number
+  projectId?: string
 }
 
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
@@ -48,8 +55,46 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(500).json({ error: (err as Error).message, requestId: ctx.requestId })
   }
 
-  const body = req.body as GenerateRequest
-  const { projectId, segments, style, mood, genre, aspectRatio, frequency } = body
+  const body = req.body as GenerateRequest | LegacyGenerateRequest
+
+  // ---- Legacy mode support (prompt/count) ----
+  if ((body as LegacyGenerateRequest).prompt && typeof (body as LegacyGenerateRequest).count === 'number') {
+    const { prompt, count } = body as LegacyGenerateRequest
+    if (!prompt || count <= 0) {
+      return res.status(400).json({ error: 'prompt and count required', requestId: ctx.requestId })
+    }
+
+    // Ensure project exists
+    let projectId = (body as LegacyGenerateRequest).projectId
+    let project = projectId ? await getProject(projectId) : null
+    if (!project) {
+      project = await createProject()
+      projectId = project.id
+    }
+
+    // Seed credits if empty (dev/demo)
+    if ((await getBalance(session.userId)) === 0) {
+      await addCredits(session.userId, 50, 'initial')
+    }
+
+    const assets: Asset[] = Array.from({ length: Math.min(24, count) }).map(() => ({
+      id: crypto.randomUUID(),
+      projectId: projectId!,
+      prompt,
+      status: 'needs_regen',
+      dataUrl: '',
+      createdAt: Date.now(),
+    }))
+
+    const updatedProject = await addAssets(projectId!, assets)
+    const balance = await getBalance(session.userId)
+
+    ctx.log('info', 'assets.generate.legacy.ok', { projectId, count: assets.length })
+    return res.status(200).json({ project: updatedProject, added: assets.length, cost: 0, balance, requestId: ctx.requestId })
+  }
+
+  // ---- New mode (segments/storyboard) ----
+  const { projectId, segments, style, mood, genre, aspectRatio, frequency } = body as GenerateRequest
 
   if (!projectId || !segments || segments.length === 0) {
     return res.status(400).json({ error: 'projectId and segments required', requestId: ctx.requestId })
