@@ -76,10 +76,27 @@ function ProjectsSection({ token }: { token: string }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // In a real app, fetch projects from API
-    // For now, show empty state
-    setLoading(false)
-    setProjects([])
+    let mounted = true
+    const run = async () => {
+      try {
+        const res = await fetch('/api/projects', { headers: { Authorization: `Bearer ${token}` } })
+        const body = await res.json().catch(() => ({}))
+        if (!mounted) return
+        setProjects(body.projects || [])
+      } catch {
+        if (!mounted) return
+        setProjects([])
+      } finally {
+        if (!mounted) return
+        setLoading(false)
+      }
+    }
+    if (token) void run()
+    else {
+      setLoading(false)
+      setProjects([])
+    }
+    return () => { mounted = false }
   }, [token])
 
   if (loading) {

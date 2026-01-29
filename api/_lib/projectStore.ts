@@ -44,6 +44,7 @@ export type RenderRecord = {
 export type Project = {
   id: string
   createdAt: number
+  userId?: string
   name?: string
   audioPath?: string
   assets: Asset[]
@@ -53,6 +54,7 @@ export type Project = {
 
 // Fallback in-memory store for dev/build without Redis
 const MEMORY_STORE: Record<string, Project> = {}
+const MEMORY_USER_INDEX: Record<string, string[]> = {}
 
 async function getRedis() {
   if (!client) return null
@@ -60,10 +62,11 @@ async function getRedis() {
   return client
 }
 
-export async function createProject(): Promise<Project> {
+export async function createProject(userId?: string): Promise<Project> {
   const project: Project = {
     id: crypto.randomUUID(),
     createdAt: Date.now(),
+    userId,
     assets: [],
     storyboard: [],
     renders: [],
@@ -86,9 +89,37 @@ export async function upsertProject(project: Project): Promise<void> {
   if (redis) {
     // Expire in 7 days (604800 seconds) to manage cost
     await redis.set(`project:${project.id}`, JSON.stringify(project), { EX: 604800 })
+
+    // Maintain per-user index for listing projects
+    if (project.userId) {
+      const indexKey = `userProjects:${project.userId}`
+      await redis.zAdd(indexKey, [{ score: project.createdAt, value: project.id }])
+      await redis.expire(indexKey, 604800)
+    }
   } else {
     MEMORY_STORE[project.id] = project
+    if (project.userId) {
+      const list = MEMORY_USER_INDEX[project.userId] || []
+      if (!list.includes(project.id)) list.unshift(project.id)
+      MEMORY_USER_INDEX[project.userId] = list
+    }
   }
+}
+
+export async function listProjects(userId: string, limit = 50): Promise<Project[]> {
+  const redis = await getRedis()
+  if (redis) {
+    const ids = await redis.zRange(`userProjects:${userId}`, 0, limit - 1, { REV: true })
+    const projects: Project[] = []
+    for (const id of ids) {
+      const p = await getProject(id)
+      if (p) projects.push(p)
+    }
+    return projects
+  }
+
+  const ids = (MEMORY_USER_INDEX[userId] || []).slice(0, limit)
+  return ids.map((id) => MEMORY_STORE[id]).filter(Boolean)
 }
 
 export async function addAssets(projectId: string, assets: Asset[]): Promise<Project> {

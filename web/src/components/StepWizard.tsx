@@ -692,6 +692,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [analyzing, setAnalyzing] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [projectId, setProjectId] = useState<string | null>(null)
+  const projectCreateInFlight = useRef<Promise<any> | null>(null)
   const [projectName, setProjectName] = useState<string>(() => localStorage.getItem('tm_project_name') || '')
   const [segments, setSegments] = useState<Segment[]>([])
   const [hookText, setHookText] = useState('')
@@ -747,6 +748,28 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [error, setError] = useState<string | null>(null)
   const token = localStorage.getItem('tm_auth_token') || ''
 
+  const ensureProjectExists = async (nameHint?: string) => {
+    if (!token) throw new Error('Faça login para continuar')
+    if (projectId) return projectId
+    if (projectCreateInFlight.current) {
+      const r = await projectCreateInFlight.current
+      return r.projectId as string
+    }
+    const name = (nameHint || projectName || 'Novo projeto').toString().trim()
+    projectCreateInFlight.current = createProject(name, token)
+    try {
+      const created = await projectCreateInFlight.current
+      setProjectId(created.projectId)
+      setProjectName(name)
+      localStorage.setItem('tm_project_name', name)
+      localStorage.setItem('tm_project_id', created.projectId)
+      localStorage.setItem('tm_ia_last_project_id', created.projectId)
+      return created.projectId as string
+    } finally {
+      projectCreateInFlight.current = null
+    }
+  }
+
   // Fetch balance
   useEffect(() => {
     if (token) {
@@ -794,14 +817,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     // Ensure we have a projectId before doing anything else
     let ensuredProjectId = projectId
     if (!ensuredProjectId) {
-      const name = (projectName || file.name || 'Novo projeto').toString().trim()
       try {
-        const created = await createProject(name, token)
-        ensuredProjectId = created.projectId
-        setProjectId(created.projectId)
-        setProjectName(name)
-        localStorage.setItem('tm_project_name', name)
-        localStorage.setItem('tm_project_id', created.projectId)
+        ensuredProjectId = await ensureProjectExists(file.name)
       } catch (err) {
         const message = (err as Error).message
         setError(message)
@@ -1305,6 +1322,43 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
             />
             <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
               Esse nome será usado para criar o projeto antes do upload.
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+              <button
+                className="btn-ghost"
+                style={{ flex: 1 }}
+                onClick={async () => {
+                  try {
+                    await ensureProjectExists()
+                    setError(null)
+                  } catch (err) {
+                    const message = (err as Error).message
+                    setError(message)
+                    onError?.(message)
+                  }
+                }}
+                disabled={!token || !projectName.trim() || !!projectId}
+                title={projectId ? 'Projeto já criado' : 'Criar projeto agora'}
+              >
+                {projectId ? 'Projeto criado ✓' : 'Salvar projeto'}
+              </button>
+              <button
+                className="btn-primary"
+                style={{ flex: 1 }}
+                onClick={async () => {
+                  try {
+                    await ensureProjectExists()
+                    setError(null)
+                  } catch (err) {
+                    const message = (err as Error).message
+                    setError(message)
+                    onError?.(message)
+                  }
+                }}
+                disabled={!token || !projectName.trim()}
+              >
+                Continuar →
+              </button>
             </div>
           </div>
           
