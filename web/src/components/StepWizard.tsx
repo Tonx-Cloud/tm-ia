@@ -739,6 +739,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [rendering, setRendering] = useState(false)
   const [renderProgress, setRenderProgress] = useState(0)
+  const [renderLog, setRenderLog] = useState<string>('')
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   
   // Modal state
@@ -975,6 +976,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     
     setRendering(true)
     setRenderProgress(0)
+    setRenderLog('')
     setError(null)
     
     try {
@@ -1027,6 +1029,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           const status = await statusRes.json()
           
           setRenderProgress(status.progress || 0)
+          if (status.logTail) setRenderLog(status.logTail)
           
           if (status.status === 'complete') {
             clearInterval(pollInterval)
@@ -2080,6 +2083,31 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                     }}>
                       Isso pode levar alguns minutos...
                     </div>
+
+                    {renderLog && (
+                      <div style={{
+                        marginTop: 12,
+                        padding: 12,
+                        border: '1px solid var(--border)',
+                        borderRadius: 12,
+                        background: 'var(--panel)'
+                      }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8, color: 'var(--text-muted)' }}>
+                          LOGS (FFmpeg)
+                        </div>
+                        <pre style={{
+                          margin: 0,
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
+                          fontSize: 11,
+                          maxHeight: 160,
+                          overflow: 'auto',
+                          color: 'var(--text-muted)'
+                        }}>
+                          {renderLog}
+                        </pre>
+                      </div>
+                    )}
                   </div>
                 )}
 

@@ -19,6 +19,7 @@ export type RenderJob = {
   progress: number // 0-100
   outputUrl?: string
   error?: string
+  logTail?: string
   createdAt: number
   updatedAt: number
 }

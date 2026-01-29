@@ -40,7 +40,8 @@ async function updateJobStatus(
   renderId: string,
   status: RenderJob['status'],
   outputUrl?: string,
-  error?: string
+  error?: string,
+  logTail?: string
 ) {
   const jobs = await loadJobs(userId)
   const idx = jobs.findIndex((j) => j.renderId === renderId)
@@ -49,17 +50,19 @@ async function updateJobStatus(
     jobs[idx].updatedAt = Date.now()
     if (outputUrl) jobs[idx].outputUrl = outputUrl
     if (error) jobs[idx].error = error
+    if (logTail) jobs[idx].logTail = logTail
     if (status === 'processing') jobs[idx].progress = 5
     if (status === 'complete') jobs[idx].progress = 100
     await saveJobs(userId, jobs)
   }
 }
 
-async function updateJobProgress(userId: string, renderId: string, progress: number) {
+async function updateJobProgress(userId: string, renderId: string, progress: number, logTail?: string) {
   const jobs = await loadJobs(userId)
   const idx = jobs.findIndex((j) => j.renderId === renderId)
   if (idx >= 0 && jobs[idx].status === 'processing') {
     jobs[idx].progress = Math.min(99, Math.max(5, progress))
+    if (logTail) jobs[idx].logTail = logTail
     jobs[idx].updatedAt = Date.now()
     await saveJobs(userId, jobs)
   }
@@ -266,14 +269,27 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       let stderr = ''
       let lastProgress = 5
 
+      let lastLogWrite = 0
       proc.stderr.on('data', async (data) => {
-        stderr += data.toString()
-        
+        const chunk = data.toString()
+        stderr += chunk
+
+        // keep last ~1500 chars for UI
+        const tail = stderr.slice(-1500)
+
         // Parse and update progress
-        const progress = parseFFmpegProgress(data.toString(), totalDurationSec)
+        const progress = parseFFmpegProgress(chunk, totalDurationSec)
+        const now = Date.now()
+        const shouldWriteLog = now - lastLogWrite > 1000
+
         if (progress !== null && progress > lastProgress) {
           lastProgress = progress
-          await updateJobProgress(userId, job.renderId, progress)
+          await updateJobProgress(userId, job.renderId, progress, tail)
+          lastLogWrite = now
+        } else if (shouldWriteLog) {
+          // update log tail even when time parsing doesn't advance
+          await updateJobProgress(userId, job.renderId, lastProgress, tail)
+          lastLogWrite = now
         }
       })
 
