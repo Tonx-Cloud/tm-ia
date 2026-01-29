@@ -2,11 +2,12 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getSession } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { spendCredits, getBalance, addCredits } from '../_lib/credits.js'
-import { PRICING, estimateRenderCost } from '../_lib/pricing.js'
+import { estimateRenderCost } from '../_lib/pricing.js'
 import { getRenderConfig } from './config.js'
 import { withObservability } from '../_lib/observability.js'
 import { createRenderJob, type RenderFormat } from '../_lib/renderPipeline.js'
 import { upsertProject, getProject } from '../_lib/projectStore.js'
+import { put } from '@vercel/blob'
 import Busboy from 'busboy'
 import path from 'path'
 import os from 'os'
@@ -28,9 +29,13 @@ function estimateCost(duration: number, quality: string, scenesCount: number, an
 
 function mapAspectRatioToFormat(aspectRatio: string): RenderFormat {
   switch (aspectRatio) {
-    case '9:16': return 'vertical'
-    case '1:1': return 'square'
-    case '16:9': default: return 'horizontal'
+    case '9:16':
+      return 'vertical'
+    case '1:1':
+      return 'square'
+    case '16:9':
+    default:
+      return 'horizontal'
   }
 }
 
@@ -66,7 +71,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   try {
     await new Promise<void>((resolve, reject) => {
       const bb = Busboy({ headers: req.headers, limits: { fileSize: 50 * 1024 * 1024 } })
-      
+
       bb.on('file', (name, file, info) => {
         if (name === 'audio') {
           const tmpDir = os.tmpdir()
@@ -81,7 +86,9 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
       bb.on('field', (name, val) => {
         if (name === 'data') {
-          try { jsonData = JSON.parse(val) } catch {}
+          try {
+            jsonData = JSON.parse(val)
+          } catch {}
         }
         // Support legacy flattened fields if needed, but prefer 'data' JSON
         if (!jsonData.projectId && name === 'projectId') jsonData.projectId = val
@@ -101,13 +108,11 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(400).json({ error: 'projectId required', requestId: ctx.requestId })
   }
 
-  // Update Project with audio. IMPORTANT on Vercel:
-  // /tmp is not shared between invocations, so we store audio inline (base64 fallback)
-  // to ensure render/run can access it.
+  // Persist audio for render across serverless invocations.
+  // Prefer Blob URL (keeps Redis small). Fallback to base64 if blob upload fails.
   if (audioPath) {
     let project = await getProject(projectId)
     if (!project) {
-      // Emergency recreate if project store was wiped
       project = {
         id: projectId,
         createdAt: Date.now(),
@@ -119,13 +124,30 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
     try {
       const buf = fs.readFileSync(audioPath)
-      project.audioDataBase64 = Buffer.from(buf).toString('base64')
+
+      // Upload to Vercel Blob (public for now to avoid auth complexity in serverless)
+      const key = `audio/${projectId}/${crypto.randomUUID()}-${audioFilename || 'audio.mp3'}`
+      const blob = await put(key, buf, { access: 'public', contentType: audioMime || undefined })
+
+      project.audioUrl = blob.url
       project.audioFilename = audioFilename || project.audioFilename
       project.audioMime = audioMime || project.audioMime
-      // Keep audioPath for dev/debug only; do not rely on it in serverless.
-      project.audioPath = audioPath
+      project.audioDataBase64 = undefined
+      project.audioPath = audioPath // dev/debug only
+
+      ctx.log('info', 'render.pro.audio_blob_ok', { projectId, key })
     } catch (err) {
-      ctx.log('warn', 'render.pro.audio_read_failed', { message: (err as Error).message })
+      // Fallback: inline base64 (may be heavy; prefer blob)
+      try {
+        const buf = fs.readFileSync(audioPath)
+        project.audioDataBase64 = Buffer.from(buf).toString('base64')
+        project.audioFilename = audioFilename || project.audioFilename
+        project.audioMime = audioMime || project.audioMime
+        project.audioPath = audioPath
+        ctx.log('warn', 'render.pro.audio_blob_failed_base64_fallback', { message: (err as Error).message })
+      } catch (err2) {
+        ctx.log('warn', 'render.pro.audio_read_failed', { message: (err2 as Error).message })
+      }
     }
 
     await upsertProject(project)
@@ -158,8 +180,8 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
   // FORCE VIP BALANCE
   if (session.email === 'hiltonsf@gmail.com' || session.email.toLowerCase().includes('felipe')) {
-     const current = await getBalance(session.userId)
-     if (current < 99999) await addCredits(session.userId, 99999 - current, 'admin_adjust')
+    const current = await getBalance(session.userId)
+    if (current < 99999) await addCredits(session.userId, 99999 - current, 'admin_adjust')
   }
 
   try {
@@ -172,7 +194,8 @@ export default withObservability(async function handler(req: VercelRequest, res:
   const renderId = crypto.randomUUID()
 
   // Determine render format
-  const format: RenderFormat = renderOptions?.format || (cfg?.aspectRatio ? mapAspectRatioToFormat(cfg.aspectRatio) : 'horizontal')
+  const format: RenderFormat =
+    renderOptions?.format || (cfg?.aspectRatio ? mapAspectRatioToFormat(cfg.aspectRatio) : 'horizontal')
 
   await createRenderJob(
     session.userId,
@@ -193,7 +216,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
   // Trigger render in a separate invocation (reliable on serverless)
   try {
-    const jwtEnv = loadEnv() // already validated; includes JWT_SECRET
+    const jwtEnv = loadEnv()
     const host = (req.headers['x-forwarded-host'] as string) || (req.headers['host'] as string) || ''
     const proto = ((req.headers['x-forwarded-proto'] as string) || 'https').split(',')[0]
     const baseUrl = jwtEnv.PUBLIC_BASE_URL || (host ? `${proto}://${host}` : '')
@@ -225,7 +248,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   return res.status(200).json({
     ok: true,
     cost: amount,
-    balance: (session.email === 'hiltonsf@gmail.com' || session.email.includes('felipe')) ? 99999 : balance,
+    balance: session.email === 'hiltonsf@gmail.com' || session.email.includes('felipe') ? 99999 : balance,
     configId: cfg?.id,
     renderId,
     status: 'pending',

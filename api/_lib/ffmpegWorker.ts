@@ -178,7 +178,15 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       // Audio may be inline base64 (prod) or a local tmp path (dev)
       let audioInput = ''
 
-      if (project.audioDataBase64) {
+      if (project.audioUrl) {
+        const tmpDir = os.tmpdir()
+        const workAudio = path.join(tmpDir, `audio_${job.renderId}.bin`)
+        const resp = await fetch(project.audioUrl)
+        if (!resp.ok) throw new Error(`Audio download failed (${resp.status})`)
+        const buf = Buffer.from(await resp.arrayBuffer())
+        fs.writeFileSync(workAudio, buf)
+        audioInput = workAudio
+      } else if (project.audioDataBase64) {
         const tmpDir = os.tmpdir()
         const workAudio = path.join(tmpDir, `audio_${job.renderId}.bin`)
         fs.writeFileSync(workAudio, project.audioDataBase64, 'base64')

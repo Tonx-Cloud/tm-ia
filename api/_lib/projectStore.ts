@@ -5,10 +5,12 @@ import crypto from 'crypto'
 const redisUrl = process.env.REDIS_URL
 const client = redisUrl ? createClient({ url: redisUrl }) : null
 
+const STRICT_REDIS =
+  process.env.VERCEL_ENV === 'production' || process.env.VERCEL_ENV === 'preview'
+
 if (client) {
   client.on('error', (err) => console.error('Redis Client Error', err))
-  // Connect immediately (top-level await supported in Node 14+ ESM, or lazy connect)
-  if (!client.isOpen) client.connect().catch(console.error)
+  // Do not eagerly connect here; connect lazily in getRedis() with strict handling.
 }
 
 export type Asset = {
@@ -46,8 +48,9 @@ export type Project = {
   createdAt: number
   userId?: string
   name?: string
-  // Audio can be stored as a temporary file path (dev), a URL (prod), or inline base64 (fallback)
+  // Audio can be stored as a temporary file path (dev) or a URL (prod). Base64 is fallback.
   audioPath?: string
+  audioUrl?: string
   audioDataBase64?: string
   audioFilename?: string
   audioMime?: string
@@ -62,7 +65,20 @@ const MEMORY_USER_INDEX: Record<string, string[]> = {}
 
 async function getRedis() {
   if (!client) return null
-  if (!client.isOpen) await client.connect()
+  if (!client.isOpen) {
+    try {
+      await client.connect()
+    } catch (err) {
+      // In production/preview, never silently fall back to in-memory.
+      if (STRICT_REDIS) {
+        const msg = (err as Error).message || String(err)
+        console.error('Redis connect failed (strict):', msg)
+        throw new Error('Redis unavailable')
+      }
+      console.warn('Redis connect failed (dev fallback to memory):', (err as Error).message)
+      return null
+    }
+  }
   return client
 }
 
