@@ -5,6 +5,7 @@ export type Asset = {
   prompt: string
   status: 'generated' | 'reused' | 'needs_regen'
   dataUrl: string
+  fileKey?: string
 }
 
 export type StoryboardItem = {

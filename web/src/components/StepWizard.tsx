@@ -190,6 +190,25 @@ function formatTime(seconds: number): string {
 const PLACEHOLDER_IMG =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
 
+async function copyText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+    return true
+  } catch {
+    try {
+      const ta = document.createElement('textarea')
+      ta.value = text
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      return true
+    } catch {
+      return false
+    }
+  }
+}
+
 // ============================================================================
 // SCENE CARD COMPONENT
 // ============================================================================
@@ -382,6 +401,24 @@ function SceneCard({
 
         <button
           className="btn-ghost"
+          onClick={(e) => {
+            e.stopPropagation()
+            const key = (asset as any).fileKey || asset.id
+            void copyText(key)
+          }}
+          title={(asset as any).fileKey || asset.id}
+          style={{
+            padding: '10px 10px',
+            fontSize: 12,
+            minWidth: 56,
+            whiteSpace: 'nowrap'
+          }}
+        >
+          🆔 Copiar
+        </button>
+
+        <button
+          className="btn-ghost"
           onClick={(e) => { e.stopPropagation(); onAction('moveRight', asset.id) }}
           disabled={index === totalCount - 1}
           title={index === totalCount - 1 ? 'Última cena' : 'Mover para frente'}
@@ -538,6 +575,38 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
                     <div style={{ fontSize: 14, fontStyle: 'italic' }}>"{scene.lyrics}"</div>
                   </div>
                 )}
+                <div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>ID (FILEKEY)</div>
+                  <div style={{
+                    display: 'flex',
+                    gap: 8,
+                    alignItems: 'center',
+                    padding: 10,
+                    background: 'var(--bg)',
+                    borderRadius: 8,
+                    border: '1px solid var(--border)'
+                  }}>
+                    <div style={{
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                      color: 'var(--text-muted)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      flex: 1
+                    }}>
+                      {(asset as any).fileKey || asset.id}
+                    </div>
+                    <button
+                      className="btn-ghost"
+                      onClick={() => void copyText((asset as any).fileKey || asset.id)}
+                      style={{ padding: '8px 10px', fontSize: 12 }}
+                    >
+                      Copiar
+                    </button>
+                  </div>
+                </div>
+
                 <div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>PROMPT</div>
                   <div style={{ 
