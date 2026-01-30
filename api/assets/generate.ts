@@ -24,7 +24,9 @@ type GenerateRequest = {
   mood: string
   genre: string
   aspectRatio: '9:16' | '16:9' | '1:1'
-  frequency: number // seconds per image
+  frequency: number // seconds per image (ignored if imageCountOverride provided)
+  imageCountOverride?: number // 3..30
+  theme?: string
   generationMode?: 'preview' | 'full'
   modelId?: string
   // when preview: how many scenes to generate with AI (default 1)
@@ -99,7 +101,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
 
   // ---- New mode (segments/storyboard) ----
-  const { projectId, segments, style, mood, genre, aspectRatio, frequency, generationMode, modelId, realCount } = body as GenerateRequest
+  const { projectId, segments, style, mood, genre, aspectRatio, frequency, imageCountOverride, theme, generationMode, modelId, realCount } = body as GenerateRequest
 
   if (!projectId || !segments || segments.length === 0) {
     return res.status(400).json({ error: 'projectId and segments required', requestId: ctx.requestId })
@@ -114,7 +116,10 @@ export default withObservability(async function handler(req: VercelRequest, res:
   const totalDuration = segments.length > 0 
     ? Math.max(...segments.map(s => s.endTime))
     : 180
-  const imageCount = Math.max(4, Math.min(24, Math.ceil(totalDuration / frequency)))
+  const override = typeof imageCountOverride === 'number' && Number.isFinite(imageCountOverride)
+    ? Math.round(imageCountOverride)
+    : undefined
+  const imageCount = Math.max(3, Math.min(30, override ?? Math.ceil(totalDuration / frequency)))
   const cost = getActionCost('GENERATE_IMAGE', imageCount)
 
   // Check/add credits
@@ -167,14 +172,17 @@ export default withObservability(async function handler(req: VercelRequest, res:
   const gemini = getGemini()
   const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
+  const themeBlock = theme && String(theme).trim().length > 0
+    ? `\nUSER THEME (must influence every scene, keep strong continuity):\n- ${String(theme).trim()}\n`
+    : ''
+
   const roteirizationPrompt = `You are a music video director. Create a visual storyboard for a music video.
 
 SONG METADATA:
 - Style: ${style}
 - Mood: ${mood}
 - Genre: ${genre}
-- Aspect Ratio: ${aspectRatio}
-
+- Aspect Ratio: ${aspectRatio}${themeBlock}
 SCENES TO CREATE (${imageCount} scenes):
 ${timeSlots.map((slot, i) => `
 Scene ${i + 1} (${formatTime(slot.start)} - ${formatTime(slot.end)}):
@@ -276,7 +284,7 @@ Return ONLY a JSON array with exactly ${imageCount} objects:
         sceneNumber: i + 1,
         timeCode: `${formatTime(slot.start)}-${formatTime(slot.end)}`,
         lyrics: slot.lyrics,
-        prompt: `${stylePrompts[i % stylePrompts.length]}, ${mood} mood, ${genre} music video, ${slot.lyrics !== '[instrumental]' ? `inspired by: "${slot.lyrics}"` : 'instrumental break, abstract visual'}, no text, no subtitles, no typography, no logos, no watermarks`,
+        prompt: `${stylePrompts[i % stylePrompts.length]}, ${mood} mood, ${genre} music video${theme && String(theme).trim() ? `, theme: ${String(theme).trim()}` : ''}, ${slot.lyrics !== '[instrumental]' ? `inspired by: "${slot.lyrics}"` : 'instrumental break, abstract visual'}, no text, no subtitles, no typography, no logos, no watermarks`,
         visualNotes: `Scene ${i + 1} - ${style} style`
       })
     }

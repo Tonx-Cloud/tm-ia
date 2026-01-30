@@ -787,6 +787,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16')
   const [visualStyle, setVisualStyle] = useState<VisualStyle>('cinematic')
   const [imgFrequency, setImgFrequency] = useState(3)
+  const [desiredSceneCount, setDesiredSceneCount] = useState<number | null>(null)
+  const [customTheme, setCustomTheme] = useState('')
   const [generating, setGenerating] = useState(false)
   const [storyboard, setStoryboard] = useState<StoryboardScene[]>([])
   
@@ -865,7 +867,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   }, [token])
 
   // Cost calculations
-  const imageCount = audio ? Math.max(4, Math.min(24, Math.ceil(audio.duration / imgFrequency))) : 8
+  const autoImageCount = audio ? Math.ceil(audio.duration / imgFrequency) : Math.ceil(180 / imgFrequency)
+  const imageCount = Math.max(3, Math.min(30, desiredSceneCount ?? autoImageCount))
   const transcriptionCost = audio ? Math.ceil(audio.duration / 60) * 3 : 3
   const analysisCost = 1
   const imageCost = imageCount * 30
@@ -1007,6 +1010,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           genre,
           aspectRatio,
           frequency: imgFrequency,
+          imageCountOverride: desiredSceneCount ?? undefined,
+          theme: customTheme.trim() || undefined,
           generationMode: 'preview',
           modelId: 'gemini-2.5-flash-image',
           realCount: 1,
@@ -1926,8 +1931,82 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
             </div>
           </div>
 
-          {/* Frequency */}
+          {/* Custom options */}
           <div style={{ marginBottom: 28 }}>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 12 }}>
+              Opções personalizadas
+            </label>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>
+                  QUANTIDADE DE CENAS (3 a 30)
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <input
+                    type="number"
+                    min={3}
+                    max={30}
+                    value={desiredSceneCount ?? ''}
+                    onChange={(e) => {
+                      const v = e.target.value
+                      if (!v) {
+                        setDesiredSceneCount(null)
+                        return
+                      }
+                      const n = Math.max(3, Math.min(30, parseInt(v)))
+                      setDesiredSceneCount(Number.isFinite(n) ? n : null)
+                    }}
+                    placeholder="Auto"
+                    style={{
+                      width: 140,
+                      padding: '10px 12px',
+                      borderRadius: 10,
+                      border: '1px solid var(--border)',
+                      background: 'var(--bg)',
+                      color: 'var(--text)',
+                    }}
+                  />
+                  <button
+                    className="btn-ghost"
+                    onClick={() => setDesiredSceneCount(null)}
+                    title="Voltar para automático"
+                  >
+                    Auto
+                  </button>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {desiredSceneCount ? 'Frequência desativada' : 'Calculado pela frequência'}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>
+                  TEMA (opcional)
+                </div>
+                <textarea
+                  value={customTheme}
+                  onChange={(e) => setCustomTheme(e.target.value)}
+                  placeholder="Ex: espaço, astronauta solitário, neon, vibe melancólica..."
+                  style={{
+                    width: '100%',
+                    minHeight: 80,
+                    padding: '10px 12px',
+                    borderRadius: 12,
+                    border: '1px solid var(--border)',
+                    background: 'var(--bg)',
+                    color: 'var(--text)',
+                    fontSize: 14,
+                    lineHeight: 1.4,
+                    resize: 'vertical',
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Frequency */}
+          <div style={{ marginBottom: 28, opacity: desiredSceneCount ? 0.45 : 1, pointerEvents: desiredSceneCount ? 'none' : 'auto' }}>
             <label style={{ display: 'block', fontWeight: 600, marginBottom: 12 }}>
               Ritmo Visual
             </label>
@@ -1938,7 +2017,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                 { freq: 5, label: 'Suave' },
                 { freq: 8, label: 'Lento' }
               ].map(({ freq, label, rec }) => {
-                const count = audio ? Math.max(4, Math.min(24, Math.ceil(audio.duration / freq))) : Math.ceil(180 / freq)
+                const count = audio ? Math.max(3, Math.min(30, Math.ceil(audio.duration / freq))) : Math.ceil(180 / freq)
                 return (
                   <button
                     key={freq}
