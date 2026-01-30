@@ -182,11 +182,13 @@ Lyrics: "${slot.lyrics}"
 `).join('')}
 
 For EACH scene, create a detailed image generation prompt that:
-1. Captures the EMOTION of the lyrics (not literal interpretation)
+1. Captures the EMOTION of the lyrics (but stays readable for general audiences)
 2. Uses ${style} visual style consistently
 3. Maintains visual continuity between scenes
 4. Includes lighting, camera angle, color palette
-5. Is optimized for AI image generation (Midjourney/DALL-E style)
+5. Is optimized for AI image generation
+6. Includes 1-3 CONCRETE ANCHORS from the lyrics (objects/places/actions) so it doesn't drift
+7. IMPORTANT: no text, no subtitles, no typography, no logos, no watermarks
 
 Return ONLY a JSON array with exactly ${imageCount} objects:
 [
@@ -274,7 +276,7 @@ Return ONLY a JSON array with exactly ${imageCount} objects:
         sceneNumber: i + 1,
         timeCode: `${formatTime(slot.start)}-${formatTime(slot.end)}`,
         lyrics: slot.lyrics,
-        prompt: `${stylePrompts[i % stylePrompts.length]}, ${mood} mood, ${genre} music video, ${slot.lyrics !== '[instrumental]' ? `inspired by: "${slot.lyrics}"` : 'instrumental break, abstract visual'}`,
+        prompt: `${stylePrompts[i % stylePrompts.length]}, ${mood} mood, ${genre} music video, ${slot.lyrics !== '[instrumental]' ? `inspired by: "${slot.lyrics}"` : 'instrumental break, abstract visual'}, no text, no subtitles, no typography, no logos, no watermarks`,
         visualNotes: `Scene ${i + 1} - ${style} style`
       })
     }

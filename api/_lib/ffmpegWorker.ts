@@ -207,19 +207,28 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       if (!fs.existsSync(workDir)) fs.mkdirSync(workDir)
 
       // 1. Extract Images from storyboard
-      const imageFiles: string[] = []
+      // IMPORTANT: preserve correct extension based on mimeType; do not assume png.
+      const imageFiles: Array<string | null> = Array.from({ length: project.storyboard.length }).map(() => null)
+
       for (const [index, item] of project.storyboard.entries()) {
         const asset = project.assets.find((a) => a.id === item.assetId)
         if (!asset || !asset.dataUrl) continue
 
-        const base64Data = asset.dataUrl.replace(/^data:image\/\w+;base64,/, '')
-        const filename = `frame_${index.toString().padStart(3, '0')}.png`
+        const m = asset.dataUrl.match(/^data:(image\/[^;]+);base64,(.*)$/)
+        if (!m) continue
+
+        const mime = m[1]
+        const base64Data = m[2]
+        const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg'
+
+        const filename = `frame_${index.toString().padStart(3, '0')}.${ext}`
         const filePath = path.join(workDir, filename)
         fs.writeFileSync(filePath, base64Data, 'base64')
-        imageFiles.push(filename)
+        imageFiles[index] = filename
       }
 
-      if (imageFiles.length === 0) throw new Error('No images to render')
+      const present = imageFiles.filter(Boolean) as string[]
+      if (present.length === 0) throw new Error('No images to render')
 
       // 2. Calculate total duration for progress tracking
       const defaultDuration = 5
@@ -242,7 +251,7 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
 
       // NOTE: Crossfade (filter_complex + xfade) has proven brittle across FFmpeg builds.
       // For reliability, default to the concat demuxer approach.
-      if (options.crossfade && imageFiles.length > 1) {
+      if (options.crossfade && present.length > 1) {
         console.log('Crossfade requested but disabled for stability; using concat demuxer.')
       }
 
@@ -252,8 +261,8 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         const lines: string[] = []
 
         project.storyboard.forEach((item, idx) => {
-          const filename = `frame_${idx.toString().padStart(3, '0')}.png`
-          if (fs.existsSync(path.join(workDir, filename))) {
+          const filename = imageFiles[idx]
+          if (filename && fs.existsSync(path.join(workDir, filename))) {
             lines.push(`file '${filename}'`)
             lines.push(`duration ${item.durationSec || defaultDuration}`)
           }

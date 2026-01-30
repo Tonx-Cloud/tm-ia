@@ -3,7 +3,7 @@ import { getSession } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { withObservability } from '../_lib/observability.js'
 import { checkRateLimit } from '../_lib/rateLimit.js'
-import { getProject, upsertProject } from '../_lib/projectStore.js'
+import { getProject, updateAsset } from '../_lib/projectStore.js'
 import { getBalance, spendCredits } from '../_lib/credits.js'
 import { PRICING } from '../_lib/pricing.js'
 import { generateImageDataUrl } from '../_lib/geminiImage.js'
@@ -63,20 +63,22 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
     try {
       const dataUrl = await generateImageDataUrl({ apiKey, model: selectedModel, prompt: asset.prompt, ctx })
-      asset.dataUrl = dataUrl
-      asset.status = 'generated'
-      asset.createdAt = Date.now()
+      await updateAsset(projectId, assetId, {
+        dataUrl,
+        status: 'generated',
+        createdAt: Date.now(),
+      })
       updated++
     } catch (err) {
       ctx.log('warn', 'assets.generate_selected.failed', { assetId, message: (err as Error).message })
-      asset.status = 'needs_regen'
+      await updateAsset(projectId, assetId, { status: 'needs_regen' })
     }
   }
 
-  await upsertProject(proj)
+  const refreshed = await getProject(projectId)
 
   let balance = await getBalance(session.userId)
   if (vip) balance = 99999
 
-  return res.status(200).json({ ok: true, updated, cost: vip ? 0 : totalCost, balance, project: proj, requestId: ctx.requestId })
+  return res.status(200).json({ ok: true, updated, cost: vip ? 0 : totalCost, balance, project: refreshed || proj, requestId: ctx.requestId })
 })

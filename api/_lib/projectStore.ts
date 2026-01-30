@@ -184,3 +184,20 @@ export async function addAssets(projectId: string, assets: Asset[]): Promise<Pro
 
   return (await getProject(projectId))!
 }
+
+export async function updateAsset(projectId: string, assetId: string, patch: Partial<Asset>): Promise<void> {
+  // Only allow updates inside the same project
+  await prisma.asset.updateMany({
+    where: { id: assetId, projectId },
+    data: {
+      prompt: patch.prompt,
+      status: patch.status,
+      dataUrl: patch.dataUrl,
+      sceneNumber: (patch as any).sceneNumber,
+      timeCode: (patch as any).timeCode,
+      lyrics: (patch as any).lyrics,
+      visualNotes: (patch as any).visualNotes,
+      createdAt: patch.createdAt ? new Date(patch.createdAt) : undefined,
+    },
+  })
+}

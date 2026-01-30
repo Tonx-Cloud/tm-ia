@@ -3,7 +3,7 @@ import crypto from 'crypto'
 import { getSession } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { generateImageDataUrl } from '../_lib/geminiImage.js'
-import { getProject, upsertProject } from '../_lib/projectStore.js'
+import { getProject, updateAsset } from '../_lib/projectStore.js'
 import { getBalance, spendCredits } from '../_lib/credits.js'
 import { PRICING } from '../_lib/pricing.js'
 import { withObservability } from '../_lib/observability.js'
@@ -41,8 +41,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   if (!asset) return res.status(404).json({ error: 'Asset not found', requestId: ctx.requestId })
 
   // marcar necessidade de regen e debitar créditos
-  asset.status = 'needs_regen'
-  await upsertProject(proj)
+  await updateAsset(projectId, assetId, { status: 'needs_regen' })
 
   const cost = PRICING.REGENERATE_IMAGE // 30 credits per image
 
@@ -69,12 +68,14 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(500).json({ error: 'Image generation failed', requestId: ctx.requestId })
   }
 
-  asset.prompt = finalPrompt
-  asset.status = 'generated'
-  asset.dataUrl = dataUrl
-  asset.createdAt = Date.now()
+  await updateAsset(projectId, assetId, {
+    prompt: finalPrompt,
+    status: 'generated',
+    dataUrl,
+    createdAt: Date.now(),
+  })
 
-  await upsertProject(proj)
+  const refreshed = await getProject(projectId)
   let balance = await getBalance(session.userId)
   
   // Override balance for Admin/VIPs
@@ -83,5 +84,6 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
 
   ctx.log('info', 'assets.regen.ok', { projectId, assetId, cost, balance })
-  return res.status(200).json({ project: proj, asset, cost, balance, requestId: ctx.requestId })
+  const refreshedAsset = refreshed?.assets.find((a) => a.id === assetId) || asset
+  return res.status(200).json({ project: refreshed || proj, asset: refreshedAsset, cost, balance, requestId: ctx.requestId })
 })
