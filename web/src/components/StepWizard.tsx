@@ -1166,25 +1166,21 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         }
       }
 
-      // Send Audio + Config (Re-upload strategy for serverless persistence)
-      const formData = new FormData()
-      formData.append('audio', audio.file)
-      formData.append('data', JSON.stringify(configData))
-
+      // Send JSON only (avoid 413). Audio must already be uploaded to Blob and stored on the project.
       const res = await fetch('/api/render/pro', {
         method: 'POST',
-        headers: { 
-          'Authorization': `Bearer ${token}`
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        body: formData
+        body: JSON.stringify(configData),
       })
-      
+
+      const data = await res.json().catch(() => ({} as any))
       if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || 'Render failed')
+        // When Vercel rejects a request, it may return HTML. Guard JSON parse above.
+        throw new Error(data.error || 'Render failed')
       }
-      
-      const data = await res.json()
       const jobId = data.renderId
       setBalance(data.balance || balance)
       

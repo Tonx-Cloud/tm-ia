@@ -62,44 +62,58 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(500).json({ error: (err as Error).message, requestId: ctx.requestId })
   }
 
-  // Parse Multipart Body (Audio + JSON Config)
+  // Parse Body:
+  // - Preferred: JSON (no audio upload; use project's stored audioUrl)
+  // - Legacy: multipart/form-data (audio + data)
   let audioPath = ''
   let audioFilename = ''
   let audioMime = ''
   let jsonData: any = {}
 
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const bb = Busboy({ headers: req.headers, limits: { fileSize: 50 * 1024 * 1024 } })
+  const contentType = String(req.headers['content-type'] || '')
 
-      bb.on('file', (name, file, info) => {
-        if (name === 'audio') {
-          const tmpDir = os.tmpdir()
-          audioFilename = info.filename || 'audio.mp3'
-          audioMime = info.mimeType || ''
-          audioPath = path.join(tmpDir, `${crypto.randomUUID()}-${audioFilename}`)
-          file.pipe(fs.createWriteStream(audioPath))
-        } else {
-          file.resume()
-        }
+  if (contentType.includes('application/json')) {
+    try {
+      const chunks: Buffer[] = []
+      for await (const chunk of req) chunks.push(Buffer.from(chunk as any))
+      jsonData = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')
+    } catch (err) {
+      return res.status(400).json({ error: 'Invalid JSON body', requestId: ctx.requestId })
+    }
+  } else {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const bb = Busboy({ headers: req.headers, limits: { fileSize: 50 * 1024 * 1024 } })
+
+        bb.on('file', (name, file, info) => {
+          if (name === 'audio') {
+            const tmpDir = os.tmpdir()
+            audioFilename = info.filename || 'audio.mp3'
+            audioMime = info.mimeType || ''
+            audioPath = path.join(tmpDir, `${crypto.randomUUID()}-${audioFilename}`)
+            file.pipe(fs.createWriteStream(audioPath))
+          } else {
+            file.resume()
+          }
+        })
+
+        bb.on('field', (name, val) => {
+          if (name === 'data') {
+            try {
+              jsonData = JSON.parse(val)
+            } catch {}
+          }
+          // Support legacy flattened fields if needed, but prefer 'data' JSON
+          if (!jsonData.projectId && name === 'projectId') jsonData.projectId = val
+        })
+
+        bb.on('finish', resolve)
+        bb.on('error', reject)
+        req.pipe(bb)
       })
-
-      bb.on('field', (name, val) => {
-        if (name === 'data') {
-          try {
-            jsonData = JSON.parse(val)
-          } catch {}
-        }
-        // Support legacy flattened fields if needed, but prefer 'data' JSON
-        if (!jsonData.projectId && name === 'projectId') jsonData.projectId = val
-      })
-
-      bb.on('finish', resolve)
-      bb.on('error', reject)
-      req.pipe(bb)
-    })
-  } catch (err) {
-    return res.status(400).json({ error: 'Upload failed: ' + (err as Error).message })
+    } catch (err) {
+      return res.status(400).json({ error: 'Upload failed: ' + (err as Error).message, requestId: ctx.requestId })
+    }
   }
 
   const { projectId, cost, configId, config: inlineConfig, renderOptions } = jsonData
@@ -122,6 +136,11 @@ export default withObservability(async function handler(req: VercelRequest, res:
       storyboard: [],
       renders: [],
     }
+  }
+
+  // If we didn't receive audio in this request, we rely on the previously uploaded Blob audioUrl.
+  if (!audioPath && !project.audioUrl && !project.audioData) {
+    return res.status(400).json({ error: 'Audio missing for this project. Please re-upload the audio.', requestId: ctx.requestId })
   }
 
   // Persist audio for render across serverless invocations.
