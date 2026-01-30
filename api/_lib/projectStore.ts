@@ -12,6 +12,7 @@ export type Asset = {
   timeCode?: string
   lyrics?: string
   visualNotes?: string
+  durationSec?: number
 }
 
 export type StoryboardItem = {
@@ -173,7 +174,7 @@ export async function addAssets(projectId: string, assets: Asset[]): Promise<Pro
   const proj = await getProject(projectId)
   if (!proj) throw new Error('Project not found')
 
-  const newItems = assets.map(a => ({ assetId: a.id, durationSec: 5, animate: false }))
+  const newItems = assets.map(a => ({ assetId: a.id, durationSec: a.durationSec || 5, animate: false }))
   const updatedStoryboard = [...proj.storyboard, ...newItems]
 
   await prisma.project.update({

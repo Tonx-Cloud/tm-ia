@@ -1001,7 +1001,10 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           mood,
           genre,
           aspectRatio,
-          frequency: imgFrequency
+          frequency: imgFrequency,
+          generationMode: 'preview',
+          modelId: 'gemini-2.5-flash-image',
+          realCount: 1,
         })
       })
       

@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { getSession } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { getGemini } from '../_lib/geminiClient.js'
+import { generateImageDataUrl } from '../_lib/geminiImage.js'
 import { addAssets, getProject, createProject, type Asset } from '../_lib/projectStore.js'
 import { spendCredits, getBalance, addCredits } from '../_lib/credits.js'
 import { getActionCost } from '../_lib/pricing.js'
@@ -24,6 +25,10 @@ type GenerateRequest = {
   genre: string
   aspectRatio: '9:16' | '16:9' | '1:1'
   frequency: number // seconds per image
+  generationMode?: 'preview' | 'full'
+  modelId?: string
+  // when preview: how many scenes to generate with AI (default 1)
+  realCount?: number
 }
 
 // Legacy payload (older web client)
@@ -94,7 +99,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
 
   // ---- New mode (segments/storyboard) ----
-  const { projectId, segments, style, mood, genre, aspectRatio, frequency } = body as GenerateRequest
+  const { projectId, segments, style, mood, genre, aspectRatio, frequency, generationMode, modelId, realCount } = body as GenerateRequest
 
   if (!projectId || !segments || segments.length === 0) {
     return res.status(400).json({ error: 'projectId and segments required', requestId: ctx.requestId })
@@ -275,48 +280,58 @@ Return ONLY a JSON array with exactly ${imageCount} objects:
     }
   }
 
-  // Generate images (using placeholder for now, would use real image API in production)
+  // Generate images:
+  // - preview mode: generate 1 real image (Gemini) and fill the rest with placeholders
+  // - full mode: generate all with Gemini
   const assets: Asset[] = []
-  
+
+  const mode = generationMode || 'preview'
+  const apiKey = process.env.GEMINI_API_KEY || ''
+
+  const selectedModel = modelId || 'gemini-2.5-flash-image'
+  const realN = Math.max(1, Math.min(imageCount, realCount || (mode === 'full' ? imageCount : 1)))
+
   for (let i = 0; i < imageCount; i++) {
     const scene = storyboard[i]
-    const seed = Date.now() + i + Math.random() * 1000
-    const imageUrl = `https://picsum.photos/seed/${Math.floor(seed)}/${resolution.width}/${resolution.height}`
-    
-    let dataUrl = imageUrl
-    try {
-      // In production with real credits, use OpenAI/Replicate here.
-      // For now, using picsum.photos for placeholders as per original logic.
-      // But we MUST ensure we get a valid dataUrl or the renderer will fail.
-      const imgResp = await fetch(imageUrl)
-      if (imgResp.ok) {
-        const buffer = await imgResp.arrayBuffer()
-        const base64 = Buffer.from(buffer).toString('base64')
-        const contentType = imgResp.headers.get('content-type') || 'image/jpeg'
-        dataUrl = `data:${contentType};base64,${base64}`
-      } else {
-         // Generate a solid color image if download fails, to prevent "No images" error
-         dataUrl = createPlaceholderImage(resolution.width, resolution.height, i)
+    const slot = timeSlots[i]
+    const durationSec = Math.max(1, Math.round((slotDuration || 5) * 100) / 100)
+
+    let dataUrl = createPlaceholderImage(resolution.width, resolution.height, i)
+    let status: any = 'generated'
+
+    if (mode === 'full' || i < realN) {
+      try {
+        // Generate with Gemini image model
+        dataUrl = await generateImageDataUrl({
+          apiKey,
+          model: selectedModel,
+          prompt: scene.prompt,
+          ctx,
+        })
+      } catch (err) {
+        ctx.log('warn', 'assets.generate.gemini_image_failed', { index: i, message: (err as Error).message })
+        // keep placeholder
+        status = 'needs_regen'
       }
-    } catch (err) {
-      ctx.log('warn', 'assets.generate.image_fetch_failed', { index: i, error: (err as Error).message })
-      dataUrl = createPlaceholderImage(resolution.width, resolution.height, i)
+    } else {
+      status = 'reused' // placeholder
     }
-    
+
     assets.push({
       id: crypto.randomUUID(),
       projectId,
       prompt: scene.prompt,
-      status: 'generated',
+      status,
       dataUrl,
       createdAt: Date.now(),
+      durationSec,
       // Extended metadata
       ...({
         sceneNumber: scene.sceneNumber,
         timeCode: scene.timeCode,
         lyrics: scene.lyrics,
-        visualNotes: scene.visualNotes
-      } as any)
+        visualNotes: scene.visualNotes,
+      } as any),
     })
   }
 
