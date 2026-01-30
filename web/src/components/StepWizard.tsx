@@ -853,7 +853,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         audioRef.current = null
       }
       if (selectedPollRef.current) {
-        window.clearInterval(selectedPollRef.current)
+        window.clearTimeout(selectedPollRef.current)
         selectedPollRef.current = null
       }
     }
@@ -879,7 +879,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   // Image generation controls (preview)
   const [selectedSceneIds, setSelectedSceneIds] = useState<Set<string>>(new Set())
   const [generatingSelected, setGeneratingSelected] = useState(false)
-  const selectedPollRef = useRef<number | null>(null)
+  const selectedPollRef = useRef<number | null>(null) // timeout id
   
   // Modal state
   const [modalAsset, setModalAsset] = useState<Asset | null>(null)
@@ -1452,27 +1452,42 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       setSelectedSceneIds(new Set())
 
       // Poll project for updated assets for a short time (worker will update DB when done)
-      if (selectedPollRef.current) window.clearInterval(selectedPollRef.current)
+      if (selectedPollRef.current) window.clearTimeout(selectedPollRef.current)
+
       let tries = 0
-      selectedPollRef.current = window.setInterval(async () => {
+      let delayMs = 6000 // avoid /api/assets rate-limit (12/min)
+
+      const pollOnce = async () => {
         tries++
         try {
-          const resp = await fetchProject(projectId, token)
-          const p = resp.project
-          if (p?.assets?.length) {
-            setAssets(p.assets)
-          }
-          if (tries >= 15) {
-            if (selectedPollRef.current) window.clearInterval(selectedPollRef.current)
-            selectedPollRef.current = null
+          const url = `/api/assets?projectId=${projectId}`
+          const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+
+          if (r.status === 429) {
+            const body = await r.json().catch(() => ({} as any))
+            const retryAfterSec = Number(body.retryAfter || r.headers.get('Retry-After') || 10)
+            delayMs = Math.min(20000, Math.max(delayMs, retryAfterSec * 1000))
+          } else if (r.ok) {
+            const body = await r.json().catch(() => ({} as any))
+            const p = body.project
+            if (p?.assets?.length) setAssets(p.assets)
+            // reset backoff when it succeeds
+            delayMs = 6000
           }
         } catch {
-          if (tries >= 15) {
-            if (selectedPollRef.current) window.clearInterval(selectedPollRef.current)
-            selectedPollRef.current = null
-          }
+          // keep backing off softly
+          delayMs = Math.min(20000, Math.round(delayMs * 1.2))
         }
-      }, 2000)
+
+        if (tries >= 12) {
+          selectedPollRef.current = null
+          return
+        }
+
+        selectedPollRef.current = window.setTimeout(pollOnce, delayMs)
+      }
+
+      selectedPollRef.current = window.setTimeout(pollOnce, delayMs)
     } catch (err) {
       setError((err as Error).message)
       onError?.((err as Error).message)
