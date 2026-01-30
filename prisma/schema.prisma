@@ -47,6 +47,7 @@ model Project {
   audioPath     String?
   audioFilename String?
   audioMime     String?
+  audioData     String?  // Base64 fallback if Blob fails
 
   // Assets & Storyboard
   storyboard    String   @default("[]") // JSON string of StoryboardItem[]

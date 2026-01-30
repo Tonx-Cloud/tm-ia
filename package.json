@@ -8,6 +8,7 @@
     "dev:api": "npx tsx dev-server.ts",
     "build:api": "npx tsc",
     "build:web": "npm --prefix web run build",
+    "worker": "npx tsx worker.ts",
     "build": "npm run build:api",
     "build:vercel": "npx prisma generate && npm run build:api && npm run build:web"
   },

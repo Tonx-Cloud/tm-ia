@@ -125,7 +125,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
 
   // Persist audio for render across serverless invocations.
-  // Prefer Blob URL (keeps Redis small). Fallback to base64 if blob upload fails.
+  // Prefer Blob URL (keeps size small). Fallback to base64 if blob upload fails.
   if (audioPath) {
 
     try {
@@ -142,9 +142,17 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
       ctx.log('info', 'render.pro.audio_blob_ok', { projectId, key })
     } catch (err) {
-      // Fallback: keep temp path (best effort)
-      project.audioPath = audioPath
-      ctx.log('warn', 'render.pro.audio_blob_failed', { message: (err as Error).message })
+      // Fallback: inline base64 (may be heavy; prefer blob)
+      try {
+        const buf = fs.readFileSync(audioPath)
+        project.audioData = Buffer.from(buf).toString('base64')
+        project.audioFilename = audioFilename || project.audioFilename
+        project.audioMime = audioMime || project.audioMime
+        project.audioPath = audioPath // keep for debug
+        ctx.log('warn', 'render.pro.audio_blob_failed_base64_fallback', { message: (err as Error).message })
+      } catch (err2) {
+        ctx.log('warn', 'render.pro.audio_read_failed', { message: (err2 as Error).message })
+      }
     }
 
     await upsertProject(project)
@@ -220,8 +228,22 @@ export default withObservability(async function handler(req: VercelRequest, res:
     const jwtEnv = loadEnv()
     const host = (req.headers['x-forwarded-host'] as string) || (req.headers['host'] as string) || ''
     const proto = ((req.headers['x-forwarded-proto'] as string) || 'https').split(',')[0]
-    const baseUrl = jwtEnv.PUBLIC_BASE_URL || (host ? `${proto}://${host}` : '')
+    
+    // Robust URL detection for Vercel
+    let baseUrl = jwtEnv.PUBLIC_BASE_URL
+    if (!baseUrl) {
+      if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+        baseUrl = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      } else if (process.env.VERCEL_URL) {
+        baseUrl = `https://${process.env.VERCEL_URL}`
+      } else if (host) {
+        baseUrl = `${proto}://${host}`
+      }
+    }
+
     if (baseUrl) {
+      ctx.log('info', 'render.pro.trigger', { baseUrl, renderId })
+      // Fire and forget, but log error if fails
       fetch(`${baseUrl}/api/render/run`, {
         method: 'POST',
         headers: {
@@ -238,7 +260,11 @@ export default withObservability(async function handler(req: VercelRequest, res:
             crossfadeDuration: renderOptions?.crossfadeDuration ?? 0.5,
           },
         }),
-      }).catch(() => {})
+      }).catch((err) => {
+         console.error('Failed to trigger render:', err)
+      })
+    } else {
+        console.error('Could not determine base URL for render trigger')
     }
   } catch {
     // best-effort

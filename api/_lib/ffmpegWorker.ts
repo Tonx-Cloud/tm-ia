@@ -188,6 +188,12 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         const buf = Buffer.from(await resp.arrayBuffer())
         fs.writeFileSync(workAudio, buf)
         audioInput = workAudio
+      } else if (project.audioData) {
+        const tmpDir = os.tmpdir()
+        const workAudio = path.join(tmpDir, `audio_${job.renderId}.bin`)
+        const buf = Buffer.from(project.audioData, 'base64')
+        fs.writeFileSync(workAudio, buf)
+        audioInput = workAudio
       } else if (project.audioPath && fs.existsSync(project.audioPath)) {
         audioInput = project.audioPath
       }

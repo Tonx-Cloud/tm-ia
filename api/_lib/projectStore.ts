@@ -42,6 +42,7 @@ export type Project = {
   audioUrl?: string
   audioFilename?: string
   audioMime?: string
+  audioData?: string
   mood?: string
   style?: string
   aspectRatio?: string
@@ -67,6 +68,7 @@ function mapProject(p: any): Project {
     audioUrl: p.audioUrl || undefined,
     audioFilename: p.audioFilename || undefined,
     audioMime: p.audioMime || undefined,
+    audioData: p.audioData || undefined,
     mood: p.mood || undefined,
     style: p.style || undefined,
     aspectRatio: p.aspectRatio || undefined,
@@ -129,6 +131,7 @@ export async function upsertProject(project: Project): Promise<void> {
       audioPath: project.audioPath,
       audioFilename: project.audioFilename,
       audioMime: project.audioMime,
+      audioData: project.audioData,
       storyboard: JSON.stringify(project.storyboard),
       mood: project.mood,
       style: project.style,

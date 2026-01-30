@@ -285,15 +285,22 @@ Return ONLY a JSON array with exactly ${imageCount} objects:
     
     let dataUrl = imageUrl
     try {
+      // In production with real credits, use OpenAI/Replicate here.
+      // For now, using picsum.photos for placeholders as per original logic.
+      // But we MUST ensure we get a valid dataUrl or the renderer will fail.
       const imgResp = await fetch(imageUrl)
       if (imgResp.ok) {
         const buffer = await imgResp.arrayBuffer()
         const base64 = Buffer.from(buffer).toString('base64')
         const contentType = imgResp.headers.get('content-type') || 'image/jpeg'
         dataUrl = `data:${contentType};base64,${base64}`
+      } else {
+         // Generate a solid color image if download fails, to prevent "No images" error
+         dataUrl = createPlaceholderImage(resolution.width, resolution.height, i)
       }
     } catch (err) {
-      ctx.log('warn', 'assets.generate.image_fetch_failed', { index: i })
+      ctx.log('warn', 'assets.generate.image_fetch_failed', { index: i, error: (err as Error).message })
+      dataUrl = createPlaceholderImage(resolution.width, resolution.height, i)
     }
     
     assets.push({
@@ -344,4 +351,11 @@ function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60)
   const secs = Math.floor(seconds % 60)
   return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+function createPlaceholderImage(width: number, height: number, index: number): string {
+    // A simple 1x1 pixel base64 (not efficient but prevents null)
+    // Actually, let's return a valid small SVG or PNG base64
+    // This is a 1x1 gray pixel PNG
+    return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
 }
