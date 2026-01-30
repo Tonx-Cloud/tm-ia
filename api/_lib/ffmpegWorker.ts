@@ -250,7 +250,27 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         imageFiles[index] = filename
       }
 
-      const present = imageFiles.filter(Boolean) as string[]
+      let present = imageFiles.filter(Boolean) as string[]
+
+      // Some older clients accidentally persisted a UI storyboard format (missing assetId).
+      // If that happens, fall back to rendering in the current assets order.
+      if (present.length === 0 && project.assets && project.assets.length > 0) {
+        const fallbackFiles: string[] = []
+        for (const [index, asset] of project.assets.entries()) {
+          if (!asset?.dataUrl) continue
+          const m = asset.dataUrl.match(/^data:(image\/[^;]+);base64,(.*)$/)
+          if (!m) continue
+          const mime = m[1]
+          const base64Data = m[2]
+          const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg'
+          const filename = `frame_${index.toString().padStart(3, '0')}.${ext}`
+          const filePath = path.join(workDir, filename)
+          fs.writeFileSync(filePath, base64Data, 'base64')
+          fallbackFiles.push(filename)
+        }
+        present = fallbackFiles
+      }
+
       if (present.length === 0) throw new Error('No images to render')
 
       // 2. Calculate total duration for progress tracking

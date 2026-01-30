@@ -1218,7 +1218,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           const next = [...prev]
           const cur = next[assetIndex] as any
           next[assetIndex] = { ...cur, animate: !cur?.animate }
-          void syncProjectEdits({ storyboard: next as any[] })
+          void syncProjectEdits({ storyboard: buildStoryboardItems(next, assets) })
           return next
         })
         break
@@ -1251,7 +1251,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           void syncProjectEdits({
             deletedAssetIds: [assetId],
             assetOrder: nextAssets.map(a => a.id),
-            storyboard: nextStoryboard as any[],
+            storyboard: buildStoryboardItems(nextStoryboard, nextAssets),
           })
           return nextStoryboard
         })
@@ -1262,7 +1262,11 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           setAssets(prev => {
             const next = [...prev]
             ;[next[assetIndex - 1], next[assetIndex]] = [next[assetIndex], next[assetIndex - 1]]
-            void syncProjectEdits({ assetOrder: next.map(a => a.id) })
+            // keep storyboard order in DB consistent with assets order
+            void syncProjectEdits({
+              assetOrder: next.map(a => a.id),
+              storyboard: buildStoryboardItems(storyboard, next),
+            })
             return next
           })
           setStoryboard(prev => {
@@ -1278,7 +1282,11 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           setAssets(prev => {
             const next = [...prev]
             ;[next[assetIndex], next[assetIndex + 1]] = [next[assetIndex + 1], next[assetIndex]]
-            void syncProjectEdits({ assetOrder: next.map(a => a.id) })
+            // keep storyboard order in DB consistent with assets order
+            void syncProjectEdits({
+              assetOrder: next.map(a => a.id),
+              storyboard: buildStoryboardItems(storyboard, next),
+            })
             return next
           })
           setStoryboard(prev => {
@@ -1363,6 +1371,15 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     } finally {
       setGeneratingSelected(false)
     }
+  }
+
+  const buildStoryboardItems = (scenes: StoryboardScene[], assetsList: Asset[]) => {
+    // DB/render expects [{ assetId, durationSec, animate }]
+    return assetsList.map((a, i) => ({
+      assetId: a.id,
+      durationSec: (a as any).durationSec || 5,
+      animate: !!(scenes[i] as any)?.animate,
+    }))
   }
 
   const syncProjectEdits = async (opts: { storyboard?: any[]; assetsPatch?: Array<{ id: string; prompt: string }>; deletedAssetIds?: string[]; assetOrder?: string[] }) => {
