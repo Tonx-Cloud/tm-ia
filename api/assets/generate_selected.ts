@@ -3,10 +3,9 @@ import { getSession } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { withObservability } from '../_lib/observability.js'
 import { checkRateLimit } from '../_lib/rateLimit.js'
-import { getProject, updateAsset } from '../_lib/projectStore.js'
+import { prisma } from '../_lib/prisma.js'
 import { getBalance, spendCredits } from '../_lib/credits.js'
 import { PRICING } from '../_lib/pricing.js'
-import { generateImageDataUrl } from '../_lib/geminiImage.js'
 
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -36,11 +35,10 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(400).json({ error: 'projectId and assetIds required', requestId: ctx.requestId })
   }
 
-  const proj = await getProject(projectId)
+  const proj = await prisma.project.findUnique({ where: { id: projectId } })
   if (!proj) return res.status(404).json({ error: 'Project not found', requestId: ctx.requestId })
 
   const selectedModel = modelId || 'gemini-2.5-flash-image'
-  const apiKey = process.env.GEMINI_API_KEY || ''
 
   const vip = session.email === 'hiltonsf@gmail.com' || session.email.toLowerCase().includes('felipe')
 
@@ -56,29 +54,19 @@ export default withObservability(async function handler(req: VercelRequest, res:
     }
   }
 
-  let updated = 0
-  for (const assetId of assetIds) {
-    const asset = proj.assets.find((a) => a.id === assetId)
-    if (!asset) continue
+  // Enqueue jobs for the VM worker (avoids Vercel timeouts)
+  const jobs = assetIds.map((assetId) => ({
+    projectId,
+    userId: session.userId,
+    assetId,
+    modelId: selectedModel,
+    status: 'pending',
+  }))
 
-    try {
-      const dataUrl = await generateImageDataUrl({ apiKey, model: selectedModel, prompt: asset.prompt, ctx })
-      await updateAsset(projectId, assetId, {
-        dataUrl,
-        status: 'generated',
-        createdAt: Date.now(),
-      })
-      updated++
-    } catch (err) {
-      ctx.log('warn', 'assets.generate_selected.failed', { assetId, message: (err as Error).message })
-      await updateAsset(projectId, assetId, { status: 'needs_regen' })
-    }
-  }
-
-  const refreshed = await getProject(projectId)
+  await prisma.imageJob.createMany({ data: jobs as any })
 
   let balance = await getBalance(session.userId)
   if (vip) balance = 99999
 
-  return res.status(200).json({ ok: true, updated, cost: vip ? 0 : totalCost, balance, project: refreshed || proj, requestId: ctx.requestId })
+  return res.status(200).json({ ok: true, enqueued: assetIds.length, cost: vip ? 0 : totalCost, balance, requestId: ctx.requestId })
 })

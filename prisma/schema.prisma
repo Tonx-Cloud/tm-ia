@@ -104,3 +104,19 @@ model Render {
   @@index([projectId])
   @@index([userId, createdAt])
 }
+
+model ImageJob {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  assetId   String
+  modelId   String
+  status    String   // pending, processing, complete, failed
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId, createdAt])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+}
