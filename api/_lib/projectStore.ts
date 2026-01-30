@@ -7,6 +7,7 @@ export type Asset = {
   prompt: string
   status: string
   dataUrl: string
+  fileKey?: string
   createdAt: number
   sceneNumber?: number
   timeCode?: string
@@ -79,6 +80,7 @@ function mapProject(p: any): Project {
       prompt: a.prompt,
       status: a.status,
       dataUrl: a.dataUrl,
+      fileKey: a.fileKey || undefined,
       createdAt: a.createdAt.getTime(),
       sceneNumber: a.sceneNumber || undefined,
       timeCode: a.timeCode || undefined,
@@ -161,6 +163,7 @@ export async function addAssets(projectId: string, assets: Asset[]): Promise<Pro
         prompt: a.prompt,
         status: a.status,
         dataUrl: a.dataUrl,
+        fileKey: (a as any).fileKey,
         sceneNumber: a.sceneNumber,
         timeCode: a.timeCode,
         lyrics: a.lyrics,
@@ -193,6 +196,7 @@ export async function updateAsset(projectId: string, assetId: string, patch: Par
       prompt: patch.prompt,
       status: patch.status,
       dataUrl: patch.dataUrl,
+      fileKey: (patch as any).fileKey,
       sceneNumber: (patch as any).sceneNumber,
       timeCode: (patch as any).timeCode,
       lyrics: (patch as any).lyrics,

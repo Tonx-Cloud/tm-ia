@@ -3,6 +3,30 @@ import crypto from 'crypto'
 import { getSession } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { getProject, addAssets, type Asset } from '../_lib/projectStore.js'
+
+function slugify(s: string) {
+  return String(s || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40) || 'projeto'
+}
+
+function formatStamp(ms: number) {
+  const d = new Date(ms)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`
+}
+
+function makeFileKey(projectName: string | undefined, createdAtMs: number, sceneNumber: number, assetId: string) {
+  const proj = slugify(projectName || '')
+  const short = String(assetId).replace(/-/g, '').slice(0, 8)
+  const s = String(sceneNumber).padStart(2, '0')
+  return `tmia__${proj}__${formatStamp(createdAtMs)}__s${s}__${short}`
+}
+
 import { withObservability } from '../_lib/observability.js'
 import { checkRateLimit } from '../_lib/rateLimit.js'
 
@@ -128,13 +152,17 @@ export default withObservability(async function handler(req: VercelRequest, res:
     ctx.log('warn', 'assets.add.image_fetch_failed')
   }
 
+  const id = crypto.randomUUID()
+  const createdAt = Date.now()
+
   const asset: Asset = {
-    id: crypto.randomUUID(),
+    id,
     projectId,
     prompt,
     status: 'generated',
     dataUrl,
-    createdAt: Date.now(),
+    fileKey: makeFileKey(project.name, createdAt, sceneNumber, id),
+    createdAt,
     sceneNumber,
     timeCode: `${formatTime(timeStart)}-${formatTime(timeEnd)}`,
     lyrics,

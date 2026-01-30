@@ -73,6 +73,9 @@ model Asset {
   status      String   @default("generated") // generated, reused, needs_regen
   dataUrl     String
 
+  // Audit / naming
+  fileKey     String?  // e.g. tmia__<project>__YYYYMMDD-HHmmss__s03__a1b2c3d4
+
   // Metadata
   sceneNumber Int?
   timeCode    String?

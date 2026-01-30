@@ -5,6 +5,30 @@ import { loadEnv } from '../_lib/env.js'
 import { getGemini } from '../_lib/geminiClient.js'
 import { generateImageDataUrl } from '../_lib/geminiImage.js'
 import { addAssets, getProject, createProject, type Asset } from '../_lib/projectStore.js'
+
+function slugify(s: string) {
+  return String(s || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40) || 'projeto'
+}
+
+function formatStamp(ms: number) {
+  const d = new Date(ms)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`
+}
+
+function makeFileKey(projectName: string | undefined, createdAtMs: number, sceneNumber: number, assetId: string) {
+  const proj = slugify(projectName || '')
+  const short = String(assetId).replace(/-/g, '').slice(0, 8)
+  const s = String(sceneNumber).padStart(2, '0')
+  return `tmia__${proj}__${formatStamp(createdAtMs)}__s${s}__${short}`
+}
+
 import { spendCredits, getBalance, addCredits } from '../_lib/credits.js'
 import { getActionCost } from '../_lib/pricing.js'
 import { withObservability } from '../_lib/observability.js'
@@ -306,6 +330,9 @@ Return ONLY a JSON array with exactly ${imageCount} objects:
     const slot = timeSlots[i]
     const durationSec = Math.max(1, Math.round((slotDuration || 5) * 100) / 100)
 
+    const id = crypto.randomUUID()
+    const createdAt = Date.now()
+
     let dataUrl = createPlaceholderImage(resolution.width, resolution.height, i)
     let status: any = 'generated'
 
@@ -328,12 +355,13 @@ Return ONLY a JSON array with exactly ${imageCount} objects:
     }
 
     assets.push({
-      id: crypto.randomUUID(),
+      id,
       projectId,
       prompt: scene.prompt,
       status,
       dataUrl,
-      createdAt: Date.now(),
+      fileKey: makeFileKey(project.name, createdAt, scene.sceneNumber, id),
+      createdAt,
       durationSec,
       // Extended metadata
       ...({
