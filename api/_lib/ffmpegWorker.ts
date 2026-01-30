@@ -284,6 +284,33 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         totalDurationSec += dur
       }
 
+      // Ensure the video lasts at least as long as the audio; otherwise -shortest will cut the audio.
+      // If storyboard durations are missing/incorrect, distribute evenly across the audio duration.
+      const getAudioDurationSec = async () => {
+        try {
+          const ffmpegPath = getFFmpegPath()
+          const p = spawn(ffmpegPath, ['-i', audioInput], { cwd: workDir })
+          let s = ''
+          for await (const chunk of p.stderr as any) s += chunk.toString()
+          const m = s.match(/Duration:\s*(\d+):(\d+):(\d+\.?\d*)/)
+          if (!m) return null
+          const h = Number(m[1])
+          const mi = Number(m[2])
+          const se = Number(m[3])
+          return h * 3600 + mi * 60 + se
+        } catch {
+          return null
+        }
+      }
+
+      const audioDur = await getAudioDurationSec()
+      const nScenes = Math.max(1, project.storyboard.length || present.length)
+      if (audioDur && totalDurationSec < audioDur - 0.5) {
+        const per = Math.max(1, Math.round((audioDur / nScenes) * 100) / 100)
+        for (let i = 0; i < durations.length; i++) durations[i] = per
+        totalDurationSec = per * nScenes
+      }
+
       // 3. Build FFmpeg command based on whether crossfade is enabled
       const outputFile = path.join(workDir, 'output.mp4')
       const audioInputPath = audioInput
@@ -307,7 +334,7 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
           const filename = imageFiles[idx]
           if (filename && fs.existsSync(path.join(workDir, filename))) {
             lines.push(`file '${filename}'`)
-            lines.push(`duration ${item.durationSec || defaultDuration}`)
+            lines.push(`duration ${durations[idx] || item.durationSec || defaultDuration}`)
           }
         })
 

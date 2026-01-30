@@ -1412,9 +1412,12 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
 
   const buildStoryboardItems = (scenes: StoryboardScene[], assetsList: Asset[]) => {
     // DB/render expects [{ assetId, durationSec, animate }]
+    // CRITICAL: duration must follow the AUDIO length, not whatever UI happens to have.
+    const total = audio?.duration || 180
+    const per = Math.max(1, Math.round((total / Math.max(assetsList.length, 1)) * 100) / 100)
     return assetsList.map((a, i) => ({
       assetId: a.id,
-      durationSec: (a as any).durationSec || 5,
+      durationSec: per,
       animate: !!(scenes[i] as any)?.animate,
     }))
   }
