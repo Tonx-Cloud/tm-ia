@@ -1236,11 +1236,20 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           return
         }
         setAssets(prev => {
-          const next = prev.filter(a => a.id !== assetId)
-          void syncProjectEdits({ deletedAssetIds: [assetId], assetOrder: next.map(a => a.id) })
-          return next
+          const nextAssets = prev.filter(a => a.id !== assetId)
+          return nextAssets
         })
-        setStoryboard(prev => prev.filter((_, i) => i !== assetIndex))
+        setStoryboard(prev => {
+          const nextStoryboard = prev.filter((_, i) => i !== assetIndex)
+          // persist BOTH asset order + storyboard so render never points to a deleted asset
+          const nextAssets = assets.filter(a => a.id !== assetId)
+          void syncProjectEdits({
+            deletedAssetIds: [assetId],
+            assetOrder: nextAssets.map(a => a.id),
+            storyboard: nextStoryboard as any[],
+          })
+          return nextStoryboard
+        })
         break
 
       case 'moveLeft':

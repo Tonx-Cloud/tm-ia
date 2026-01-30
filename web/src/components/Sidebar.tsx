@@ -25,6 +25,7 @@ type SidebarItem = {
 type SidebarProps = {
   activeSection: SidebarSection
   onSectionChange: (section: SidebarSection) => void
+  onNewProject?: () => void
   balance: number
   onLogout: () => void
   onBuyCredits?: () => void
@@ -290,6 +291,7 @@ const styles = {
 export function Sidebar({
   activeSection,
   onSectionChange,
+  onNewProject,
   balance,
   onLogout,
   onBuyCredits,
@@ -367,6 +369,24 @@ export function Sidebar({
               <div style={styles.balanceLabel}>créditos disponíveis</div>
             </div>
           </div>
+
+          {/* New Project */}
+          {onNewProject && (
+            <button
+              className="btn-primary"
+              onClick={() => onNewProject()}
+              style={{
+                width: '100%',
+                marginTop: 10,
+                padding: isCollapsed ? '10px 8px' : '10px 12px',
+                borderRadius: 10,
+                fontSize: 13,
+              }}
+              title={isCollapsed ? 'Novo projeto' : undefined}
+            >
+              ➕ {isCollapsed ? '' : 'Novo projeto'}
+            </button>
+          )}
         </div>
 
         {/* Navigation */}

@@ -92,11 +92,9 @@ export async function uploadAudio(file: File, token: string): Promise<{ ok: bool
 }
 
 export async function analyzeAudio(file: File, durationSeconds: number, token: string, existingProjectId?: string) {
-  // Divide the context: upload audio first (Blob), then analyze by URL.
-  // If Blob upload is not available (missing token) we fall back to multipart analyze.
+  // Upload to Blob first, then analyze by URL. If that fails, fall back to multipart.
   const upload = await uploadAudio(file, token)
 
-  // Preferred: analyze by URL
   if (upload.audioUrl) {
     const res = await fetch(`${API}/api/demo/analyze`, {
       method: 'POST',
@@ -113,26 +111,25 @@ export async function analyzeAudio(file: File, durationSeconds: number, token: s
       }),
     })
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.error || 'Analysis failed')
+    if (res.ok) {
+      return res.json() as Promise<{
+        projectId: string
+        status: string
+        transcription: string
+        hookText: string
+        hookStart: number
+        hookEnd: number
+        mood: string
+        genre: string
+        balance: number
+        audioUrl?: string
+      }>
     }
 
-    return res.json() as Promise<{
-      projectId: string
-      status: string
-      transcription: string
-      hookText: string
-      hookStart: number
-      hookEnd: number
-      mood: string
-      genre: string
-      balance: number
-      audioUrl?: string
-    }>
+    // If URL analysis fails, fall back to multipart.
+    console.warn('[analyzeAudio] analyze-by-url failed; falling back to multipart')
   }
 
-  // Fallback: upload + analyze in one request
   const formData = new FormData()
   formData.append('audio', file)
   formData.append('durationSeconds', String(durationSeconds))

@@ -339,6 +339,7 @@ function App() {
   const [authToken, setAuthToken] = useState<string>(() => localStorage.getItem('tm_auth_token') || '')
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [activeSection, setActiveSection] = useState<SidebarSection>('music-video')
+  const [wizardKey, setWizardKey] = useState(1)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   
@@ -406,13 +407,23 @@ function App() {
     push({ type: 'info', text: 'Compra de créditos em breve!' })
   }
 
+  const handleNewProject = () => {
+    // Clear local resume state and remount wizard clean
+    localStorage.removeItem('tm_project_id')
+    localStorage.removeItem('tm_project_name')
+    localStorage.removeItem('tm_resume_project')
+    setWizardKey((k) => k + 1)
+    setActiveSection('music-video')
+    push({ type: 'info', text: 'Novo projeto iniciado.' })
+  }
+
   const sidebarWidth = getSidebarWidth(sidebarCollapsed, isMobile)
 
   // Render section content
   const renderSection = () => {
     switch (activeSection) {
       case 'music-video':
-        return <StepWizard locale="pt" />
+        return <StepWizard key={wizardKey} locale="pt" />
       
       case 'image':
         return (
@@ -500,6 +511,7 @@ function App() {
           <Sidebar 
             activeSection={activeSection} 
             onSectionChange={setActiveSection}
+            onNewProject={handleNewProject}
             balance={credits.balance ?? 0}
             onLogout={handleLogout}
             onBuyCredits={handleBuyCredits}
