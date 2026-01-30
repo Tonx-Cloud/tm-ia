@@ -852,10 +852,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         audioRef.current.pause()
         audioRef.current = null
       }
-      if (selectedPollRef.current) {
-        window.clearTimeout(selectedPollRef.current)
-        selectedPollRef.current = null
-      }
+      // (poll removed)
     }
   }, [audio])
   
@@ -876,10 +873,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [renderLog, setRenderLog] = useState<string>('')
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
 
-  // Image generation controls (preview)
-  const [selectedSceneIds, setSelectedSceneIds] = useState<Set<string>>(new Set())
-  const [generatingSelected, setGeneratingSelected] = useState(false)
-  const selectedPollRef = useRef<number | null>(null) // timeout id
+  // Image generation controls
+  // NOTE: We generate all images up-front (no preview/placeholders) to simplify UX.
   
   // Modal state
   const [modalAsset, setModalAsset] = useState<Asset | null>(null)
@@ -1091,9 +1086,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           frequency: imgFrequency,
           imageCountOverride: desiredSceneCount ?? undefined,
           theme: customTheme.trim() || undefined,
-          generationMode: 'preview',
+          generationMode: 'full',
           modelId: 'gemini-2.5-flash-image',
-          realCount: 1,
+          realCount: imageCount,
         })
       })
       
@@ -1417,84 +1412,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     }
   }
 
-  const handleGenerateSelectedScenes = async () => {
-    if (!projectId || !token) return
-    if (selectedSceneIds.size === 0) {
-      setError('Selecione ao menos 1 cena para gerar com IA')
-      return
-    }
-
-    setGeneratingSelected(true)
-    setError(null)
-
-    try {
-      const res = await fetch('/api/assets/generate_selected', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          projectId,
-          assetIds: Array.from(selectedSceneIds),
-          modelId: 'gemini-2.5-flash-image',
-        }),
-      })
-
-      const data = await res.json().catch(() => ({} as any))
-      if (!res.ok) throw new Error(data.error || 'Falha ao gerar cenas selecionadas')
-
-      // IMPORTANT: /api/assets/generate_selected only enqueues jobs and does NOT return the updated project.
-      // Never clear the UI; keep what the user is seeing and refresh in the background.
-      const justQueued = new Set(selectedSceneIds)
-
-      setAssets((prev) =>
-        prev.map((a) => (justQueued.has(a.id) ? { ...a, status: 'needs_regen' as any } : a))
-      )
-      setBalance(data.balance || balance)
-      setSelectedSceneIds(new Set())
-
-      // Poll project for updated assets for a short time (worker will update DB when done)
-      if (selectedPollRef.current) window.clearTimeout(selectedPollRef.current)
-
-      let tries = 0
-      let delayMs = 6000 // avoid /api/assets rate-limit (12/min)
-
-      const pollOnce = async () => {
-        tries++
-        try {
-          const url = `/api/assets?projectId=${projectId}`
-          const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } })
-
-          if (r.status === 429) {
-            const body = await r.json().catch(() => ({} as any))
-            const retryAfterSec = Number(body.retryAfter || r.headers.get('Retry-After') || 10)
-            delayMs = Math.min(20000, Math.max(delayMs, retryAfterSec * 1000))
-          } else if (r.ok) {
-            const body = await r.json().catch(() => ({} as any))
-            const p = body.project
-            if (p?.assets?.length) setAssets(p.assets)
-            // reset backoff when it succeeds
-            delayMs = 6000
-          }
-        } catch {
-          // keep backing off softly
-          delayMs = Math.min(20000, Math.round(delayMs * 1.2))
-        }
-
-        if (tries >= 12) {
-          selectedPollRef.current = null
-          return
-        }
-
-        selectedPollRef.current = window.setTimeout(pollOnce, delayMs)
-      }
-
-      selectedPollRef.current = window.setTimeout(pollOnce, delayMs)
-    } catch (err) {
-      setError((err as Error).message)
-      onError?.((err as Error).message)
-    } finally {
-      setGeneratingSelected(false)
-    }
-  }
+  // Removed: generate-selected (preview/placeholders flow). We now generate all images up-front.
 
   const buildStoryboardItems = (scenes: StoryboardScene[], assetsList: Asset[]) => {
     // DB/render expects [{ assetId, durationSec, animate }]
@@ -2340,47 +2258,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
               </div>
             </div>
 
-            {/* Preview generation controls */}
-            <div style={{
-              marginTop: 12,
-              paddingTop: 12,
-              borderTop: '1px solid var(--border)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              gap: 12,
-              flexWrap: 'wrap'
-            }}>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                Preview: 1 imagem real (cena 1) + placeholders. Selecione cenas para gerar com IA.
-              </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                <button
-                  className="btn-ghost"
-                  onClick={() => {
-                    // Select next 3 placeholders (skip first which is already real)
-                    const next = new Set(selectedSceneIds)
-                    for (let i = 1; i < assets.length && next.size < 3; i++) {
-                      const id = assets[i]?.id
-                      if (id) next.add(id)
-                    }
-                    setSelectedSceneIds(next)
-                  }}
-                  style={{ padding: '8px 10px', borderRadius: 10, fontSize: 13 }}
-                  title="Selecionar +3"
-                >
-                  +3
-                </button>
-
-                <button
-                  className={selectedSceneIds.size > 0 ? 'btn-primary' : 'btn-ghost'}
-                  onClick={handleGenerateSelectedScenes}
-                  disabled={generatingSelected || selectedSceneIds.size === 0}
-                  style={{ padding: '8px 12px', borderRadius: 10, fontSize: 13, opacity: generatingSelected ? 0.7 : 1 }}
-                >
-                  {generatingSelected ? 'Gerando…' : `Gerar selecionadas (${selectedSceneIds.size})`}
-                </button>
-              </div>
-            </div>
+            {/* Full generation: no preview/placeholders */}
           </div>
 
           {/* Action hints */}
@@ -2416,36 +2294,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
               const scene = storyboard[i]
               return (
                 <div key={asset.id} style={{ position: 'relative' }}>
-                  {/* Placeholder selection checkbox (skip first scene) */}
-                  {i > 0 && (
-                    <label style={{
-                      position: 'absolute',
-                      top: 8,
-                      left: 8,
-                      zIndex: 5,
-                      background: 'rgba(0,0,0,0.55)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 10,
-                      padding: '6px 8px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      fontSize: 12,
-                      cursor: 'pointer'
-                    }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedSceneIds.has(asset.id)}
-                        onChange={(e) => {
-                          const next = new Set(selectedSceneIds)
-                          if (e.target.checked) next.add(asset.id)
-                          else next.delete(asset.id)
-                          setSelectedSceneIds(next)
-                        }}
-                      />
-                      Gerar IA
-                    </label>
-                  )}
+                  {/* Full generation: removed per-scene selection */}
 
                   <SceneCard
                     asset={asset}
