@@ -108,19 +108,25 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(400).json({ error: 'projectId required', requestId: ctx.requestId })
   }
 
+  // Ensure project exists and has assets before starting render job
+  let project = await getProject(projectId)
+  if (!project) {
+    // If re-uploading audio, we might create it, but if no assets -> fail
+    if (!audioPath) {
+      return res.status(400).json({ error: 'Project expired or missing. Please create a new video.', requestId: ctx.requestId })
+    }
+    project = {
+      id: projectId,
+      createdAt: Date.now(),
+      assets: [],
+      storyboard: [],
+      renders: [],
+    }
+  }
+
   // Persist audio for render across serverless invocations.
   // Prefer Blob URL (keeps Redis small). Fallback to base64 if blob upload fails.
   if (audioPath) {
-    let project = await getProject(projectId)
-    if (!project) {
-      project = {
-        id: projectId,
-        createdAt: Date.now(),
-        assets: [],
-        storyboard: [],
-        renders: [],
-      }
-    }
 
     try {
       const buf = fs.readFileSync(audioPath)
@@ -151,6 +157,10 @@ export default withObservability(async function handler(req: VercelRequest, res:
     }
 
     await upsertProject(project)
+  }
+
+  if (!project.assets || project.assets.length === 0) {
+    return res.status(400).json({ error: 'Project has no scenes to render. Please regenerate scenes.', requestId: ctx.requestId })
   }
 
   // Get config from configId or inline
