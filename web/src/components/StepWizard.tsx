@@ -187,6 +187,9 @@ function formatTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
+const PLACEHOLDER_IMG =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+
 // ============================================================================
 // SCENE CARD COMPONENT
 // ============================================================================
@@ -245,7 +248,7 @@ function SceneCard({
       onClick={() => onAction('expand', asset.id)}
       >
         <img
-          src={asset.dataUrl}
+          src={asset.dataUrl || PLACEHOLDER_IMG}
           alt={`Cena ${index + 1}`}
           style={{
             width: '100%',
@@ -505,7 +508,7 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
             justifyContent: 'center'
           }}>
             <img
-              src={asset.dataUrl}
+              src={asset.dataUrl || PLACEHOLDER_IMG}
               alt="Scene"
               style={{
                 maxWidth: '100%',
