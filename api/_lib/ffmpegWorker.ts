@@ -240,12 +240,13 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
 
       let args: string[]
 
+      // NOTE: Crossfade (filter_complex + xfade) has proven brittle across FFmpeg builds.
+      // For reliability, default to the concat demuxer approach.
       if (options.crossfade && imageFiles.length > 1) {
-        // Complex filtergraph for crossfade transitions
-        const crossfadeDur = options.crossfadeDuration || 0.5
-        const animateFlags = project.storyboard.map((s) => !!s.animate)
-        args = buildCrossfadeCommand(workDir, imageFiles, durations, animateFlags, audioInputPath, outputFile, filterString, crossfadeDur)
-      } else {
+        console.log('Crossfade requested but disabled for stability; using concat demuxer.')
+      }
+
+      {
         // Simple concat demuxer approach
         const concatFile = path.join(workDir, 'input.txt')
         const lines: string[] = []
