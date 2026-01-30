@@ -43,6 +43,7 @@ type StoryboardScene = {
   prompt: string
   visualNotes: string
   animate?: boolean
+  animateType?: 'zoom' | 'pan'
 }
 
 // ============================================================================
@@ -796,6 +797,10 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [renderProgress, setRenderProgress] = useState(0)
   const [renderLog, setRenderLog] = useState<string>('')
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
+
+  // Image generation controls (preview)
+  const [selectedSceneIds, setSelectedSceneIds] = useState<Set<string>>(new Set())
+  const [generatingSelected, setGeneratingSelected] = useState(false)
   
   // Modal state
   const [modalAsset, setModalAsset] = useState<Asset | null>(null)
@@ -1296,17 +1301,52 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       }
 
       const data = await res.json()
-      
+
       // Update the asset in state
-      setAssets(prev => prev.map(a => 
+      setAssets(prev => prev.map(a =>
         a.id === assetId ? data.asset : a
       ))
       setBalance(data.balance || balance)
       setModalAsset(null)
-      
+
     } catch (err) {
       setError((err as Error).message)
       onError?.((err as Error).message)
+    }
+  }
+
+  const handleGenerateSelectedScenes = async () => {
+    if (!projectId || !token) return
+    if (selectedSceneIds.size === 0) {
+      setError('Selecione ao menos 1 cena para gerar com IA')
+      return
+    }
+
+    setGeneratingSelected(true)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/assets/generate_selected', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          projectId,
+          assetIds: Array.from(selectedSceneIds),
+          modelId: 'gemini-2.5-flash-image',
+        }),
+      })
+
+      const data = await res.json().catch(() => ({} as any))
+      if (!res.ok) throw new Error(data.error || 'Falha ao gerar cenas selecionadas')
+
+      setAssets(data.project?.assets || [])
+      setBalance(data.balance || balance)
+      setSelectedSceneIds(new Set())
+    } catch (err) {
+      setError((err as Error).message)
+      onError?.((err as Error).message)
+    } finally {
+      setGeneratingSelected(false)
     }
   }
 
@@ -1997,47 +2037,120 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       {step === 3 && (
         <div>
           
-          {/* Header with stats */}
+          {/* Header with music info + controls */}
           <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
             marginBottom: 20,
             padding: '16px 20px',
             background: 'var(--panel)',
             borderRadius: 16,
             border: '1px solid var(--border)'
           }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, marginBottom: 4 }}>
-                Suas Cenas
-              </h2>
-              <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>
-                {assets.length} cenas • {aspectRatio} • Estilo {visualStyle}
-              </p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              {favorites.size > 0 && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 12,
+              flexWrap: 'wrap'
+            }}>
+              <div style={{ minWidth: 220 }}>
+                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, marginBottom: 4 }}>
+                  Edição do clipe
+                </h2>
+                <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>
+                  {audio?.name || 'Áudio'} • {audio?.durationFmt || '3:00'} • {assets.length} cenas
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <button
+                  className={isPlaying ? 'btn-primary' : 'btn-ghost'}
+                  onClick={togglePlay}
+                  style={{ padding: '10px 14px', borderRadius: 12 }}
+                  title={isPlaying ? 'Pausar' : 'Tocar'}
+                >
+                  {isPlaying ? '⏸️ Pause' : '▶️ Play'}
+                </button>
+
+                <button
+                  className="btn-ghost"
+                  onClick={() => {
+                    if (audioRef.current) {
+                      audioRef.current.pause()
+                      audioRef.current.currentTime = 0
+                    }
+                    setIsPlaying(false)
+                  }}
+                  style={{ padding: '10px 14px', borderRadius: 12 }}
+                  title="Parar"
+                >
+                  ⏹️ Stop
+                </button>
+
+                {favorites.size > 0 && (
+                  <span style={{
+                    padding: '6px 12px',
+                    background: 'rgba(255, 193, 7, 0.15)',
+                    border: '1px solid rgba(255, 193, 7, 0.3)',
+                    borderRadius: 20,
+                    fontSize: 12,
+                    fontWeight: 600
+                  }}>
+                    ⭐ {favorites.size} favoritos
+                  </span>
+                )}
+
                 <span style={{
                   padding: '6px 12px',
-                  background: 'rgba(255, 193, 7, 0.15)',
-                  border: '1px solid rgba(255, 193, 7, 0.3)',
+                  background: 'rgba(180, 59, 255, 0.1)',
+                  border: '1px solid rgba(180, 59, 255, 0.3)',
                   borderRadius: 20,
-                  fontSize: 12,
-                  fontWeight: 600
+                  fontSize: 12
                 }}>
-                  ⭐ {favorites.size} favoritos
+                  {aspectRatio} • {visualStyle}
                 </span>
-              )}
-              <span style={{
-                padding: '6px 12px',
-                background: 'rgba(180, 59, 255, 0.1)',
-                border: '1px solid rgba(180, 59, 255, 0.3)',
-                borderRadius: 20,
-                fontSize: 12
-              }}>
-                {audio?.durationFmt || '3:00'} de vídeo
-              </span>
+              </div>
+            </div>
+
+            {/* Preview generation controls */}
+            <div style={{
+              marginTop: 12,
+              paddingTop: 12,
+              borderTop: '1px solid var(--border)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: 12,
+              flexWrap: 'wrap'
+            }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                Preview: 1 imagem real (cena 1) + placeholders. Selecione cenas para gerar com IA.
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  className="btn-ghost"
+                  onClick={() => {
+                    // Select next 3 placeholders (skip first which is already real)
+                    const next = new Set(selectedSceneIds)
+                    for (let i = 1; i < assets.length && next.size < 3; i++) {
+                      const id = assets[i]?.id
+                      if (id) next.add(id)
+                    }
+                    setSelectedSceneIds(next)
+                  }}
+                  style={{ padding: '8px 10px', borderRadius: 10, fontSize: 13 }}
+                  title="Selecionar +3"
+                >
+                  +3
+                </button>
+
+                <button
+                  className={selectedSceneIds.size > 0 ? 'btn-primary' : 'btn-ghost'}
+                  onClick={handleGenerateSelectedScenes}
+                  disabled={generatingSelected || selectedSceneIds.size === 0}
+                  style={{ padding: '8px 12px', borderRadius: 10, fontSize: 13, opacity: generatingSelected ? 0.7 : 1 }}
+                >
+                  {generatingSelected ? 'Gerando…' : `Gerar selecionadas (${selectedSceneIds.size})`}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -2073,18 +2186,50 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
             {assets.map((asset, i) => {
               const scene = storyboard[i]
               return (
-                <SceneCard
-                  key={asset.id}
-                  asset={asset}
-                  index={i}
-                  totalCount={assets.length}
-                  aspectRatio={aspectRatio}
-                  timeCode={scene?.timeCode}
-                  lyrics={scene?.lyrics}
-                  isFavorite={favorites.has(asset.id)}
-                  isAnimated={false}
-                  onAction={handleSceneAction}
-                />
+                <div key={asset.id} style={{ position: 'relative' }}>
+                  {/* Placeholder selection checkbox (skip first scene) */}
+                  {i > 0 && (
+                    <label style={{
+                      position: 'absolute',
+                      top: 8,
+                      left: 8,
+                      zIndex: 5,
+                      background: 'rgba(0,0,0,0.55)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 10,
+                      padding: '6px 8px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      fontSize: 12,
+                      cursor: 'pointer'
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedSceneIds.has(asset.id)}
+                        onChange={(e) => {
+                          const next = new Set(selectedSceneIds)
+                          if (e.target.checked) next.add(asset.id)
+                          else next.delete(asset.id)
+                          setSelectedSceneIds(next)
+                        }}
+                      />
+                      Gerar IA
+                    </label>
+                  )}
+
+                  <SceneCard
+                    asset={asset}
+                    index={i}
+                    totalCount={assets.length}
+                    aspectRatio={aspectRatio}
+                    timeCode={scene?.timeCode}
+                    lyrics={scene?.lyrics}
+                    isFavorite={favorites.has(asset.id)}
+                    isAnimated={false}
+                    onAction={handleSceneAction}
+                  />
+                </div>
               )
             })}
 

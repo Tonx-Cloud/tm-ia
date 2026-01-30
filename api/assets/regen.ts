@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import crypto from 'crypto'
 import { getSession } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
-import { getGemini } from '../_lib/geminiClient.js'
+import { generateImageDataUrl } from '../_lib/geminiImage.js'
 import { getProject, upsertProject } from '../_lib/projectStore.js'
 import { getBalance, spendCredits } from '../_lib/credits.js'
 import { PRICING } from '../_lib/pricing.js'
@@ -58,15 +58,16 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
 
   const finalPrompt = prompt || asset.prompt
-  const gemini = getGemini()
-  const model = gemini.getGenerativeModel({ model: 'gemini-1.5-flash' })
-  const resp = await model.generateContent([{ text: `${finalPrompt}. Add subtle watermark text: DEMO ASSET.` }])
-  const image = resp.response.candidates?.[0]?.content?.parts?.[0]?.inlineData
-  if (!image?.data) {
-    ctx.log('error', 'assets.regen.no_image')
+  const apiKey = process.env.GEMINI_API_KEY || ''
+  const modelId = 'gemini-2.5-flash-image'
+
+  let dataUrl = ''
+  try {
+    dataUrl = await generateImageDataUrl({ apiKey, model: modelId, prompt: finalPrompt, ctx })
+  } catch (err) {
+    ctx.log('error', 'assets.regen.no_image', { message: (err as Error).message })
     return res.status(500).json({ error: 'Image generation failed', requestId: ctx.requestId })
   }
-  const dataUrl = `data:${image.mimeType};base64,${image.data}`
 
   asset.prompt = finalPrompt
   asset.status = 'generated'
