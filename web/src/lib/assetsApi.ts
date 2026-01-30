@@ -74,26 +74,45 @@ export async function generateAssets(prompt: string, count: number, token: strin
   return (await res.json()) as GenerateResp
 }
 
-export async function uploadAudio(file: File, token: string): Promise<{ ok: boolean; projectId: string; audioUrl?: string; filePath: string; filename: string; size: number; mime: string }> {
-  const formData = new FormData()
-  formData.append('audio', file)
+export async function uploadAudio(
+  file: File,
+  token: string,
+  opts?: { projectId?: string }
+): Promise<{ ok: boolean; projectId: string; audioUrl?: string; filePath: string; filename: string; size: number; mime: string }> {
+  // IMPORTANT: avoid Vercel 413 by uploading directly from the browser to Vercel Blob.
+  // Server only issues the token.
+  const { upload } = await import('@vercel/blob/client')
 
-  const res = await fetch(`${API}/api/upload`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
-    body: formData,
+  const projectId =
+    opts?.projectId ||
+    (await createProject(`Projeto ${new Date().toLocaleString()}`, token)).projectId
+
+  const ext = (file.name || 'audio').split('.').pop() || 'audio'
+  const safeName = (file.name || `audio.${ext}`).replace(/[^a-zA-Z0-9._-]/g, '_')
+  const pathname = `audio/${projectId}/${Date.now()}-${safeName}`
+
+  const blob = await upload(pathname, file, {
+    access: 'public',
+    handleUploadUrl: `${API}/api/blob/upload`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   })
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.error || 'Upload failed')
+  return {
+    ok: true,
+    projectId,
+    audioUrl: blob.url,
+    filePath: '',
+    filename: file.name || safeName,
+    size: file.size,
+    mime: file.type,
   }
-  return res.json()
 }
 
 export async function analyzeAudio(file: File, durationSeconds: number, token: string, existingProjectId?: string) {
   // Upload to Blob first, then analyze by URL. If that fails, fall back to multipart.
-  const upload = await uploadAudio(file, token)
+  const upload = await uploadAudio(file, token, { projectId: existingProjectId })
 
   if (upload.audioUrl) {
     const res = await fetch(`${API}/api/demo/analyze`, {

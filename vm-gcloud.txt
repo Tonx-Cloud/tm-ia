@@ -1,0 +1,52 @@
+Aqui vai o **relatório real da VM** (buscado via `gcloud` + checagens via SSH), pra responder minhas perguntas e já deixar os dados de conexão claros.
+
+## VM encontrada (GCP Compute Engine)
+- **Projeto GCP:** `tonx-cloud`
+- **Conta ativa (gcloud):** `hiltonsf@gmail.com`
+- **Nome da instância:** `tm-ia-worker`
+- **Zona:** `us-central1-a`
+- **Status:** `RUNNING`
+- **IP externo (NAT):** `34.9.51.163`
+- **IP interno:** `10.128.0.3`
+
+## Hardware / tipo de máquina
+- **Machine type:** `e2-medium`
+- **vCPU:** **2** (`nproc` = 2)
+- **RAM:** **3.8 GiB** (`free -h`)
+- **Swap:** **0**
+- **GPU:** **não tem** (nada de GPU aparece no `instances describe`; e2-medium é CPU-only)
+
+## Sistema operacional
+- **Distro:** Ubuntu **22.04.5 LTS** (Jammy)
+- **Kernel:** `6.8.0-1045-gcp`
+
+## Como conectar (SSH)
+Como não existe `~/.ssh/config` com alias, o jeito mais garantido é pelo gcloud:
+
+```bash
+gcloud compute ssh tm-ia-worker --zone us-central1-a
+```
+
+(Tem chave `google_compute_engine` em `C:\Users\hilto\.ssh\`, então tá no padrão do gcloud.)
+
+---
+
+# Conclusão (respondendo objetivamente sua pergunta)
+Sim, dá pra fazer a transcrição com Python nessa VM — **mas é CPU-only** (2 vCPU / ~4GB RAM). Vai funcionar, só que:
+- será **mais lento** que GPU
+- pra áudios longos, o ideal é usar **faster-whisper** com modelo pequeno/médio e/ou fazer **chunking por tempo** (ex: 60s) pra não estourar RAM/tempo.
+
+---
+
+## Próximo passo que eu recomendo (pra você confirmar)
+Você quer que a VM exponha um endpoint HTTP público tipo:
+
+- `POST /transcribe` (recebe áudio, ou recebe URL)
+- retorna `transcription + segments`
+
+Se sim, me diga qual você prefere:
+
+1) **Upload direto pra VM** (resolve o 413 do Vercel, mas precisa abrir/segurar endpoint público com limite/rate-limit), ou  
+2) **Upload pro Blob/R2** e a VM só baixa pela URL (mais “limpo” e seguro; Vercel não recebe arquivo grande).
+
+Se você escolher 1 ou 2, eu já monto o plano exato (FastAPI + faster-whisper + systemd + nginx + chave de API + limites).
