@@ -13,24 +13,46 @@ import { put } from '@vercel/blob'
 // ============================================================================
 
 export type RenderFormat = 'vertical' | 'horizontal' | 'square'
+export type RenderQuality = 'basic' | 'standard' | 'pro'
 
 export type RenderOptions = {
   format?: RenderFormat
+  quality?: RenderQuality
   watermark?: boolean
   crossfade?: boolean
   crossfadeDuration?: number // seconds
 }
 
-type FormatConfig = {
-  width: number
-  height: number
-  label: string
+type Resolution = { width: number; height: number }
+
+const RESOLUTIONS: Record<RenderQuality, Record<RenderFormat, Resolution>> = {
+  basic: {
+    horizontal: { width: 1280, height: 720 },
+    vertical: { width: 720, height: 1280 },
+    square: { width: 720, height: 720 },
+  },
+  standard: {
+    horizontal: { width: 1920, height: 1080 },
+    vertical: { width: 1080, height: 1920 },
+    square: { width: 1080, height: 1080 },
+  },
+  pro: {
+    horizontal: { width: 1920, height: 1080 },
+    vertical: { width: 1080, height: 1920 },
+    square: { width: 1080, height: 1080 },
+  },
 }
 
-const FORMAT_CONFIGS: Record<RenderFormat, FormatConfig> = {
-  vertical: { width: 1080, height: 1920, label: '9:16 (TikTok/Reels)' },
-  horizontal: { width: 1920, height: 1080, label: '16:9 (YouTube)' },
-  square: { width: 1080, height: 1080, label: '1:1 (Instagram)' },
+const BITRATES: Record<RenderQuality, string> = {
+  basic: '2500k',
+  standard: '5000k',
+  pro: '8000k',
+}
+
+const PRESETS: Record<RenderQuality, string> = {
+  basic: 'veryfast',
+  standard: 'fast',
+  pro: 'medium', // Slower, better compression
 }
 
 // ============================================================================
@@ -142,13 +164,14 @@ function parseFFmpegProgress(stderr: string, totalDurationSec: number): number |
 function buildVideoFilters(options: RenderOptions): string[] {
   const filters: string[] = []
   const format = options.format || 'horizontal'
-  const config = FORMAT_CONFIGS[format]
+  const quality = options.quality || 'standard'
+  const res = RESOLUTIONS[quality][format]
 
   // 1. Scale to target resolution with padding (letterbox/pillarbox)
   // This ensures all images fit the target aspect ratio
   filters.push(
-    `scale=${config.width}:${config.height}:force_original_aspect_ratio=decrease`,
-    `pad=${config.width}:${config.height}:(ow-iw)/2:(oh-ih)/2:black`
+    `scale=${res.width}:${res.height}:force_original_aspect_ratio=decrease`,
+    `pad=${res.width}:${res.height}:(ow-iw)/2:(oh-ih)/2:black`
   )
 
   // 2. Ensure even dimensions (H.264 requirement) - already handled by fixed sizes above
@@ -276,6 +299,7 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
 
         fs.writeFileSync(concatFile, lines.join('\n'))
 
+        const q = options.quality || 'standard'
         args = [
           '-f', 'concat',
           '-safe', '0',
@@ -283,11 +307,12 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
           '-i', audioInputPath,
           '-vf', filterString,
           '-c:v', 'libx264',
-          '-preset', 'fast',
-          '-crf', '23',
+          '-preset', PRESETS[q],
+          '-crf', q === 'basic' ? '24' : q === 'pro' ? '21' : '23',
+          '-b:v', BITRATES[q],
           '-pix_fmt', 'yuv420p',
           '-c:a', 'aac',
-          '-b:a', '192k',
+          '-b:a', q === 'basic' ? '160k' : '192k',
           '-shortest',
           '-movflags', '+faststart',
           '-y',

@@ -255,6 +255,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
           renderId,
           options: {
             format,
+            quality: (renderOptions as any)?.quality || 'standard',
             watermark: renderOptions?.watermark ?? false,
             crossfade: renderOptions?.crossfade ?? false,
             crossfadeDuration: renderOptions?.crossfadeDuration ?? 0.5,

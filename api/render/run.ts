@@ -48,6 +48,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   // normalize options
   const opts: RenderOptions = {
     format: options?.format || ('horizontal' as RenderFormat),
+    quality: (options as any)?.quality || 'standard',
     watermark: options?.watermark ?? false,
     crossfade: options?.crossfade ?? false,
     crossfadeDuration: options?.crossfadeDuration ?? 0.5,

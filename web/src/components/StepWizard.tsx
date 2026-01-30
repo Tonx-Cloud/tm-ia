@@ -1080,8 +1080,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         },
         renderOptions: {
           format: aspectRatio === '9:16' ? 'vertical' : aspectRatio === '16:9' ? 'horizontal' : 'square',
+          quality: 'basic',
           watermark: false,
-          crossfade: true,
+          crossfade: false,
           crossfadeDuration: 0.5
         }
       }
