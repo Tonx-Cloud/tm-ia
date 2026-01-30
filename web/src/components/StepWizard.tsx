@@ -852,6 +852,10 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         audioRef.current.pause()
         audioRef.current = null
       }
+      if (selectedPollRef.current) {
+        window.clearInterval(selectedPollRef.current)
+        selectedPollRef.current = null
+      }
     }
   }, [audio])
   
@@ -875,6 +879,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   // Image generation controls (preview)
   const [selectedSceneIds, setSelectedSceneIds] = useState<Set<string>>(new Set())
   const [generatingSelected, setGeneratingSelected] = useState(false)
+  const selectedPollRef = useRef<number | null>(null)
   
   // Modal state
   const [modalAsset, setModalAsset] = useState<Asset | null>(null)
@@ -1436,9 +1441,38 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       const data = await res.json().catch(() => ({} as any))
       if (!res.ok) throw new Error(data.error || 'Falha ao gerar cenas selecionadas')
 
-      setAssets(data.project?.assets || [])
+      // IMPORTANT: /api/assets/generate_selected only enqueues jobs and does NOT return the updated project.
+      // Never clear the UI; keep what the user is seeing and refresh in the background.
+      const justQueued = new Set(selectedSceneIds)
+
+      setAssets((prev) =>
+        prev.map((a) => (justQueued.has(a.id) ? { ...a, status: 'needs_regen' as any } : a))
+      )
       setBalance(data.balance || balance)
       setSelectedSceneIds(new Set())
+
+      // Poll project for updated assets for a short time (worker will update DB when done)
+      if (selectedPollRef.current) window.clearInterval(selectedPollRef.current)
+      let tries = 0
+      selectedPollRef.current = window.setInterval(async () => {
+        tries++
+        try {
+          const resp = await fetchProject(projectId, token)
+          const p = resp.project
+          if (p?.assets?.length) {
+            setAssets(p.assets)
+          }
+          if (tries >= 15) {
+            if (selectedPollRef.current) window.clearInterval(selectedPollRef.current)
+            selectedPollRef.current = null
+          }
+        } catch {
+          if (tries >= 15) {
+            if (selectedPollRef.current) window.clearInterval(selectedPollRef.current)
+            selectedPollRef.current = null
+          }
+        }
+      }, 2000)
     } catch (err) {
       setError((err as Error).message)
       onError?.((err as Error).message)
