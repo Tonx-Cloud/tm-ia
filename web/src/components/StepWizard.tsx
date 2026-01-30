@@ -908,7 +908,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     let ensuredProjectId = projectId
     if (!ensuredProjectId) {
       try {
-        ensuredProjectId = await ensureProjectExists(file.name)
+        // IMPORTANT: do not overwrite the user-chosen project name with the audio filename.
+        // Only use the filename as a fallback when the project name is empty.
+        ensuredProjectId = await ensureProjectExists(projectName?.trim() ? undefined : file.name)
       } catch (err) {
         const message = (err as Error).message
         setError(message)
