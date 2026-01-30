@@ -138,22 +138,13 @@ export default withObservability(async function handler(req: VercelRequest, res:
       project.audioUrl = blob.url
       project.audioFilename = audioFilename || project.audioFilename
       project.audioMime = audioMime || project.audioMime
-      project.audioDataBase64 = undefined
       project.audioPath = audioPath // dev/debug only
 
       ctx.log('info', 'render.pro.audio_blob_ok', { projectId, key })
     } catch (err) {
-      // Fallback: inline base64 (may be heavy; prefer blob)
-      try {
-        const buf = fs.readFileSync(audioPath)
-        project.audioDataBase64 = Buffer.from(buf).toString('base64')
-        project.audioFilename = audioFilename || project.audioFilename
-        project.audioMime = audioMime || project.audioMime
-        project.audioPath = audioPath
-        ctx.log('warn', 'render.pro.audio_blob_failed_base64_fallback', { message: (err as Error).message })
-      } catch (err2) {
-        ctx.log('warn', 'render.pro.audio_read_failed', { message: (err2 as Error).message })
-      }
+      // Fallback: keep temp path (best effort)
+      project.audioPath = audioPath
+      ctx.log('warn', 'render.pro.audio_blob_failed', { message: (err as Error).message })
     }
 
     await upsertProject(project)

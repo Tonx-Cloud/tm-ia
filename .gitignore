@@ -45,3 +45,9 @@ USER.md
 ACTION_PLAN.md
 .vercel
 .env*.local
+
+/generated/prisma
+
+# Prisma local db
+prisma/dev.db
+prisma/dev.db-journal

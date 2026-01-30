@@ -2,6 +2,7 @@ const requiredVars = [
   'OPENAI_API_KEY',
   'GEMINI_API_KEY',
   'JWT_SECRET',
+  'DATABASE_URL',
 ] as const
 
 const jwtVars = ['JWT_SECRET'] as const

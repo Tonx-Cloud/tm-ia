@@ -4,7 +4,8 @@ import os from 'os'
 import { spawn } from 'child_process'
 import { getFFmpegPath } from './ffmpegPath.js'
 import { getProject } from './projectStore.js'
-import { type RenderJob, loadJobs, saveJobs } from './jobStore.js'
+import { prisma } from './prisma.js'
+import { type RenderJob } from './renderPipeline.js'
 import { put } from '@vercel/blob'
 
 // ============================================================================
@@ -44,29 +45,29 @@ async function updateJobStatus(
   error?: string,
   logTail?: string
 ) {
-  const jobs = await loadJobs(userId)
-  const idx = jobs.findIndex((j) => j.renderId === renderId)
-  if (idx >= 0) {
-    jobs[idx].status = status
-    jobs[idx].updatedAt = Date.now()
-    if (outputUrl) jobs[idx].outputUrl = outputUrl
-    if (error) jobs[idx].error = error
-    if (logTail) jobs[idx].logTail = logTail
-    if (status === 'processing') jobs[idx].progress = 5
-    if (status === 'complete') jobs[idx].progress = 100
-    await saveJobs(userId, jobs)
+  const data: any = {
+    status,
+    outputUrl: outputUrl ?? undefined,
+    error: error ?? undefined,
+    logTail: logTail ?? undefined,
   }
+  if (status === 'processing') data.progress = 5
+  if (status === 'complete') data.progress = 100
+
+  await prisma.render.updateMany({
+    where: { id: renderId, userId },
+    data,
+  })
 }
 
 async function updateJobProgress(userId: string, renderId: string, progress: number, logTail?: string) {
-  const jobs = await loadJobs(userId)
-  const idx = jobs.findIndex((j) => j.renderId === renderId)
-  if (idx >= 0 && jobs[idx].status === 'processing') {
-    jobs[idx].progress = Math.min(99, Math.max(5, progress))
-    if (logTail) jobs[idx].logTail = logTail
-    jobs[idx].updatedAt = Date.now()
-    await saveJobs(userId, jobs)
-  }
+  await prisma.render.updateMany({
+    where: { id: renderId, userId, status: 'processing' },
+    data: {
+      progress: Math.min(99, Math.max(5, progress)),
+      logTail: logTail ?? undefined,
+    },
+  })
 }
 
 // ============================================================================
@@ -186,11 +187,6 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         if (!resp.ok) throw new Error(`Audio download failed (${resp.status})`)
         const buf = Buffer.from(await resp.arrayBuffer())
         fs.writeFileSync(workAudio, buf)
-        audioInput = workAudio
-      } else if (project.audioDataBase64) {
-        const tmpDir = os.tmpdir()
-        const workAudio = path.join(tmpDir, `audio_${job.renderId}.bin`)
-        fs.writeFileSync(workAudio, project.audioDataBase64, 'base64')
         audioInput = workAudio
       } else if (project.audioPath && fs.existsSync(project.audioPath)) {
         audioInput = project.audioPath

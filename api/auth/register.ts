@@ -5,6 +5,7 @@ import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import { withObservability } from '../_lib/observability.js'
 import { loadJwtEnv } from '../_lib/env.js'
+import { prisma } from '../_lib/prisma.js'
 
 const DB_PATH = path.join(process.cwd(), '.data', 'users.json')
 
@@ -72,6 +73,17 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
     users.push(newUser)
     await saveUsers(users)
+
+    // Ensure user exists in Postgres (credits + projects)
+    try {
+      await prisma.user.upsert({
+        where: { id: newUser.id },
+        create: { id: newUser.id, email: newUser.email, credits: 0 },
+        update: { email: newUser.email },
+      })
+    } catch (err) {
+      ctx.log('warn', 'auth.register.prisma_upsert_failed', { message: (err as Error).message })
+    }
     
     // Sign a JWT token - use loadJwtEnv() which only needs JWT_SECRET
     const env = loadJwtEnv()

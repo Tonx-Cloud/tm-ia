@@ -1,36 +1,23 @@
-import { createClient } from 'redis'
 import crypto from 'crypto'
+import { prisma } from './prisma.js'
 
-// Reuse Redis client from projectStore logic or create new
-const redisUrl = process.env.REDIS_URL
-const client = redisUrl ? createClient({ url: redisUrl }) : null
-
-if (client) {
-  client.on('error', (err) => console.error('Redis Client Error', err))
-  if (!client.isOpen) client.connect().catch(console.error)
-}
-
-/**
- * Credit transaction reasons
- * @see docs/CREDITS_MODEL.md for pricing details
- */
 export type CreditReason =
-  | 'initial'              
-  | 'purchase'             
-  | 'payment_pix'          
-  | 'admin_adjust'         
-  | 'refund'               
-  | 'transcription'        
-  | 'analysis'             
-  | 'generate_image'       
-  | 'regenerate_image'     
-  | 'animate_image'        
-  | 'render'               
-  | 'render_base'          
-  | 'pro_render'           
-  | 'export_4k'            
-  | 'remove_watermark'     
-  | 'demo_unlock'          
+  | 'initial'
+  | 'purchase'
+  | 'payment_pix'
+  | 'admin_adjust'
+  | 'refund'
+  | 'transcription'
+  | 'analysis'
+  | 'generate_image'
+  | 'regenerate_image'
+  | 'animate_image'
+  | 'render'
+  | 'render_base'
+  | 'pro_render'
+  | 'export_4k'
+  | 'remove_watermark'
+  | 'demo_unlock'
 
 export type CreditEntry = {
   id: string
@@ -43,84 +30,101 @@ export type CreditEntry = {
   createdAt: number
 }
 
-export type CreditLedger = {
-  balance: number
-  entries: CreditEntry[]
+async function ensureUser(userId: string) {
+  const existing = await prisma.user.findUnique({ where: { id: userId } })
+  if (existing) return existing
+  // Fallback email placeholder; real email should be upserted by auth endpoints.
+  return prisma.user.create({
+    data: {
+      id: userId,
+      email: `user-${userId}@tm.local`,
+      credits: 0,
+    },
+  })
 }
 
-const MEMORY_LEDGERS: Record<string, CreditLedger> = {}
-
-async function getRedis() {
-  if (!client) return null
-  if (!client.isOpen) await client.connect()
-  return client
-}
-
-async function loadLedger(userId: string): Promise<CreditLedger> {
-  const redis = await getRedis()
-  if (redis) {
-    const data = await redis.get(`credits:${userId}`)
-    if (data) return JSON.parse(data)
-  }
-  return MEMORY_LEDGERS[userId] || { balance: 0, entries: [] }
-}
-
-async function saveLedger(userId: string, ledger: CreditLedger) {
-  const redis = await getRedis()
-  if (redis) {
-    await redis.set(`credits:${userId}`, JSON.stringify(ledger))
-  } else {
-    MEMORY_LEDGERS[userId] = ledger
-  }
-}
-
-// NOTE: Changed to async!
 export async function getBalance(userId: string): Promise<number> {
-  const ledger = await loadLedger(userId)
-  return ledger.balance
+  const u = await ensureUser(userId)
+  return u.credits
 }
 
-// NOTE: Changed to async!
 export async function getLedger(userId: string, limit = 10): Promise<CreditEntry[]> {
-  const { entries } = await loadLedger(userId)
-  return entries.slice(-limit).reverse()
+  await ensureUser(userId)
+  const rows = await prisma.creditEntry.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+  })
+  return rows.map((r) => ({
+    id: r.id,
+    userId: r.userId,
+    type: (r.type as any) || 'earn',
+    amount: r.amount,
+    reason: r.reason as any,
+    projectId: r.projectId || undefined,
+    renderId: r.renderId || undefined,
+    createdAt: r.createdAt.getTime(),
+  }))
 }
 
 export async function addCredits(userId: string, amount: number, reason: CreditReason, meta?: Partial<CreditEntry>) {
   if (amount <= 0) throw new Error('amount must be positive')
-  const ledger = await loadLedger(userId)
-  const entry: CreditEntry = {
-    id: crypto.randomUUID(),
-    userId,
-    type: 'earn',
-    amount,
-    reason,
-    projectId: meta?.projectId,
-    renderId: meta?.renderId,
-    createdAt: Date.now(),
-  }
-  ledger.balance += amount
-  ledger.entries.push(entry)
-  await saveLedger(userId, ledger)
-  return ledger.balance
+
+  await ensureUser(userId)
+
+  const res = await prisma.$transaction(async (tx) => {
+    const updated = await tx.user.update({
+      where: { id: userId },
+      data: { credits: { increment: amount } },
+    })
+
+    await tx.creditEntry.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId,
+        type: 'earn',
+        amount,
+        reason,
+        projectId: meta?.projectId,
+        renderId: meta?.renderId,
+      },
+    })
+
+    return updated.credits
+  })
+
+  return res
 }
 
 export async function spendCredits(userId: string, amount: number, reason: CreditReason, meta?: Partial<CreditEntry>) {
   if (amount <= 0) throw new Error('amount must be positive')
-  const ledger = await loadLedger(userId)
-  if (ledger.balance < amount) throw new Error('Insufficient credits')
-  const entry: CreditEntry = {
-    id: crypto.randomUUID(),
-    userId,
-    type: 'spend',
-    amount: -amount,
-    reason,
-    projectId: meta?.projectId,
-    renderId: meta?.renderId,
-    createdAt: Date.now(),
-  }
-  ledger.balance -= amount
-  ledger.entries.push(entry)
-  await saveLedger(userId, ledger)
-  return ledger.balance
+
+  await ensureUser(userId)
+
+  const res = await prisma.$transaction(async (tx) => {
+    const u = await tx.user.findUnique({ where: { id: userId } })
+    if (!u) throw new Error('User not found')
+    if (u.credits < amount) throw new Error('Insufficient credits')
+
+    const updated = await tx.user.update({
+      where: { id: userId },
+      data: { credits: { decrement: amount } },
+    })
+
+    await tx.creditEntry.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId,
+        type: 'spend',
+        amount: -amount,
+        reason,
+        projectId: meta?.projectId,
+        renderId: meta?.renderId,
+      },
+    })
+
+    return updated.credits
+  })
+
+  return res
 }

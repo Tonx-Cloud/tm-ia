@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String        @id
+  email     String        @unique
+  credits   Int           @default(0)
+  createdAt DateTime      @default(now())
+  projects  Project[]
+  creditsLog CreditEntry[]
+}
+
+model CreditEntry {
+  id        String   @id
+  userId    String
+  type      String   // earn | spend
+  amount    Int
+  reason    String
+  projectId String?
+  renderId  String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Project {
+  id            String   @id
+  userId        String?
+  name          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Audio
+  audioUrl      String?
+  audioPath     String?
+  audioFilename String?
+  audioMime     String?
+
+  // Assets & Storyboard
+  storyboard    String   @default("[]") // JSON string of StoryboardItem[]
+
+  // Meta
+  mood          String?
+  style         String?
+  aspectRatio   String?
+
+  user          User?    @relation(fields: [userId], references: [id])
+  assets        Asset[]
+  renders       Render[]
+
+  @@index([userId])
+}
+
+model Asset {
+  id          String   @id
+  projectId   String
+  createdAt   DateTime @default(now())
+
+  prompt      String
+  status      String   @default("generated") // generated, reused, needs_regen
+  dataUrl     String
+
+  // Metadata
+  sceneNumber Int?
+  timeCode    String?
+  lyrics      String?
+  visualNotes String?
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model Render {
+  id           String   @id
+  projectId    String
+  userId       String?
+  configId     String?  // inline, etc.
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  status       String   // pending, processing, complete, failed
+  progress     Int      @default(0)
+  outputUrl    String?
+  error        String?
+  logTail      String?
+  costCredits  Int?
+
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([userId, createdAt])
+}

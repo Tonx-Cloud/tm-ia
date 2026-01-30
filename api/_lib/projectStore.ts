@@ -1,26 +1,13 @@
-import { createClient } from 'redis'
+import { prisma } from './prisma.js'
 import crypto from 'crypto'
-
-// Use REDIS_URL from env
-const redisUrl = process.env.REDIS_URL
-const client = redisUrl ? createClient({ url: redisUrl }) : null
-
-const STRICT_REDIS =
-  process.env.VERCEL_ENV === 'production' || process.env.VERCEL_ENV === 'preview'
-
-if (client) {
-  client.on('error', (err) => console.error('Redis Client Error', err))
-  // Do not eagerly connect here; connect lazily in getRedis() with strict handling.
-}
 
 export type Asset = {
   id: string
   projectId: string
   prompt: string
-  status: 'generated' | 'reused' | 'needs_regen'
+  status: string
   dataUrl: string
   createdAt: number
-  // Extended metadata
   sceneNumber?: number
   timeCode?: string
   lyrics?: string
@@ -37,10 +24,13 @@ export type StoryboardItem = {
 export type RenderRecord = {
   id: string
   createdAt: number
-  status: 'ready' | 'failed'
+  status: string
+  progress?: number
   costCredits?: number
   snapshotHash?: string
   outputUrl?: string
+  error?: string
+  logTail?: string
 }
 
 export type Project = {
@@ -48,111 +38,145 @@ export type Project = {
   createdAt: number
   userId?: string
   name?: string
-  // Audio can be stored as a temporary file path (dev) or a URL (prod). Base64 is fallback.
   audioPath?: string
   audioUrl?: string
-  audioDataBase64?: string
   audioFilename?: string
   audioMime?: string
+  mood?: string
+  style?: string
+  aspectRatio?: string
   assets: Asset[]
   storyboard: StoryboardItem[]
   renders: RenderRecord[]
 }
 
-// Fallback in-memory store for dev/build without Redis
-const MEMORY_STORE: Record<string, Project> = {}
-const MEMORY_USER_INDEX: Record<string, string[]> = {}
-
-async function getRedis() {
-  if (!client) return null
-  if (!client.isOpen) {
-    try {
-      await client.connect()
-    } catch (err) {
-      // In production/preview, never silently fall back to in-memory.
-      if (STRICT_REDIS) {
-        const msg = (err as Error).message || String(err)
-        console.error('Redis connect failed (strict):', msg)
-        throw new Error('Redis unavailable')
-      }
-      console.warn('Redis connect failed (dev fallback to memory):', (err as Error).message)
-      return null
-    }
+function mapProject(p: any): Project {
+  let storyboard: StoryboardItem[] = []
+  try {
+    storyboard = JSON.parse(p.storyboard || '[]')
+  } catch (e) {
+    storyboard = []
   }
-  return client
+
+  return {
+    id: p.id,
+    createdAt: p.createdAt.getTime(),
+    userId: p.userId || undefined,
+    name: p.name || undefined,
+    audioPath: p.audioPath || undefined,
+    audioUrl: p.audioUrl || undefined,
+    audioFilename: p.audioFilename || undefined,
+    audioMime: p.audioMime || undefined,
+    mood: p.mood || undefined,
+    style: p.style || undefined,
+    aspectRatio: p.aspectRatio || undefined,
+    assets: p.assets.map((a: any) => ({
+      id: a.id,
+      projectId: a.projectId,
+      prompt: a.prompt,
+      status: a.status,
+      dataUrl: a.dataUrl,
+      createdAt: a.createdAt.getTime(),
+      sceneNumber: a.sceneNumber || undefined,
+      timeCode: a.timeCode || undefined,
+      lyrics: a.lyrics || undefined,
+      visualNotes: a.visualNotes || undefined,
+    })),
+    storyboard,
+    renders: p.renders.map((r: any) => ({
+      id: r.id,
+      createdAt: r.createdAt.getTime(),
+      status: r.status,
+      progress: r.progress,
+      outputUrl: r.outputUrl || undefined,
+      error: r.error || undefined,
+      logTail: r.logTail || undefined,
+      costCredits: r.costCredits || undefined,
+    })),
+  }
 }
 
 export async function createProject(userId?: string): Promise<Project> {
-  const project: Project = {
-    id: crypto.randomUUID(),
-    createdAt: Date.now(),
-    userId,
-    assets: [],
-    storyboard: [],
-    renders: [],
+  const data: any = {
+    storyboard: '[]',
   }
-  await upsertProject(project)
-  return project
+  if (userId) data.userId = userId
+
+  const p = await prisma.project.create({
+    data,
+    include: { assets: true, renders: true }
+  })
+  return mapProject(p)
 }
 
 export async function getProject(projectId: string): Promise<Project | null> {
-  const redis = await getRedis()
-  if (redis) {
-    const data = await redis.get(`project:${projectId}`)
-    return data ? JSON.parse(data) : null
-  }
-  return MEMORY_STORE[projectId] || null
+  const p = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: { assets: true, renders: true }
+  })
+  if (!p) return null
+  return mapProject(p)
 }
 
 export async function upsertProject(project: Project): Promise<void> {
-  const redis = await getRedis()
-  if (redis) {
-    // Expire in 7 days (604800 seconds) to manage cost
-    await redis.set(`project:${project.id}`, JSON.stringify(project), { EX: 604800 })
-
-    // Maintain per-user index for listing projects
-    if (project.userId) {
-      const indexKey = `userProjects:${project.userId}`
-      await redis.zAdd(indexKey, [{ score: project.createdAt, value: project.id }])
-      await redis.expire(indexKey, 604800)
+  // Update main fields
+  await prisma.project.update({
+    where: { id: project.id },
+    data: {
+      name: project.name,
+      userId: project.userId,
+      audioUrl: project.audioUrl,
+      audioPath: project.audioPath,
+      audioFilename: project.audioFilename,
+      audioMime: project.audioMime,
+      storyboard: JSON.stringify(project.storyboard),
+      mood: project.mood,
+      style: project.style,
+      aspectRatio: project.aspectRatio,
     }
-  } else {
-    MEMORY_STORE[project.id] = project
-    if (project.userId) {
-      const list = MEMORY_USER_INDEX[project.userId] || []
-      if (!list.includes(project.id)) list.unshift(project.id)
-      MEMORY_USER_INDEX[project.userId] = list
-    }
-  }
+  })
 }
 
 export async function listProjects(userId: string, limit = 50): Promise<Project[]> {
-  const redis = await getRedis()
-  if (redis) {
-    const ids = await redis.zRange(`userProjects:${userId}`, 0, limit - 1, { REV: true })
-    const projects: Project[] = []
-    for (const id of ids) {
-      const p = await getProject(id)
-      if (p) projects.push(p)
-    }
-    return projects
-  }
-
-  const ids = (MEMORY_USER_INDEX[userId] || []).slice(0, limit)
-  return ids.map((id) => MEMORY_STORE[id]).filter(Boolean)
+  const projects = await prisma.project.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+    include: { assets: true, renders: true }
+  })
+  return projects.map(mapProject)
 }
 
 export async function addAssets(projectId: string, assets: Asset[]): Promise<Project> {
+  // 1. Create assets in DB
+  await prisma.$transaction(
+    assets.map(a => prisma.asset.create({
+      data: {
+        id: a.id,
+        projectId,
+        prompt: a.prompt,
+        status: a.status,
+        dataUrl: a.dataUrl,
+        sceneNumber: a.sceneNumber,
+        timeCode: a.timeCode,
+        lyrics: a.lyrics,
+        visualNotes: a.visualNotes,
+        createdAt: new Date(a.createdAt),
+      }
+    }))
+  )
+
+  // 2. Append to storyboard
   const proj = await getProject(projectId)
   if (!proj) throw new Error('Project not found')
-  
-  proj.assets.push(...assets)
-  
-  // default storyboard entries
-  assets.forEach((a) => {
-    proj.storyboard.push({ assetId: a.id, durationSec: 5, animate: false })
+
+  const newItems = assets.map(a => ({ assetId: a.id, durationSec: 5, animate: false }))
+  const updatedStoryboard = [...proj.storyboard, ...newItems]
+
+  await prisma.project.update({
+    where: { id: projectId },
+    data: { storyboard: JSON.stringify(updatedStoryboard) }
   })
-  
-  await upsertProject(proj)
-  return proj
+
+  return (await getProject(projectId))!
 }

@@ -1,13 +1,4 @@
-import { createClient } from 'redis'
-
-// Reuse Redis client from projectStore logic or create new
-const redisUrl = process.env.REDIS_URL
-const client = redisUrl ? createClient({ url: redisUrl }) : null
-
-if (client) {
-  client.on('error', (err) => console.error('Redis Client Error', err))
-  if (!client.isOpen) client.connect().catch(console.error)
-}
+import { prisma } from './prisma.js'
 
 export type RenderJobStatus = 'pending' | 'processing' | 'complete' | 'failed'
 
@@ -16,7 +7,7 @@ export type RenderJob = {
   projectId: string
   configId: string
   status: RenderJobStatus
-  progress: number // 0-100
+  progress: number
   outputUrl?: string
   error?: string
   logTail?: string
@@ -24,30 +15,55 @@ export type RenderJob = {
   updatedAt: number
 }
 
-const MEMORY_JOBS: Record<string, RenderJob[]> = {}
-
-async function getRedis() {
-  if (!client) return null
-  if (!client.isOpen) await client.connect()
-  return client
+function mapRow(r: any): RenderJob {
+  return {
+    renderId: r.id,
+    projectId: r.projectId,
+    configId: r.configId || 'inline',
+    status: r.status,
+    progress: r.progress ?? 0,
+    outputUrl: r.outputUrl || undefined,
+    error: r.error || undefined,
+    logTail: r.logTail || undefined,
+    createdAt: r.createdAt.getTime(),
+    updatedAt: r.updatedAt?.getTime?.() ?? r.createdAt.getTime(),
+  }
 }
 
-// NOTE: Changed to async
 export async function loadJobs(userId: string): Promise<RenderJob[]> {
-  const redis = await getRedis()
-  if (redis) {
-    const data = await redis.get(`jobs:${userId}`)
-    return data ? JSON.parse(data) : []
-  }
-  return MEMORY_JOBS[userId] || []
+  const rows = await prisma.render.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+  })
+  return rows.map(mapRow)
 }
 
-// NOTE: Changed to async
-export async function saveJobs(userId: string, jobs: RenderJob[]) {
-  const redis = await getRedis()
-  if (redis) {
-    await redis.set(`jobs:${userId}`, JSON.stringify(jobs), { EX: 86400 * 3 }) // 3 days retention
-  } else {
-    MEMORY_JOBS[userId] = jobs
-  }
+export async function saveJobs(_userId: string, _jobs: RenderJob[]) {
+  // no-op: jobs are stored individually in DB.
+}
+
+export async function upsertJob(userId: string, job: RenderJob) {
+  await prisma.render.upsert({
+    where: { id: job.renderId },
+    create: {
+      id: job.renderId,
+      projectId: job.projectId,
+      userId,
+      configId: job.configId,
+      status: job.status,
+      progress: job.progress,
+      outputUrl: job.outputUrl,
+      error: job.error,
+      logTail: job.logTail,
+    },
+    update: {
+      configId: job.configId,
+      status: job.status,
+      progress: job.progress,
+      outputUrl: job.outputUrl,
+      error: job.error,
+      logTail: job.logTail,
+    },
+  })
 }
