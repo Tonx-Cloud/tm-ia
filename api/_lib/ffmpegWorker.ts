@@ -284,8 +284,10 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         totalDurationSec += dur
       }
 
-      // Ensure the video lasts at least as long as the audio; otherwise -shortest will cut the audio.
-      // If storyboard durations are missing/incorrect, distribute evenly across the audio duration.
+      // Ensure the video duration matches the audio duration.
+      // We enforce this in two ways:
+      // 1) Normalize per-scene durations to cover the audio length.
+      // 2) Pass -t <audioDur> to FFmpeg so the output cannot exceed the audio.
       const getAudioDurationSec = async () => {
         try {
           const ffmpegPath = getFFmpegPath()
@@ -305,10 +307,10 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
 
       const audioDur = await getAudioDurationSec()
       const nScenes = Math.max(1, project.storyboard.length || present.length)
-      if (audioDur && totalDurationSec < audioDur - 0.5) {
+      if (audioDur && nScenes > 0) {
         const per = Math.max(1, Math.round((audioDur / nScenes) * 100) / 100)
         for (let i = 0; i < durations.length; i++) durations[i] = per
-        totalDurationSec = per * nScenes
+        totalDurationSec = audioDur
       }
 
       // 3. Build FFmpeg command based on whether crossfade is enabled
@@ -360,6 +362,7 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
           '-pix_fmt', 'yuv420p',
           '-c:a', 'aac',
           '-b:a', q === 'basic' ? '160k' : '192k',
+          ...(audioDur ? ['-t', String(Math.max(1, Math.round(audioDur * 100) / 100))] : []),
           '-shortest',
           '-movflags', '+faststart',
           '-y',
@@ -525,6 +528,7 @@ function buildCrossfadeCommand(
     '-pix_fmt', 'yuv420p',
     '-c:a', 'aac',
     '-b:a', '192k',
+    ...(typeof audioInput === 'string' ? [] : []),
     '-shortest',
     '-movflags', '+faststart',
     '-y',
