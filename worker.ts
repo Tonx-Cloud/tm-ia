@@ -48,8 +48,8 @@ async function checkQueue() {
     const options = {
         format: 'horizontal', // default
         watermark: false,
-        crossfade: true,
-        crossfadeDuration: 0.5
+        crossfade: false,
+        crossfadeDuration: 0.5,
     }
 
     // Run render locally
