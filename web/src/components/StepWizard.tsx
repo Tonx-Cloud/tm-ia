@@ -1191,6 +1191,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       const configData = {
         projectId,
         idempotencyKey,
+        // CRITICAL: Send current UI storyboard state to ensure animations are respected
+        // even if the background sync hasn't finished yet.
+        storyboard: buildStoryboardItems(storyboard, assets),
         config: {
           format: aspectRatio === '9:16' ? 'vertical' : aspectRatio === '16:9' ? 'horizontal' : 'square',
           duration: totalDuration,

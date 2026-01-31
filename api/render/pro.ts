@@ -116,7 +116,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
     }
   }
 
-  const { projectId, cost, configId, config: inlineConfig, renderOptions, idempotencyKey } = jsonData
+  const { projectId, cost, configId, config: inlineConfig, renderOptions, idempotencyKey, storyboard: explicitStoryboard } = jsonData
 
   if (!projectId) {
     return res.status(400).json({ error: 'projectId required', requestId: ctx.requestId })
@@ -136,6 +136,14 @@ export default withObservability(async function handler(req: VercelRequest, res:
       storyboard: [],
       renders: [],
     }
+  }
+
+  // CRITICAL FIX: If frontend sends an explicit storyboard, verify and persist it immediately.
+  // This avoids race conditions where the render job starts before the background sync finishes.
+  if (explicitStoryboard && Array.isArray(explicitStoryboard)) {
+    project.storyboard = explicitStoryboard
+    ctx.log('info', 'render.pro.storyboard_updated_from_payload', { projectId, count: explicitStoryboard.length })
+    await upsertProject(project)
   }
 
   // If we didn't receive audio in this request, we rely on the previously uploaded Blob audioUrl.
