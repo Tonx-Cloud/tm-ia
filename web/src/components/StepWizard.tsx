@@ -60,6 +60,31 @@ type StoryboardScene = {
 // COST TOOLTIP COMPONENT
 // ============================================================================
 
+// ============================================================================
+// GLOBAL LOADING OVERLAY
+// ============================================================================
+
+function LoadingOverlay({ message }: { message: string }) {
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      zIndex: 9999,
+      background: 'rgba(0,0,0,0.7)',
+      backdropFilter: 'blur(4px)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: 'white',
+      animation: 'fadeIn 0.3s ease'
+    }}>
+      <div className="spinner" style={{ width: 48, height: 48, border: '4px solid rgba(255,255,255,0.3)', borderTopColor: 'var(--accent)' }} />
+      <div style={{ marginTop: 24, fontSize: 18, fontWeight: 600 }}>{message}</div>
+    </div>
+  )
+}
+
 function CostBadge({ 
   credits, 
   label, 
@@ -892,6 +917,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [generating, setGenerating] = useState(false)
   const [storyboard, setStoryboard] = useState<StoryboardScene[]>([])
   const [step2Confirmed, setStep2Confirmed] = useState(false)
+  const [confirmingStep2, setConfirmingStep2] = useState(false)
   
   // Step 3
   const [assets, setAssets] = useState<Asset[]>([])
@@ -901,6 +927,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [renderLog, setRenderLog] = useState<string>('')
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
   const [step3Confirmed, setStep3Confirmed] = useState(false)
+  const [confirmingStep3, setConfirmingStep3] = useState(false)
 
   // Image generation controls
   // NOTE: We generate all images up-front (no preview/placeholders) to simplify UX.
@@ -914,6 +941,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
 
   const handleConfirmStep2 = async () => {
     if (!projectId || !token) return
+    setConfirmingStep2(true)
     try {
       // Force new render job ID
       localStorage.removeItem(`tm_render_idem_${projectId}`)
@@ -933,11 +961,14 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     } catch (err) {
       console.error('Failed to confirm settings:', err)
       setError('Erro ao salvar configurações')
+    } finally {
+      setConfirmingStep2(false)
     }
   }
 
   const handleConfirmStep3 = async () => {
     if (!projectId || !token) return
+    setConfirmingStep3(true)
     try {
       // Force new render job ID
       localStorage.removeItem(`tm_render_idem_${projectId}`)
@@ -956,6 +987,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     } catch (err) {
       console.error('Failed to save edits:', err)
       setError('Erro ao salvar edições')
+    } finally {
+      setConfirmingStep3(false)
     }
   }
 
@@ -2703,6 +2736,13 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         </div>
       )}
       
+      {/* Global loading overlay (UX for slow transitions) */}
+      {(uploading || analyzing) && <LoadingOverlay message="Analisando áudio..." />}
+      {generating && <LoadingOverlay message="Gerando cenas com IA..." />}
+      {confirmingStep2 && <LoadingOverlay message="Salvando predefinições..." />}
+      {confirmingStep3 && <LoadingOverlay message="Salvando edições..." />}
+      {rendering && <LoadingOverlay message="Renderizando vídeo..." />}
+
       {/* Global styles */}
       <style>{`
         @keyframes fadeIn {
