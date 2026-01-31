@@ -80,9 +80,8 @@ export async function uploadAudio(
   token: string,
   opts?: { projectId?: string }
 ): Promise<{ ok: boolean; projectId: string; audioUrl?: string; filePath: string; filename: string; size: number; mime: string }> {
-  // IMPORTANT: avoid Vercel 413 by uploading directly from the browser to Vercel Blob.
-  // Server only issues the token.
-  const { upload } = await import('@vercel/blob/client')
+  // IMPORTANT: avoid Vercel 413 by uploading directly from the browser.
+  // Server only issues a presigned URL (Cloudflare R2).
 
   const projectId =
     opts?.projectId ||
@@ -92,18 +91,38 @@ export async function uploadAudio(
   const safeName = (file.name || `audio.${ext}`).replace(/[^a-zA-Z0-9._-]/g, '_')
   const pathname = `audio/${projectId}/${Date.now()}-${safeName}`
 
-  const blob = await upload(pathname, file, {
-    access: 'public',
-    handleUploadUrl: `${API}/api/blob/upload`,
+  const presignRes = await fetch(`${API}/api/blob/upload`, {
+    method: 'POST',
     headers: {
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
+    body: JSON.stringify({ pathname, contentType: file.type || 'audio/mpeg' }),
   })
+
+  if (!presignRes.ok) {
+    const err = await presignRes.json().catch(() => ({}))
+    throw new Error(err.error || 'Failed to get upload URL')
+  }
+
+  const presigned = (await presignRes.json()) as { uploadUrl: string; publicUrl: string }
+
+  const putRes = await fetch(presigned.uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': file.type || 'audio/mpeg',
+    },
+    body: file,
+  })
+
+  if (!putRes.ok) {
+    throw new Error(`Upload failed (${putRes.status})`)
+  }
 
   return {
     ok: true,
     projectId,
-    audioUrl: blob.url,
+    audioUrl: presigned.publicUrl,
     filePath: '',
     filename: file.name || safeName,
     size: file.size,

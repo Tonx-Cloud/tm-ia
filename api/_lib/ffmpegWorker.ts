@@ -6,7 +6,7 @@ import { getFFmpegPath } from './ffmpegPath.js'
 import { getProject } from './projectStore.js'
 import { prisma } from './prisma.js'
 import { type RenderJob } from './renderPipeline.js'
-import { put } from '@vercel/blob'
+import { putBufferToR2 } from './r2.js'
 
 // ============================================================================
 // Types
@@ -514,8 +514,8 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
             try {
               const buf = fs.readFileSync(outputFile)
               const key = `renders/${job.projectId}/${job.renderId}.mp4`
-              const blob = await put(key, buf, { access: 'public', contentType: 'video/mp4' })
-              await updateJobStatus(userId, job.renderId, 'complete', blob.url)
+              const obj = await putBufferToR2(key, buf, 'video/mp4')
+              await updateJobStatus(userId, job.renderId, 'complete', obj.url)
             } catch (err) {
               // fallback: keep local path (may expire)
               const downloadUrl = `${process.env.PUBLIC_BASE_URL || ''}/api/render/download?jobId=${job.renderId}`

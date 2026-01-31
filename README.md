@@ -12,7 +12,7 @@ Produção: **https://tm-ia.vercel.app**
 
 ## Status (o que está funcionando hoje)
 
-- Upload de áudio **grande** via **Vercel Blob (direto do navegador)** (evita 413 no Vercel).
+- Upload de áudio **grande** via **Cloudflare R2 (direto do navegador, presigned URL)** (evita 413 no Vercel).
 - Análise do áudio (transcrição + hook/mood/genre) via `/api/demo/analyze`.
 - Geração de imagens via Gemini (geração completa: sem preview/placeholders).
 - Edição de cenas no Step 3:
@@ -40,14 +40,14 @@ Produção: **https://tm-ia.vercel.app**
 - **Frontend:** React + Vite (`/web`)
 - **Backend:** Vercel Functions (`/api`)
 - **DB:** PostgreSQL (Prisma)
-- **Storage:** Vercel Blob (áudios e renders)
+- **Storage:** Cloudflare R2 (áudios e renders)
 - **IA:**
   - OpenAI (Whisper e análises no `/api/demo/analyze`)
   - Google Gemini (imagens)
 - **Render:** FFmpeg (serverless job via `/api/render/run`)
 
 Fluxo principal:
-1. Web faz upload do áudio direto pro Blob (token via `/api/blob/upload`).
+1. Web faz upload do áudio direto pro **R2** (presign via `/api/blob/upload`).
 2. Web chama `/api/demo/analyze` (por `audioUrl` ou multipart fallback) para transcrição e metadados.
 3. Web chama `/api/assets/generate` para criar as cenas.
 4. Web chama `/api/render/pro` (JSON, sem reupload do áudio) para iniciar render.
@@ -117,6 +117,14 @@ GEMINI_API_KEY=...
 
 # URL pública (ajuda em callbacks e URLs internas)
 PUBLIC_BASE_URL=https://tm-ia.vercel.app
+
+# Cloudflare R2 (storage)
+R2_ACCOUNT_ID=...
+R2_BUCKET=...
+R2_ACCESS_KEY_ID=...
+R2_SECRET_ACCESS_KEY=...
+# Base pública para servir arquivos (ex: https://pub-<hash>.r2.dev ou seu domínio)
+R2_PUBLIC_BASE_URL=...
 ```
 
 ---

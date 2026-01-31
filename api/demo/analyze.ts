@@ -4,7 +4,7 @@ import path from 'path'
 import os from 'os'
 import crypto from 'crypto'
 import Busboy from 'busboy'
-import { put } from '@vercel/blob'
+import { putBufferToR2 } from '../_lib/r2.js'
 import { getSession } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { getOpenAI } from '../_lib/openaiClient.js'
@@ -125,8 +125,8 @@ export default withObservability(async function handler(req: VercelRequest, res:
     try {
       const buf = fs.readFileSync(filePath)
       const key = `audio/${projectId}/${crypto.randomUUID()}-${audioFilename || 'audio.mp3'}`
-      const blob = await put(key, buf, { access: 'public', contentType: audioMime || undefined })
-      audioUrl = blob.url
+      const obj = await putBufferToR2(key, buf, audioMime || undefined)
+      audioUrl = obj.url
     } catch (err) {
       ctx.log('warn', 'demo.analyze.audio_blob_failed', { message: (err as Error).message })
       // best-effort: continue without audioUrl

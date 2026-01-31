@@ -11,7 +11,7 @@ import { withObservability } from '../_lib/observability.js'
 import { checkRateLimit } from '../_lib/rateLimit.js'
 import { createLogger } from '../_lib/logger.js'
 import { createProject, getProject, upsertProject } from '../_lib/projectStore.js'
-import { put } from '@vercel/blob'
+import { putBufferToR2 } from '../_lib/r2.js'
 
 export const config = {
   api: {
@@ -158,8 +158,8 @@ export default withObservability(async function handler(req: VercelRequest, res:
   try {
     const buf = fs.readFileSync(tmpPath)
     const key = `audio/${projectId}/${crypto.randomUUID()}-${path.basename(filename)}`
-    const blob = await put(key, buf, { access: 'public', contentType: mime || undefined })
-    audioUrl = blob.url
+    const obj = await putBufferToR2(key, buf, mime || undefined)
+    audioUrl = obj.url
     project.audioUrl = audioUrl
     project.audioFilename = filename
     project.audioMime = mime

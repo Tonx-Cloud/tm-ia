@@ -7,7 +7,7 @@ import { getRenderConfig } from './config.js'
 import { withObservability } from '../_lib/observability.js'
 import { createRenderJob, getRenderJob, type RenderFormat } from '../_lib/renderPipeline.js'
 import { upsertProject, getProject } from '../_lib/projectStore.js'
-import { put } from '@vercel/blob'
+import { putBufferToR2 } from '../_lib/r2.js'
 import Busboy from 'busboy'
 import path from 'path'
 import os from 'os'
@@ -150,11 +150,11 @@ export default withObservability(async function handler(req: VercelRequest, res:
     try {
       const buf = fs.readFileSync(audioPath)
 
-      // Upload to Vercel Blob (public for now to avoid auth complexity in serverless)
+      // Upload to Cloudflare R2 (public url)
       const key = `audio/${projectId}/${crypto.randomUUID()}-${audioFilename || 'audio.mp3'}`
-      const blob = await put(key, buf, { access: 'public', contentType: audioMime || undefined })
+      const obj = await putBufferToR2(key, buf, audioMime || undefined)
 
-      project.audioUrl = blob.url
+      project.audioUrl = obj.url
       project.audioFilename = audioFilename || project.audioFilename
       project.audioMime = audioMime || project.audioMime
       project.audioPath = audioPath // dev/debug only
