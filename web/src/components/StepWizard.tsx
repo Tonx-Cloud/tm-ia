@@ -374,9 +374,10 @@ function SceneCard({
         padding: 10,
         borderTop: '1px solid var(--border)',
         display: 'flex',
-        gap: 8,
-        alignItems: 'center',
-        justifyContent: 'space-between'
+        gap: 6,
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        alignItems: 'stretch'
       }}>
         <button
           className="btn-ghost"
@@ -384,10 +385,14 @@ function SceneCard({
           disabled={index === 0}
           title={index === 0 ? 'Primeira cena' : 'Mover para trás'}
           style={{
-            padding: '10px 12px',
-            fontSize: 14,
-            minWidth: 52,
-            opacity: index === 0 ? 0.4 : 1
+            flex: 1,
+            padding: '8px',
+            fontSize: 16,
+            minWidth: 40,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: index === 0 ? 0.3 : 1
           }}
         >
           ←
@@ -396,17 +401,20 @@ function SceneCard({
         <button
           className="btn-ghost"
           onClick={(e) => { e.stopPropagation(); onAction('expand', asset.id) }}
+          title="Editar imagem / Detalhes"
           style={{
-            flex: 1,
-            padding: '10px 12px',
+            flex: 2,
+            minWidth: 80,
+            padding: '8px',
             fontSize: 13,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            gap: 8
+            gap: 6,
+            whiteSpace: 'nowrap'
           }}
         >
-          ✏️ Editar imagem
+          ✏️ Editar
         </button>
 
         <button
@@ -416,15 +424,18 @@ function SceneCard({
             const key = (asset as any).fileKey || asset.id
             void copyText(key)
           }}
-          title={(asset as any).fileKey || asset.id}
+          title={`Copiar ID: ${(asset as any).fileKey || asset.id}`}
           style={{
-            padding: '10px 10px',
-            fontSize: 12,
-            minWidth: 56,
-            whiteSpace: 'nowrap'
+            flex: 1,
+            minWidth: 40,
+            padding: '8px',
+            fontSize: 16,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
           }}
         >
-          🆔 Copiar
+          📋
         </button>
 
         <button
@@ -433,10 +444,14 @@ function SceneCard({
           disabled={index === totalCount - 1}
           title={index === totalCount - 1 ? 'Última cena' : 'Mover para frente'}
           style={{
-            padding: '10px 12px',
-            fontSize: 14,
-            minWidth: 52,
-            opacity: index === totalCount - 1 ? 0.4 : 1
+            flex: 1,
+            minWidth: 40,
+            padding: '8px',
+            fontSize: 16,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            opacity: index === totalCount - 1 ? 0.3 : 1
           }}
         >
           →
