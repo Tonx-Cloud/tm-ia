@@ -321,13 +321,87 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
 
       let args: string[]
 
+      // If any scene has animation, use a filter_complex concat pipeline (per-scene control).
+      const animateTypes = (project.storyboard as any[]).map((s) => String(s.animateType || s.animation || (s.animate ? 'zoom-in' : 'none')))
+      const hasAnim = animateTypes.some((t) => t && t !== 'none')
+
       // NOTE: Crossfade (filter_complex + xfade) has proven brittle across FFmpeg builds.
-      // For reliability, default to the concat demuxer approach.
+      // We'll use filter_complex only for per-scene animation; otherwise concat demuxer.
       if (options.crossfade && present.length > 1) {
-        console.log('Crossfade requested but disabled for stability; using concat demuxer.')
+        console.log('Crossfade requested but disabled for stability; using concat/filters approach.')
       }
 
-      {
+      if (hasAnim) {
+        const fps = 30
+        const inputs: string[] = []
+        const filterParts: string[] = []
+        const labels: string[] = []
+
+        // Add each image as loop input
+        for (let i = 0; i < imageFiles.length; i++) {
+          const filename = imageFiles[i]
+          if (!filename) continue
+          const dur = durations[i] || defaultDuration
+          inputs.push('-loop', '1', '-t', String(dur), '-i', path.join(workDir, filename))
+        }
+
+        // audio input
+        const audioIndex = inputs.filter((x) => x === '-i').length
+        inputs.push('-i', audioInputPath)
+
+        // Build per-scene filters
+        let vIn = 0
+        for (let i = 0; i < imageFiles.length; i++) {
+          const filename = imageFiles[i]
+          if (!filename) continue
+          const dur = durations[i] || defaultDuration
+          const frames = Math.max(1, Math.round(dur * fps))
+          const anim = animateTypes[i] || 'none'
+          const out = `v${i}`
+
+          const base = `${filterString},fps=${fps}`
+
+          if (anim === 'zoom-in') {
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='min(zoom+0.0015,1.10)':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+          } else if (anim === 'zoom-out') {
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='if(eq(on,1),1.10,max(1.0,zoom-0.0015))':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+          } else if (anim === 'pan-left') {
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)*(t/${dur.toFixed(2)})':y='(ih-oh)/2':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+          } else if (anim === 'pan-right') {
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)*(1-(t/${dur.toFixed(2)}))':y='(ih-oh)/2':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+          } else if (anim === 'pan-up') {
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(1-(t/${dur.toFixed(2)}))':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+          } else if (anim === 'pan-down') {
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(t/${dur.toFixed(2)})':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+          } else {
+            filterParts.push(`[${vIn}:v]${base},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+          }
+
+          labels.push(`[${out}]`)
+          vIn++
+        }
+
+        filterParts.push(`${labels.join('')}concat=n=${labels.length}:v=1:a=0[vout]`)
+
+        args = [
+          ...inputs,
+          '-filter_complex', filterParts.join(';'),
+          '-map', '[vout]',
+          '-map', `${audioIndex}:a`,
+          '-c:v', 'libx264',
+          '-preset', PRESETS[options.quality || 'standard'],
+          '-crf', (options.quality || 'standard') === 'basic' ? '24' : (options.quality || 'standard') === 'pro' ? '21' : '23',
+          '-b:v', BITRATES[options.quality || 'standard'],
+          '-pix_fmt', 'yuv420p',
+          '-c:a', 'aac',
+          '-b:a', (options.quality || 'standard') === 'basic' ? '160k' : '192k',
+          ...(audioDur ? ['-t', String(Math.max(1, Math.round(audioDur * 100) / 100))] : []),
+          '-shortest',
+          '-movflags', '+faststart',
+          '-y',
+          outputFile,
+        ]
+      } else {
         // Simple concat demuxer approach
         const concatFile = path.join(workDir, 'input.txt')
         const lines: string[] = []

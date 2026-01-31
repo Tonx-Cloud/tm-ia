@@ -36,14 +36,15 @@ type StepWizardProps = {
   onError?: (error: string) => void
 }
 
+type AnimationType = 'none' | 'zoom-in' | 'zoom-out' | 'pan-left' | 'pan-right' | 'pan-up' | 'pan-down'
+
 type StoryboardScene = {
   sceneNumber: number
   timeCode: string
   lyrics: string
   prompt: string
   visualNotes: string
-  animate?: boolean
-  animateType?: 'zoom' | 'pan'
+  animation?: AnimationType
 }
 
 // ============================================================================
@@ -449,9 +450,10 @@ type SceneModalProps = {
   onSave?: (assetId: string, newPrompt: string) => void
   onRegenerate?: (assetId: string, newPrompt: string) => void
   onAction?: (action: SceneAction, assetId: string) => void
+  onSetAnimation?: (assetId: string, animation: AnimationType) => void
 }
 
-function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenerate, onAction }: SceneModalProps) {
+function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenerate, onAction, onSetAnimation }: SceneModalProps) {
   const [editPrompt, setEditPrompt] = useState(asset?.prompt || '')
   const [isRegenerating, setIsRegenerating] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -667,39 +669,37 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
                       alignItems: 'center',
                       justifyContent: 'space-between'
                     }}>
-                      <span>ANIMAÇÃO (SIMPLES)</span>
+                      <span>ANIMAÇÃO (VEO 3 - SIMPLES)</span>
                       <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                        {scene?.animate ? 'Ativada' : 'Desativada'}
+                        {(scene?.animation && scene.animation !== 'none') ? 'Ativada' : 'Desativada'}
                       </span>
                     </div>
 
-                    <button
-                      className={scene?.animate ? 'btn-primary' : 'btn-ghost'}
-                      onClick={() => onAction?.('animate', asset.id)}
-                      style={{ width: '100%', padding: '12px 12px', marginBottom: 10 }}
+                    <select
+                      value={scene?.animation || 'none'}
+                      onChange={(e) => onSetAnimation?.(asset.id, e.target.value as any)}
+                      style={{
+                        width: '100%',
+                        padding: '12px 12px',
+                        borderRadius: 12,
+                        border: '1px solid var(--border)',
+                        background: 'var(--bg)',
+                        color: 'var(--text)',
+                        fontSize: 14,
+                        marginBottom: 8
+                      }}
                     >
-                      ✨ Animar simples
-                    </button>
+                      <option value="none">Nenhuma</option>
+                      <option value="zoom-in">Zoom suave (aproximar)</option>
+                      <option value="zoom-out">Zoom suave (afastar)</option>
+                      <option value="pan-left">Pan (esquerda → direita)</option>
+                      <option value="pan-right">Pan (direita → esquerda)</option>
+                      <option value="pan-up">Pan (baixo → cima)</option>
+                      <option value="pan-down">Pan (cima → baixo)</option>
+                    </select>
 
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: '1fr 1fr',
-                      gap: 10,
-                      opacity: scene?.animate ? 1 : 0.45,
-                      pointerEvents: scene?.animate ? 'auto' : 'none'
-                    }}>
-                      <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13 }}>
-                        <input type="checkbox" checked readOnly />
-                        Zoom suave
-                      </label>
-                      <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 13 }}>
-                        <input type="checkbox" checked={false} readOnly />
-                        Pan (em breve)
-                      </label>
-                    </div>
-
-                    <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
-                      Dica: ative a animação e gere o vídeo. (Em breve: escolher o tipo)
+                    <div style={{ marginTop: 4, fontSize: 12, color: 'var(--text-muted)' }}>
+                      Dica: selecione um movimento e gere o vídeo final.
                     </div>
                   </div>
 
@@ -1293,11 +1293,13 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         break
 
       case 'animate':
-        // Toggle simple animation flag for this storyboard item
+        // Legacy toggle: cycle none <-> zoom-in
         setStoryboard((prev) => {
           const next = [...prev]
           const cur = next[assetIndex] as any
-          next[assetIndex] = { ...cur, animate: !cur?.animate }
+          const curAnim = (cur?.animation || 'none') as AnimationType
+          const nextAnim: AnimationType = curAnim === 'none' ? 'zoom-in' : 'none'
+          next[assetIndex] = { ...cur, animation: nextAnim }
           void syncProjectEdits({ storyboard: buildStoryboardItems(next, assets) })
           return next
         })
@@ -1421,15 +1423,19 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   // Removed: generate-selected (preview/placeholders flow). We now generate all images up-front.
 
   const buildStoryboardItems = (scenes: StoryboardScene[], assetsList: Asset[]) => {
-    // DB/render expects [{ assetId, durationSec, animate }]
+    // DB/render expects [{ assetId, durationSec, animate, animateType }]
     // CRITICAL: duration must follow the AUDIO length, not whatever UI happens to have.
     const total = audio?.duration || 180
     const per = Math.max(1, Math.round((total / Math.max(assetsList.length, 1)) * 100) / 100)
-    return assetsList.map((a, i) => ({
-      assetId: a.id,
-      durationSec: per,
-      animate: !!(scenes[i] as any)?.animate,
-    }))
+    return assetsList.map((a, i) => {
+      const anim = (scenes[i] as any)?.animation || 'none'
+      return {
+        assetId: a.id,
+        durationSec: per,
+        animate: anim !== 'none',
+        animateType: anim,
+      }
+    })
   }
 
   const syncProjectEdits = async (opts: { storyboard?: any[]; assetsPatch?: Array<{ id: string; prompt: string }>; deletedAssetIds?: string[]; assetOrder?: string[] }) => {
@@ -1450,6 +1456,18 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       a.id === assetId ? { ...a, prompt: newPrompt } : a
     ))
     void syncProjectEdits({ assetsPatch: [{ id: assetId, prompt: newPrompt }] })
+  }
+
+  const handleSetAnimation = (assetId: string, animation: AnimationType) => {
+    const idx = assets.findIndex((a) => a.id === assetId)
+    if (idx === -1) return
+    setStoryboard((prev) => {
+      const next = [...prev]
+      const cur = next[idx] as any
+      next[idx] = { ...cur, animation }
+      void syncProjectEdits({ storyboard: buildStoryboardItems(next, assets) })
+      return next
+    })
   }
 
   // ============================================================================
@@ -2326,7 +2344,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                     timeCode={scene?.timeCode}
                     lyrics={scene?.lyrics}
                     isFavorite={favorites.has(asset.id)}
-                    isAnimated={false}
+                    isAnimated={((scene as any)?.animation || 'none') !== 'none'}
                     onAction={handleSceneAction}
                   />
                 </div>
@@ -2555,6 +2573,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
               onSave={handleSavePrompt}
               onRegenerate={handleRegenerateAsset}
               onAction={handleSceneAction}
+              onSetAnimation={handleSetAnimation}
             />
           )}
         </div>
