@@ -69,11 +69,15 @@ export function ProRenderConfig({ locale = 'en', credits: _credits, token, proje
       const cfgBody = await cfgRes.json()
       const configId = cfgBody.configId as string
 
-      // iniciar pro render
+      // iniciar pro render (idempotente)
+      const idemStorageKey = `tm_render_idem_${projectId}`
+      const idempotencyKey = localStorage.getItem(idemStorageKey) || (crypto?.randomUUID?.() ?? String(Date.now()))
+      localStorage.setItem(idemStorageKey, idempotencyKey)
+
       const renderRes = await fetch(`${import.meta.env.VITE_API_BASE || ''}/api/render/pro`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ projectId, configId }),
+        body: JSON.stringify({ projectId, configId, idempotencyKey }),
       })
       if (!renderRes.ok) {
         const err = await renderRes.json().catch(() => ({}))

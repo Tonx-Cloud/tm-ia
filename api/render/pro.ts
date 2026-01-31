@@ -5,7 +5,7 @@ import { spendCredits, getBalance, addCredits } from '../_lib/credits.js'
 import { estimateRenderCost } from '../_lib/pricing.js'
 import { getRenderConfig } from './config.js'
 import { withObservability } from '../_lib/observability.js'
-import { createRenderJob, type RenderFormat } from '../_lib/renderPipeline.js'
+import { createRenderJob, getRenderJob, type RenderFormat } from '../_lib/renderPipeline.js'
 import { upsertProject, getProject } from '../_lib/projectStore.js'
 import { put } from '@vercel/blob'
 import Busboy from 'busboy'
@@ -116,7 +116,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
     }
   }
 
-  const { projectId, cost, configId, config: inlineConfig, renderOptions } = jsonData
+  const { projectId, cost, configId, config: inlineConfig, renderOptions, idempotencyKey } = jsonData
 
   if (!projectId) {
     return res.status(400).json({ error: 'projectId required', requestId: ctx.requestId })
@@ -212,14 +212,34 @@ export default withObservability(async function handler(req: VercelRequest, res:
     if (current < 99999) await addCredits(session.userId, 99999 - current, 'admin_adjust')
   }
 
+  const renderId = idempotencyKey
+    ? `render_${crypto.createHash('sha256').update(`${session.userId}:${String(idempotencyKey)}`).digest('hex').slice(0, 24)}`
+    : crypto.randomUUID()
+
+  // Idempotency: if this renderId already exists, return it (and avoid double-charge).
+  const existing = await getRenderJob(session.userId, renderId)
+  if (existing) {
+    const balance = await getBalance(session.userId)
+    ctx.log('info', 'render.pro.idempotent_hit', { projectId, renderId })
+    return res.status(200).json({
+      ok: true,
+      cost: amount,
+      balance,
+      renderId: existing.renderId,
+      status: existing.status,
+      outputUrl: existing.outputUrl,
+      progress: existing.progress,
+      requestId: ctx.requestId,
+    })
+  }
+
   try {
-    await spendCredits(session.userId, amount, 'pro_render', { projectId })
+    await spendCredits(session.userId, amount, 'pro_render', { projectId, renderId })
   } catch (err) {
     return res.status(402).json({ error: 'Insufficient credits', requestId: ctx.requestId })
   }
 
   const balance = await getBalance(session.userId)
-  const renderId = crypto.randomUUID()
 
   // Determine render format (authoritative source: aspectRatio)
   // Do not rely on renderOptions.format coming from the client.

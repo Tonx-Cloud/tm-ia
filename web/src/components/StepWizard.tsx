@@ -1158,8 +1158,13 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     try {
       const totalDuration = audio.duration
       
+      const idemStorageKey = `tm_render_idem_${projectId}`
+      const idempotencyKey = localStorage.getItem(idemStorageKey) || (crypto?.randomUUID?.() ?? String(Date.now()))
+      localStorage.setItem(idemStorageKey, idempotencyKey)
+
       const configData = {
         projectId,
+        idempotencyKey,
         config: {
           format: aspectRatio === '9:16' ? 'vertical' : aspectRatio === '16:9' ? 'horizontal' : 'square',
           duration: totalDuration,
@@ -1206,10 +1211,12 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           
           if (status.status === 'complete') {
             clearInterval(pollInterval)
+            localStorage.removeItem(`tm_render_idem_${projectId}`)
             setVideoUrl(status.outputUrl || `/api/render/download?renderId=${jobId}`)
             setRendering(false)
           } else if (status.status === 'failed') {
             clearInterval(pollInterval)
+            localStorage.removeItem(`tm_render_idem_${projectId}`)
             throw new Error(status.error || 'Render failed')
           }
         } catch (err) {
@@ -1220,6 +1227,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       }, 2000)
       
     } catch (err) {
+      localStorage.removeItem(`tm_render_idem_${projectId}`)
       setError((err as Error).message)
       onError?.((err as Error).message)
       setRendering(false)

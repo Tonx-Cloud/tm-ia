@@ -104,6 +104,22 @@ export async function spendCredits(userId: string, amount: number, reason: Credi
   const res = await prisma.$transaction(async (tx) => {
     const u = await tx.user.findUnique({ where: { id: userId } })
     if (!u) throw new Error('User not found')
+
+    // Idempotency (best-effort): if we already logged a spend for the same reason+renderId, don't charge twice.
+    // This is used mainly for render endpoints where retries/timeouts can happen.
+    if (meta?.renderId) {
+      const existing = await tx.creditEntry.findFirst({
+        where: {
+          userId,
+          type: 'spend',
+          reason,
+          renderId: meta.renderId,
+        },
+        orderBy: { createdAt: 'desc' },
+      })
+      if (existing) return u.credits
+    }
+
     if (u.credits < amount) throw new Error('Insufficient credits')
 
     const updated = await tx.user.update({
