@@ -1,0 +1,64 @@
+name: Security Check
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lockfile-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect lockfile changes
+        id: diff
+        run: |
+          set -e
+          git fetch --no-tags --prune --depth=1 origin "+${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+          CHANGED=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD" || true)
+          echo "changed<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          if echo "$CHANGED" | grep -E '^(package-lock\.json|web/package-lock\.json)$' >/dev/null; then
+            echo "lock_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "lock_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Fail if lockfile changed without explicit label
+        if: steps.diff.outputs.lock_changed == 'true'
+        run: |
+          set -e
+          echo "Lockfile change detected. Require PR label 'deps-ok' to proceed." 
+          echo "Current labels: ${{ toJson(github.event.pull_request.labels.*.name) }}"
+          echo "${{ toJson(github.event.pull_request.labels.*.name) }}" | grep -q 'deps-ok' || exit 1
+
+  audits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install root deps (ci)
+        run: npm ci
+
+      - name: Root audit (high)
+        run: npm audit --audit-level=high
+
+      - name: Install web deps (ci)
+        run: npm --prefix web ci
+
+      - name: Web audit (high)
+        run: npm --prefix web audit --audit-level=high
+
+      - name: Lockfile integrity (root)
+        run: npm ci --dry-run
+
+      - name: Lockfile integrity (web)
+        run: npm --prefix web ci --dry-run

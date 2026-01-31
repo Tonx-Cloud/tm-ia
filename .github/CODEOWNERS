@@ -1,0 +1,12 @@
+# Require extra review for high-risk files
+# (GitHub branch protection must have "Require review from Code Owners" enabled)
+
+# Dependency lockfiles
+/package-lock.json @Tonx-Cloud/security
+/web/package-lock.json @Tonx-Cloud/security
+
+# Database schema changes
+/prisma/schema.prisma @Tonx-Cloud/security
+
+# Workflow changes
+/.github/workflows/* @Tonx-Cloud/security
