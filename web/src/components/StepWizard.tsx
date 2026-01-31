@@ -891,6 +891,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [customTheme, setCustomTheme] = useState('')
   const [generating, setGenerating] = useState(false)
   const [storyboard, setStoryboard] = useState<StoryboardScene[]>([])
+  const [step2Confirmed, setStep2Confirmed] = useState(false)
   
   // Step 3
   const [assets, setAssets] = useState<Asset[]>([])
@@ -899,6 +900,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [renderProgress, setRenderProgress] = useState(0)
   const [renderLog, setRenderLog] = useState<string>('')
   const [videoUrl, setVideoUrl] = useState<string | null>(null)
+  const [step3Confirmed, setStep3Confirmed] = useState(false)
 
   // Image generation controls
   // NOTE: We generate all images up-front (no preview/placeholders) to simplify UX.
@@ -909,6 +911,47 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   
   const [error, setError] = useState<string | null>(null)
   const token = localStorage.getItem('tm_auth_token') || ''
+
+  const handleConfirmStep2 = async () => {
+    if (!projectId || !token) return
+    try {
+      // Persist project settings explicitly before generation
+      await fetch('/api/projects', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          projectId,
+          style: visualStyle,
+          mood,
+          aspectRatio,
+        }),
+      })
+      setStep2Confirmed(true)
+    } catch (err) {
+      console.error('Failed to confirm settings:', err)
+      setError('Erro ao salvar configurações')
+    }
+  }
+
+  const handleConfirmStep3 = async () => {
+    if (!projectId || !token) return
+    try {
+      // Explicitly save storyboard state (animations, order)
+      const currentStoryboard = buildStoryboardItems(storyboard, assets)
+      await fetch('/api/assets', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ 
+          projectId, 
+          storyboard: currentStoryboard 
+        }),
+      })
+      setStep3Confirmed(true)
+    } catch (err) {
+      console.error('Failed to save edits:', err)
+      setError('Erro ao salvar edições')
+    }
+  }
 
   const ensureProjectExists = async (nameHint?: string) => {
     if (!token) throw new Error('Faça login para continuar')
@@ -1317,6 +1360,11 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     const assetIndex = assets.findIndex(a => a.id === assetId)
     if (assetIndex === -1) return
 
+    // If user changes anything that affects the final render, require reconfirm
+    if (['moveLeft', 'moveRight', 'delete', 'regenerate', 'animate'].includes(action)) {
+      setStep3Confirmed(false)
+    }
+
     switch (action) {
       case 'expand':
         setModalAsset(assets[assetIndex])
@@ -1498,6 +1546,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const handleSetAnimation = (assetId: string, animation: AnimationType) => {
     const idx = assets.findIndex((a) => a.id === assetId)
     if (idx === -1) return
+    setStep3Confirmed(false)
     setStoryboard((prev) => {
       const next = [...prev]
       const cur = next[idx] as any
@@ -1981,7 +2030,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         <div className="card" style={{ padding: 24 }}>
           
           {/* Format */}
-          <div style={{ marginBottom: 28 }}>
+          <div style={{ marginBottom: 28, pointerEvents: step2Confirmed ? 'none' : 'auto', opacity: step2Confirmed ? 0.5 : 1 }}>
             <label style={{ 
               display: 'flex', 
               alignItems: 'center', 
@@ -2018,7 +2067,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           </div>
 
           {/* Style */}
-          <div style={{ marginBottom: 28 }}>
+          <div style={{ marginBottom: 28, pointerEvents: step2Confirmed ? 'none' : 'auto', opacity: step2Confirmed ? 0.5 : 1 }}>
             <label style={{ display: 'block', fontWeight: 600, marginBottom: 12 }}>
               Estilo Visual
             </label>
@@ -2232,15 +2281,27 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: 12 }}>
-            <button className="btn-ghost" style={{ flex: 1 }} onClick={() => setStep(1)}>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <button className="btn-ghost" style={{ flex: 1, minWidth: 120 }} onClick={() => setStep(1)}>
               ← Voltar
             </button>
+
+            <button
+              className={step2Confirmed ? 'btn-primary' : 'btn-ghost'}
+              style={{ flex: 1, minWidth: 180, border: step2Confirmed ? undefined : '1px dashed var(--accent)' }}
+              onClick={handleConfirmStep2}
+              disabled={step2Confirmed || !projectId || !token}
+              title={step2Confirmed ? 'Predefinições já confirmadas' : 'Confirme antes de gerar as cenas'}
+            >
+              {step2Confirmed ? '✅ Predefinições confirmadas' : '✅ Confirmar predefinições'}
+            </button>
+
             <button 
               className="btn-primary" 
-              style={{ flex: 2 }}
+              style={{ flex: 2, minWidth: 200 }}
               onClick={handleGenerateImages}
-              disabled={generating || balance < imageCost}
+              disabled={!step2Confirmed || generating || balance < imageCost}
+              title={!step2Confirmed ? 'Confirme as predefinições antes de gerar' : undefined}
             >
               {generating ? (
                 <>
@@ -2426,7 +2487,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                   <div style={{ 
                     display: 'flex', 
                     justifyContent: 'space-between', 
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    gap: 12,
+                    flexWrap: 'wrap'
                   }}>
                     <div>
                       <div style={{ fontWeight: 700, marginBottom: 4, fontSize: 16 }}>
@@ -2510,6 +2573,23 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                   </div>
                 )}
 
+                {/* Confirmação explícita das edições (garante storyboard + formato antes do render) */}
+                <div style={{ marginBottom: 12 }}>
+                  <button
+                    className={step3Confirmed ? 'btn-primary' : 'btn-ghost'}
+                    onClick={handleConfirmStep3}
+                    disabled={step3Confirmed || rendering}
+                    style={{
+                      width: '100%',
+                      padding: 12,
+                      border: step3Confirmed ? undefined : '1px dashed var(--accent)',
+                    }}
+                    title={step3Confirmed ? 'Edições já confirmadas' : 'Confirme as edições/animações antes de renderizar'}
+                  >
+                    {step3Confirmed ? '✅ Edições confirmadas' : '✅ Confirmar edições (animações + ordem)'}
+                  </button>
+                </div>
+
                 <div style={{ display: 'flex', gap: 12 }}>
                   <button 
                     className="btn-ghost" 
@@ -2529,7 +2609,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                       gap: 8
                     }}
                     onClick={handleRender}
-                    disabled={rendering || balance < renderCost}
+                    disabled={rendering || balance < renderCost || !step3Confirmed}
+                    title={!step3Confirmed ? 'Confirme as edições antes de renderizar' : undefined}
                   >
                     {rendering ? (
                       <>Renderizando {renderProgress}%...</>
