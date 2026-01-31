@@ -1155,6 +1155,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       setGenre(analysis.genre || 'pop')
       setBalance(analysis.balance || balance)
       setAnalyzing(false)
+      setUploading(false)
       
       console.log('[StepWizard] States updated - hookText:', analysis.hookText, 'segments:', newSegments.length)
       
