@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Locale } from '@/i18n'
 import { analyzeAudio, createProject, fetchProject, type Asset } from '@/lib/assetsApi'
+import { RenderHistory } from '@/components/RenderHistory'
 
 // ============================================================================
 // TYPES
@@ -2374,6 +2375,13 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
               <div style={{ fontSize: 12 }}>A IA cria o prompt e gera a imagem</div>
             </button>
           </div>
+
+          {/* Histórico do projeto (renders) */}
+          {projectId && (
+            <div style={{ marginBottom: 16 }}>
+              <RenderHistory token={token} locale="pt" projectId={projectId} />
+            </div>
+          )}
 
           {/* Render section */}
           <div className="card" style={{ padding: 24 }}>

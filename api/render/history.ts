@@ -9,8 +9,13 @@ export default withObservability(async function handler(req: VercelRequest, res:
   if (!session) return res.status(401).json({ error: 'Auth required', requestId: ctx.requestId })
   ctx.userId = session.userId
 
-  const { status, limit } = req.query as { status?: string; limit?: string }
+  const { status, limit, projectId } = req.query as { status?: string; limit?: string; projectId?: string }
   // advanceAll removed as we now have real async workers
-  const renders = await listRenderJobs(session.userId, status as any, limit ? Number(limit) : 20)
+  const renders = await listRenderJobs(
+    session.userId,
+    status as any,
+    limit ? Number(limit) : 20,
+    projectId ? String(projectId) : undefined
+  )
   return res.status(200).json({ renders, requestId: ctx.requestId })
 })

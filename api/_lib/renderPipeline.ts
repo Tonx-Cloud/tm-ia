@@ -70,9 +70,18 @@ export async function getRenderJob(userId: string, renderId: string): Promise<Re
   return row ? mapRow(row) : null
 }
 
-export async function listRenderJobs(userId: string, status?: RenderJobStatus, limit = 20) {
+export async function listRenderJobs(
+  userId: string,
+  status?: RenderJobStatus,
+  limit = 20,
+  projectId?: string
+) {
   const rows = await prisma.render.findMany({
-    where: { userId, ...(status ? { status } : {}) },
+    where: {
+      userId,
+      ...(projectId ? { projectId } : {}),
+      ...(status ? { status } : {}),
+    },
     orderBy: { createdAt: 'desc' },
     take: limit,
   })

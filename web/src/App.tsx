@@ -174,13 +174,21 @@ function ProjectsSection({ token, onOpenProject }: { token: string; onOpenProjec
 // ============================================================================
 
 function HistorySection({ token }: { token: string }) {
+  const projectId = localStorage.getItem('tm_project_id') || ''
+
   return (
     <div style={{ padding: 24 }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Histórico de Renders</h1>
       <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>
-        Veja e baixe seus vídeos renderizados
+        Histórico do projeto atual
       </p>
-      <RenderHistory token={token} locale="pt" />
+      {!projectId ? (
+        <div className="card" style={{ padding: 16 }}>
+          Nenhum projeto selecionado. Abra um projeto em “Meus Projetos” ou crie um novo.
+        </div>
+      ) : (
+        <RenderHistory token={token} locale="pt" projectId={projectId} />
+      )}
     </div>
   )
 }

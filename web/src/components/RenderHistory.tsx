@@ -16,11 +16,12 @@ type RenderJob = {
 type Props = {
   locale?: Locale
   token: string
+  projectId?: string
 }
 
 const filters = ['all', 'pending', 'complete', 'failed'] as const
 
-export function RenderHistory({ locale = 'en', token }: Props) {
+export function RenderHistory({ locale = 'en', token, projectId }: Props) {
   const [items, setItems] = useState<RenderJob[]>([])
   const [filter, setFilter] = useState<(typeof filters)[number]>('all')
   const [loading, setLoading] = useState(false)
@@ -30,7 +31,8 @@ export function RenderHistory({ locale = 'en', token }: Props) {
   const fetchHistory = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE || ''}/api/render/history`, {
+      const qs = projectId ? `?projectId=${encodeURIComponent(projectId)}` : ''
+      const res = await fetch(`${import.meta.env.VITE_API_BASE || ''}/api/render/history${qs}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!res.ok) throw new Error('Failed to fetch history')
