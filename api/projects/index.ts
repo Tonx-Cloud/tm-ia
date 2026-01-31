@@ -72,6 +72,13 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
     await upsertProject(project)
 
+    ctx.log('info', 'projects.patch.updated', {
+      projectId,
+      aspectRatio: project.aspectRatio,
+      style: project.style,
+      mood: project.mood,
+    })
+
     return res.status(200).json({ ok: true, projectId, project, requestId: ctx.requestId })
   }
 

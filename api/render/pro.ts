@@ -253,6 +253,14 @@ export default withObservability(async function handler(req: VercelRequest, res:
   // Do not rely on renderOptions.format coming from the client.
   const ar = (inlineConfig?.aspectRatio || cfg?.aspectRatio || project.aspectRatio || '16:9') as string
   const format: RenderFormat = mapAspectRatioToFormat(ar)
+  ctx.log('info', 'render.pro.format_resolved', {
+    projectId,
+    inlineAspectRatio: inlineConfig?.aspectRatio,
+    cfgAspectRatio: cfg?.aspectRatio,
+    projectAspectRatio: project.aspectRatio,
+    resolvedAspectRatio: ar,
+    resolvedFormat: format,
+  })
 
   await createRenderJob(
     session.userId,

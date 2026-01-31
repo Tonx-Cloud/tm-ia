@@ -342,10 +342,11 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       const hasAnim = animateTypes.some((t) => t && t !== 'none')
 
       // Write a helpful debug header to logTail (visible via /api/render/status)
+      let header = ''
       try {
         const sbLog = summarizeStoryboardForLog(project)
-        const header = `TM-IA render debug\nformat=${options.format || 'horizontal'} quality=${options.quality || 'standard'}\nscenes=${project.storyboard.length}\n${sbLog}\n`
-        await updateJobProgress(userId, job.renderId, 5, header.slice(-1500))
+        header = `TM-IA render debug\nformat=${options.format || 'horizontal'} quality=${options.quality || 'standard'}\nscenes=${project.storyboard.length}\n${sbLog}\n`
+        await updateJobProgress(userId, job.renderId, 5, header)
       } catch {
         // ignore
       }
@@ -490,8 +491,8 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         const chunk = data.toString()
         stderr += chunk
 
-        // keep last ~1500 chars for UI
-        const tail = stderr.slice(-1500)
+        // keep header + last ~1500 chars for UI
+        const tail = (header + '\n... [ffmpeg log] ...\n' + stderr).slice(-2000)
 
         // Parse and update progress
         const progress = parseFFmpegProgress(chunk, totalDurationSec)

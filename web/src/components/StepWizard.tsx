@@ -915,6 +915,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const handleConfirmStep2 = async () => {
     if (!projectId || !token) return
     try {
+      // Force new render job ID
+      localStorage.removeItem(`tm_render_idem_${projectId}`)
+
       // Persist project settings explicitly before generation
       await fetch('/api/projects', {
         method: 'PATCH',
@@ -936,6 +939,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const handleConfirmStep3 = async () => {
     if (!projectId || !token) return
     try {
+      // Force new render job ID
+      localStorage.removeItem(`tm_render_idem_${projectId}`)
+
       // Explicitly save storyboard state (animations, order)
       const currentStoryboard = buildStoryboardItems(storyboard, assets)
       await fetch('/api/assets', {
