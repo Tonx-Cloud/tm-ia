@@ -196,28 +196,53 @@ export default withObservability(async function handler(req: VercelRequest, res:
     const MAX_TRANSCRIPT_CHARS = 4000
     if (text.length > MAX_TRANSCRIPT_CHARS) {
       truncated = true
-      // Ask a small/cheap model to summarize the transcript concisely
-      const summarization = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: 'You are a concise summarizer. Produce a short summary (<=800 chars) of the transcript focusing on chorus/hook markers, repeated lines, and main themes.' },
-          { role: 'user', content: `Please summarize the following transcript in <=800 characters:\n\n${text.slice(0, MAX_TRANSCRIPT_CHARS)}` }
-        ],
-        max_tokens: 800,
-      })
-      const sumContent = summarization.choices?.[0]?.message?.content || ''
-      transcriptForPrompt = (sumContent + '\n\n(Transcript truncated)')
+      // Ask a small/cheap model to summarize the transcript concisely (via Vercel AI Gateway)
+      try {
+        const { gatewayGenerateText } = await import('../_lib/aiGateway.js')
+        const { text: sumContent } = await gatewayGenerateText({
+          model: 'openai/gpt-4.1-mini',
+          prompt:
+            'Você é um resumidor conciso. Produza um resumo curto (<=800 chars) focando em refrão/hook, linhas repetidas e temas principais.\n\n' +
+            text.slice(0, MAX_TRANSCRIPT_CHARS),
+          maxOutputTokens: 800,
+          ctx,
+        })
+        transcriptForPrompt = (sumContent + '\n\n(Transcript truncated)')
+      } catch {
+        // fallback to OpenAI direct
+        const summarization = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: 'You are a concise summarizer. Produce a short summary (<=800 chars) of the transcript focusing on chorus/hook markers, repeated lines, and main themes.' },
+            { role: 'user', content: `Please summarize the following transcript in <=800 characters:\n\n${text.slice(0, MAX_TRANSCRIPT_CHARS)}` }
+          ],
+          max_tokens: 800,
+        })
+        const sumContent = summarization.choices?.[0]?.message?.content || ''
+        transcriptForPrompt = (sumContent + '\n\n(Transcript truncated)')
+      }
     }
 
     const prompt = `Given this song transcript (or its summary), identify the strongest chorus/hook. Return JSON strictly as {"hookText":string,"startSec":number,"endSec":number,"summary":string,"mood":string,"genre":string}. Transcript/Summary: ${transcriptForPrompt}`
 
-    const analysis = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 200,
-    })
-
-    let content = analysis.choices[0]?.message?.content || '{}'
+    let content = '{}'
+    try {
+      const { gatewayGenerateText } = await import('../_lib/aiGateway.js')
+      const r = await gatewayGenerateText({
+        model: 'openai/gpt-4.1-mini',
+        prompt,
+        maxOutputTokens: 250,
+        ctx,
+      })
+      content = r.text || '{}'
+    } catch {
+      const analysis = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 200,
+      })
+      content = analysis.choices[0]?.message?.content || '{}'
+    }
     content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim()
     
     let payload = {

@@ -12,11 +12,39 @@ export async function generateImageDataUrl(params: {
 }): Promise<string> {
   const { apiKey, model, prompt, ctx } = params
 
+  // Prefer Vercel AI Gateway when running on Vercel (auto-auth) or when an explicit API key is set.
+  // Falls back to direct Gemini REST if gateway fails.
+  const canUseGateway = !!process.env.VERCEL || !!process.env.AI_GATEWAY_API_KEY
+
+  if (canUseGateway) {
+    try {
+      const { gatewayGenerateText } = await import('./aiGateway.js')
+      const r = await gatewayGenerateText({
+        model: 'google/gemini-3-pro-image',
+        prompt,
+        ctx,
+      })
+
+      const files = r.files || []
+      const img = files.find((f: any) => String(f.mediaType || '').startsWith('image/'))
+      if (img?.data) {
+        const mime = img.mediaType || 'image/png'
+        const b64 = Buffer.from(img.data).toString('base64')
+        return `data:${mime};base64,${b64}`
+      }
+
+      // Some responses may return no files; treat as failure.
+      throw new Error('AI Gateway image model returned no image file')
+    } catch (err) {
+      ctx?.log?.('warn', 'ai.gateway.image_fallback', { message: (err as Error).message })
+    }
+  }
+
+  // Fallback: direct Gemini REST (Google AI Studio API key)
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`
 
   const body = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    // Many image models require explicitly requesting IMAGE modality.
     generationConfig: {
       responseModalities: ['IMAGE'],
     },
