@@ -165,8 +165,13 @@ export async function analyzeAudio(file: File, durationSeconds: number, token: s
       }>
     }
 
-    // If URL analysis fails, fall back to multipart.
-    console.warn('[analyzeAudio] analyze-by-url failed; falling back to multipart')
+    // If URL analysis fails, try to surface the real error, then fall back to multipart.
+    const errBody = await res.json().catch(() => ({} as any))
+    console.warn('[analyzeAudio] analyze-by-url failed; falling back to multipart', {
+      status: res.status,
+      error: errBody?.error,
+      requestId: errBody?.requestId,
+    })
   }
 
   const formData = new FormData()
@@ -181,8 +186,10 @@ export async function analyzeAudio(file: File, durationSeconds: number, token: s
   })
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err.error || 'Analysis failed')
+    const err = await res.json().catch(() => ({} as any))
+    const msg = err?.error || `Analysis failed (${res.status})`
+    const rid = err?.requestId
+    throw new Error(rid ? `${msg} (requestId: ${rid})` : msg)
   }
 
   return res.json() as Promise<{

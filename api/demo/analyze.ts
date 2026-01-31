@@ -72,16 +72,33 @@ export default withObservability(async function handler(req: VercelRequest, res:
       return res.status(400).json({ error: 'audioUrl required', requestId: ctx.requestId })
     }
 
-    // Download to tmp for Whisper
+    // Download to tmp for Whisper (with timeout + logs)
     try {
-      const resp = await fetch(audioUrl)
-      if (!resp.ok) throw new Error(`audioUrl download failed (${resp.status})`)
+      const startedAt = Date.now()
+      const ac = new AbortController()
+      const timeout = setTimeout(() => ac.abort(), 25_000)
+
+      const resp = await fetch(audioUrl, { signal: ac.signal })
+      clearTimeout(timeout)
+
+      if (!resp.ok) {
+        throw new Error(`audioUrl download failed (${resp.status})`)
+      }
+
       const tmpDir = os.tmpdir()
       filePath = path.join(tmpDir, `${crypto.randomUUID()}-${audioFilename || 'audio.mp3'}`)
       const buf = Buffer.from(await resp.arrayBuffer())
       fs.writeFileSync(filePath, buf)
+
+      ctx.log('info', 'demo.analyze.audio_download_ok', {
+        projectId,
+        ms: Date.now() - startedAt,
+        bytes: buf.length,
+      })
     } catch (err) {
-      return res.status(400).json({ error: 'Failed to fetch audioUrl: ' + (err as Error).message, requestId: ctx.requestId })
+      const msg = (err as Error).message || String(err)
+      ctx.log('warn', 'demo.analyze.audio_download_failed', { projectId, message: msg })
+      return res.status(400).json({ error: 'Failed to fetch audioUrl: ' + msg, requestId: ctx.requestId })
     }
   } else {
     // Multipart path (file upload)
@@ -180,7 +197,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
     const openai = getOpenAI()
     
     // 3. Transcription
-    ctx.log('info', 'demo.analyze.transcribing')
+    ctx.log('info', 'demo.analyze.transcribing', { projectId })
     const transcription = await openai.audio.transcriptions.create({
       file: fs.createReadStream(filePath),
       model: 'whisper-1', // Reverted to Whisper-1 for stability
