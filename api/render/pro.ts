@@ -221,9 +221,10 @@ export default withObservability(async function handler(req: VercelRequest, res:
   const balance = await getBalance(session.userId)
   const renderId = crypto.randomUUID()
 
-  // Determine render format
-  const format: RenderFormat =
-    renderOptions?.format || (cfg?.aspectRatio ? mapAspectRatioToFormat(cfg.aspectRatio) : 'horizontal')
+  // Determine render format (authoritative source: aspectRatio)
+  // Do not rely on renderOptions.format coming from the client.
+  const ar = (inlineConfig?.aspectRatio || cfg?.aspectRatio || project.aspectRatio || '16:9') as string
+  const format: RenderFormat = mapAspectRatioToFormat(ar)
 
   await createRenderJob(
     session.userId,

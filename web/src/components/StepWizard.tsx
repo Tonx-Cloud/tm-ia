@@ -861,6 +861,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [visualStyle, setVisualStyle] = useState<VisualStyle>('cinematic')
   const [imgFrequency, setImgFrequency] = useState(3)
   const [desiredSceneCount, setDesiredSceneCount] = useState<number | null>(null)
+  const [desiredSceneCountInput, setDesiredSceneCountInput] = useState<string>('')
   const [customTheme, setCustomTheme] = useState('')
   const [generating, setGenerating] = useState(false)
   const [storyboard, setStoryboard] = useState<StoryboardScene[]>([])
@@ -941,6 +942,15 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   // Cost calculations
   const autoImageCount = audio ? Math.ceil(audio.duration / imgFrequency) : Math.ceil(180 / imgFrequency)
   const imageCount = Math.max(3, Math.min(30, desiredSceneCount ?? autoImageCount))
+
+  // keep input field in sync when value comes from elsewhere
+  useEffect(() => {
+    if (desiredSceneCount == null) {
+      setDesiredSceneCountInput('')
+    } else {
+      setDesiredSceneCountInput(String(desiredSceneCount))
+    }
+  }, [desiredSceneCount])
   const transcriptionCost = audio ? Math.ceil(audio.duration / 60) * 3 : 3
   const analysisCost = 1
   const imageCost = imageCount * 30
@@ -2002,17 +2012,27 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                   <input
                     type="number"
-                    min={3}
+                    min={1}
                     max={30}
-                    value={desiredSceneCount ?? ''}
+                    value={desiredSceneCountInput}
                     onChange={(e) => {
-                      const v = e.target.value
-                      if (!v) {
+                      // Let the user type freely (e.g., "12") and clamp on blur.
+                      setDesiredSceneCountInput(e.target.value)
+                    }}
+                    onBlur={() => {
+                      const raw = desiredSceneCountInput.trim()
+                      if (!raw) {
                         setDesiredSceneCount(null)
                         return
                       }
-                      const n = Math.max(3, Math.min(30, parseInt(v)))
-                      setDesiredSceneCount(Number.isFinite(n) ? n : null)
+                      const n0 = parseInt(raw, 10)
+                      if (!Number.isFinite(n0)) {
+                        setDesiredSceneCount(null)
+                        return
+                      }
+                      const n = Math.max(3, Math.min(30, n0))
+                      setDesiredSceneCount(n)
+                      setDesiredSceneCountInput(String(n))
                     }}
                     placeholder="Auto"
                     style={{
@@ -2026,7 +2046,10 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                   />
                   <button
                     className="btn-ghost"
-                    onClick={() => setDesiredSceneCount(null)}
+                    onClick={() => {
+                      setDesiredSceneCount(null)
+                      setDesiredSceneCountInput('')
+                    }}
                     title="Voltar para automático"
                   >
                     Auto
