@@ -2,9 +2,13 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { loadEnv } from './env.js'
 
+function clean(v: string): string {
+  return v.trim().replace(/[\r\n]+/g, '')
+}
+
 function must(key: string, v?: string) {
   if (!v) throw new Error(`Missing env var: ${key}`)
-  return v
+  return clean(v)
 }
 
 export type R2Env = {

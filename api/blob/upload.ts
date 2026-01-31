@@ -16,8 +16,9 @@ export default withObservability(async function handler(req: VercelRequest, res:
   ctx.userId = session.userId
 
   const body = (req.body || {}) as { pathname?: string; contentType?: string }
-  const pathname = String(body.pathname || '')
-  const contentType = String(body.contentType || '')
+  // Strong sanitization on inputs
+  const pathname = String(body.pathname || '').trim().replace(/[\r\n]+/g, '')
+  const contentType = String(body.contentType || '').trim().replace(/[\r\n]+/g, '')
 
   if (!pathname || !pathname.startsWith('audio/')) {
     return res.status(400).json({ error: 'Invalid upload path', requestId: ctx.requestId })
@@ -27,7 +28,21 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
 
   const signed = await presignPutToR2(pathname, contentType, 15 * 60)
-  ctx.log('info', 'r2.presign.ok', { key: signed.key })
+  
+  // Critical Debug for R2 Presign issues
+  const hasNewline = signed.uploadUrl.includes('%0A') || signed.uploadUrl.includes('\n')
+  ctx.log('info', 'r2.presign.generated', { 
+    key: signed.key,
+    publicUrl: signed.publicUrl,
+    uploadUrlPrefix: signed.uploadUrl.slice(0, 100),
+    hasNewline,
+    bucketLength: process.env.R2_BUCKET?.length
+  })
+
+  if (hasNewline) {
+    ctx.log('error', 'r2.presign.corruption_detected', { uploadUrl: signed.uploadUrl })
+    return res.status(500).json({ error: 'Server configuration error (newline in url)', requestId: ctx.requestId })
+  }
 
   return res.status(200).json({
     ok: true,
