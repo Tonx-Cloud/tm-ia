@@ -188,6 +188,21 @@ function buildVideoFilters(options: RenderOptions): string[] {
   return filters
 }
 
+function summarizeStoryboardForLog(project: any) {
+  try {
+    const sb = (project?.storyboard || []) as any[]
+    const lines = sb.map((s, i) => {
+      const anim = String(s.animateType || s.animation || (s.animate ? 'zoom-in' : 'none'))
+      const dur = Number(s.durationSec || 0) || 0
+      const assetId = s.assetId ? String(s.assetId) : 'unknown'
+      return `scene#${String(i + 1).padStart(2, '0')} asset=${assetId} dur=${dur}s anim=${anim}`
+    })
+    return lines.join('\n')
+  } catch {
+    return ''
+  }
+}
+
 // ============================================================================
 // Main Render Function
 // ============================================================================
@@ -322,8 +337,18 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       let args: string[]
 
       // If any scene has animation, use a filter_complex concat pipeline (per-scene control).
+      // Supported: zoom-in, zoom-out, pan-left, pan-right, pan-up, pan-down, fade-in, fade-out.
       const animateTypes = (project.storyboard as any[]).map((s) => String(s.animateType || s.animation || (s.animate ? 'zoom-in' : 'none')))
       const hasAnim = animateTypes.some((t) => t && t !== 'none')
+
+      // Write a helpful debug header to logTail (visible via /api/render/status)
+      try {
+        const sbLog = summarizeStoryboardForLog(project)
+        const header = `TM-IA render debug\nformat=${options.format || 'horizontal'} quality=${options.quality || 'standard'}\nscenes=${project.storyboard.length}\n${sbLog}\n`
+        await updateJobProgress(userId, job.renderId, 5, header.slice(-1500))
+      } catch {
+        // ignore
+      }
 
       // NOTE: Crossfade (filter_complex + xfade) has proven brittle across FFmpeg builds.
       // We'll use filter_complex only for per-scene animation; otherwise concat demuxer.
@@ -366,13 +391,19 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
           } else if (anim === 'zoom-out') {
             filterParts.push(`[${vIn}:v]${base},zoompan=z='if(eq(on,1),1.10,max(1.0,zoom-0.0015))':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
           } else if (anim === 'pan-left') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)*(t/${dur.toFixed(2)})':y='(ih-oh)/2':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+            // Use `on` (output frame index) in zoompan expressions. `t` is not defined in zoompan.
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)*on/${Math.max(1, frames - 1)}':y='(ih-oh)/2':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
           } else if (anim === 'pan-right') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)*(1-(t/${dur.toFixed(2)}))':y='(ih-oh)/2':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)*(1-on/${Math.max(1, frames - 1)})':y='(ih-oh)/2':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
           } else if (anim === 'pan-up') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(1-(t/${dur.toFixed(2)}))':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(1-on/${Math.max(1, frames - 1)})':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
           } else if (anim === 'pan-down') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(t/${dur.toFixed(2)})':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*on/${Math.max(1, frames - 1)}':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+          } else if (anim === 'fade-in') {
+            filterParts.push(`[${vIn}:v]${base},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS,fade=t=in:st=0:d=0.35[${out}]`)
+          } else if (anim === 'fade-out') {
+            const st = Math.max(0, Number((dur - 0.35).toFixed(2)))
+            filterParts.push(`[${vIn}:v]${base},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS,fade=t=out:st=${st}:d=0.35[${out}]`)
           } else {
             filterParts.push(`[${vIn}:v]${base},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
           }

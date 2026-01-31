@@ -36,7 +36,16 @@ type StepWizardProps = {
   onError?: (error: string) => void
 }
 
-type AnimationType = 'none' | 'zoom-in' | 'zoom-out' | 'pan-left' | 'pan-right' | 'pan-up' | 'pan-down'
+type AnimationType =
+  | 'none'
+  | 'zoom-in'
+  | 'zoom-out'
+  | 'pan-left'
+  | 'pan-right'
+  | 'pan-up'
+  | 'pan-down'
+  | 'fade-in'
+  | 'fade-out'
 
 type StoryboardScene = {
   sceneNumber: number
@@ -696,6 +705,8 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
                       <option value="pan-right">Pan (direita → esquerda)</option>
                       <option value="pan-up">Pan (baixo → cima)</option>
                       <option value="pan-down">Pan (cima → baixo)</option>
+                      <option value="fade-in">Fade in</option>
+                      <option value="fade-out">Fade out</option>
                     </select>
 
                     <div style={{ marginTop: 4, fontSize: 12, color: 'var(--text-muted)' }}>

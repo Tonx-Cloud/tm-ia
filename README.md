@@ -29,7 +29,9 @@ Produção: **https://tm-ia.vercel.app**
 - Animação simples por cena (estilo "VEO 3 - simples"):
   - zoom-in/zoom-out
   - pan left/right/up/down
+  - fade-in / fade-out
   - seleção por **dropdown (select)** no modal da cena
+  - **debug**: o render salva um resumo das animações no `logTail` (visível via `/api/render/status?renderId=...`)
 
 ---
 
