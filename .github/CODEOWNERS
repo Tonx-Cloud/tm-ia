@@ -2,11 +2,11 @@
 # (GitHub branch protection must have "Require review from Code Owners" enabled)
 
 # Dependency lockfiles
-/package-lock.json @Tonx-Cloud/security
-/web/package-lock.json @Tonx-Cloud/security
+/package-lock.json @Tonx-Cloud/tonx
+/web/package-lock.json @Tonx-Cloud/tonx
 
 # Database schema changes
-/prisma/schema.prisma @Tonx-Cloud/security
+/prisma/schema.prisma @Tonx-Cloud/tonx
 
 # Workflow changes
-/.github/workflows/* @Tonx-Cloud/security
+/.github/workflows/* @Tonx-Cloud/tonx
