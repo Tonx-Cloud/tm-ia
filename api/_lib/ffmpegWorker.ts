@@ -204,361 +204,180 @@ function summarizeStoryboardForLog(project: any) {
 }
 
 // ============================================================================
-// Main Render Function
+// Main Render Function (Refactored: Sequential Clip Generation + Concat)
 // ============================================================================
 
 export async function startFFmpegRender(userId: string, job: RenderJob, options: RenderOptions = {}) {
-  // Update status to processing immediately
   await updateJobStatus(userId, job.renderId, 'processing')
-
-  // Log runtime ffmpeg binary info (helps debug differences between local vs VM/Vercel)
-  let ffmpegPathForLog = ''
-  try {
-    ffmpegPathForLog = getFFmpegPath()
-  } catch {
-    ffmpegPathForLog = '(unavailable)'
-  }
 
   try {
     const project = await getProject(job.projectId)
-      if (!project) throw new Error('Project not found')
+    if (!project) throw new Error('Project not found')
 
-      // Audio may be inline base64 (prod) or a local tmp path (dev)
-      let audioInput = ''
+    // 1. Prepare Workspace
+    const tmpDir = os.tmpdir()
+    const workDir = path.join(tmpDir, `render_${job.renderId}`)
+    if (!fs.existsSync(workDir)) fs.mkdirSync(workDir)
 
-      if (project.audioUrl) {
-        const tmpDir = os.tmpdir()
-        const workAudio = path.join(tmpDir, `audio_${job.renderId}.bin`)
-        const resp = await fetch(project.audioUrl)
-        if (!resp.ok) throw new Error(`Audio download failed (${resp.status})`)
-        const buf = Buffer.from(await resp.arrayBuffer())
-        fs.writeFileSync(workAudio, buf)
-        audioInput = workAudio
-      } else if (project.audioData) {
-        const tmpDir = os.tmpdir()
-        const workAudio = path.join(tmpDir, `audio_${job.renderId}.bin`)
-        const buf = Buffer.from(project.audioData, 'base64')
-        fs.writeFileSync(workAudio, buf)
-        audioInput = workAudio
-      } else if (project.audioPath && fs.existsSync(project.audioPath)) {
-        audioInput = project.audioPath
+    // 2. Prepare Audio
+    let audioInput = ''
+    if (project.audioUrl) {
+      const workAudio = path.join(tmpDir, `audio_${job.renderId}.bin`)
+      const resp = await fetch(project.audioUrl)
+      if (!resp.ok) throw new Error(`Audio download failed`)
+      fs.writeFileSync(workAudio, Buffer.from(await resp.arrayBuffer()))
+      audioInput = workAudio
+    } else if (project.audioData) {
+      const workAudio = path.join(tmpDir, `audio_${job.renderId}.bin`)
+      fs.writeFileSync(workAudio, Buffer.from(project.audioData, 'base64'))
+      audioInput = workAudio
+    } else if (project.audioPath && fs.existsSync(project.audioPath)) {
+      audioInput = project.audioPath
+    }
+    if (!audioInput) throw new Error('Audio file missing')
+
+    // 3. Resolve Resolution & FPS
+    const quality = options.quality || 'standard'
+    const format = options.format || 'horizontal'
+    const res = RESOLUTIONS[quality][format]
+    const fps = 30
+    const ffmpegPath = getFFmpegPath()
+
+    // 4. Generate Clips Sequentially
+    // Using simple clip generation avoids "filter_complex" complexity and guarantees resolution/animation correctness per scene.
+    const clipFiles: string[] = []
+    const storyboard = project.storyboard || []
+    
+    // Fallback if storyboard is empty but assets exist
+    if (storyboard.length === 0 && project.assets.length > 0) {
+       project.assets.forEach(a => storyboard.push({ assetId: a.id, durationSec: 5, animate: false }))
+    }
+
+    let totalDurationSec = 0
+    storyboard.forEach(s => totalDurationSec += (s.durationSec || 5))
+
+    let currentProgressDuration = 0
+
+    // Debug Log Header
+    const sbLog = summarizeStoryboardForLog(project)
+    const header = `TM-IA render (sequential)\nformat=${format} quality=${quality} (${res.width}x${res.height})\nscenes=${storyboard.length}\n${sbLog}\n`
+    await updateJobProgress(userId, job.renderId, 5, header)
+
+    for (let i = 0; i < storyboard.length; i++) {
+      const item = storyboard[i]
+      const asset = project.assets.find(a => a.id === item.assetId)
+      if (!asset || !asset.dataUrl) continue
+
+      // Save Image
+      const m = asset.dataUrl.match(/^data:(image\/[^;]+);base64,(.*)$/)
+      if (!m) continue
+      const ext = m[1].includes('png') ? 'png' : 'jpg'
+      const imgPath = path.join(workDir, `src_${i}.${ext}`)
+      fs.writeFileSync(imgPath, m[2], 'base64')
+
+      // Generate Clip
+      const dur = item.durationSec || 5
+      const frames = Math.max(1, Math.round(dur * fps))
+      const anim = String((item as any).animateType || (item as any).animation || (item.animate ? 'zoom-in' : 'none'))
+      const clipName = `clip_${String(i).padStart(3, '0')}.mp4`
+      const clipPath = path.join(workDir, clipName)
+
+      // Build Filter for this specific clip
+      // Force scale before AND after zoompan to ensure 100% compliance with target resolution
+      const sizeStr = `s=${res.width}x${res.height}`
+      const scaleFilter = `scale=${res.width}:${res.height}:force_original_aspect_ratio=decrease,pad=${res.width}:${res.height}:(ow-iw)/2:(oh-ih)/2:black`
+      
+      let vf = `${scaleFilter},setsar=1,fps=${fps}` // setsar=1 fixes aspect ratio glitches
+
+      if (anim === 'zoom-in') {
+        vf += `,zoompan=z='min(zoom+0.0015,1.10)':d=${frames}:fps=${fps}:${sizeStr}`
+      } else if (anim === 'zoom-out') {
+        vf += `,zoompan=z='if(eq(on,1),1.10,max(1.0,zoom-0.0015))':d=${frames}:fps=${fps}:${sizeStr}`
+      } else if (anim === 'pan-left') {
+        vf += `,zoompan=z='1.05':x='(iw-ow)*on/${Math.max(1, frames - 1)}':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr}`
+      } else if (anim === 'pan-right') {
+        vf += `,zoompan=z='1.05':x='(iw-ow)*(1-on/${Math.max(1, frames - 1)})':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr}`
+      } else if (anim === 'pan-up') {
+        vf += `,zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(1-on/${Math.max(1, frames - 1)})':d=${frames}:fps=${fps}:${sizeStr}`
+      } else if (anim === 'pan-down') {
+        vf += `,zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*on/${Math.max(1, frames - 1)}':d=${frames}:fps=${fps}:${sizeStr}`
+      } else if (anim === 'fade-in') {
+        vf += `,fade=t=in:st=0:d=0.5`
+      } else if (anim === 'fade-out') {
+        vf += `,fade=t=out:st=${(dur - 0.5).toFixed(2)}:d=0.5`
       }
 
-      if (!audioInput) {
-        throw new Error('Audio file missing')
-      }
+      // Safety scale again to catch zoompan resets
+      vf += `,scale=${res.width}:${res.height}`
 
-      const tmpDir = os.tmpdir()
-      const workDir = path.join(tmpDir, `render_${job.renderId}`)
-      if (!fs.existsSync(workDir)) fs.mkdirSync(workDir)
+      const args = [
+        '-loop', '1',
+        '-t', dur.toFixed(2),
+        '-i', imgPath,
+        '-vf', vf,
+        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', // Fast intermediate encode
+        '-pix_fmt', 'yuv420p',
+        '-y', clipPath
+      ]
 
-      // 1. Extract Images from storyboard
-      // IMPORTANT: preserve correct extension based on mimeType; do not assume png.
-      const imageFiles: Array<string | null> = Array.from({ length: project.storyboard.length }).map(() => null)
+      await new Promise<void>((resolve, reject) => {
+        const p = spawn(ffmpegPath, args)
+        p.on('close', c => c === 0 ? resolve() : reject(new Error(`Clip ${i} failed`)))
+        p.on('error', reject)
+      })
 
-      for (const [index, item] of project.storyboard.entries()) {
-        const asset = project.assets.find((a) => a.id === item.assetId)
-        if (!asset || !asset.dataUrl) continue
+      clipFiles.push(clipPath)
+      
+      // Update Progress based on clips done
+      currentProgressDuration += dur
+      const pct = Math.min(90, Math.round((currentProgressDuration / totalDurationSec) * 90))
+      await updateJobProgress(userId, job.renderId, pct, (header + `\nClip ${i + 1}/${storyboard.length} done`).slice(-2000))
+    }
 
-        const m = asset.dataUrl.match(/^data:(image\/[^;]+);base64,(.*)$/)
-        if (!m) continue
+    if (clipFiles.length === 0) throw new Error('No clips generated')
 
-        const mime = m[1]
-        const base64Data = m[2]
-        const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg'
+    // 5. Concat Clips + Audio
+    const concatList = path.join(workDir, 'concat.txt')
+    const lines = clipFiles.map(f => `file '${f}'`)
+    fs.writeFileSync(concatList, lines.join('\n'))
 
-        const filename = `frame_${index.toString().padStart(3, '0')}.${ext}`
-        const filePath = path.join(workDir, filename)
-        fs.writeFileSync(filePath, base64Data, 'base64')
-        imageFiles[index] = filename
-      }
+    const finalOutput = path.join(workDir, 'output.mp4')
+    // We encode again to combine with audio and ensure final bitrate/profile
+    const concatArgs = [
+      '-f', 'concat', '-safe', '0',
+      '-i', concatList,
+      '-i', audioInput,
+      '-c:v', 'copy', // Copy video stream (fast!) since clips are already correct
+      '-c:a', 'aac', '-b:a', '192k',
+      '-shortest',
+      '-movflags', '+faststart',
+      '-y', finalOutput
+    ]
 
-      let present = imageFiles.filter(Boolean) as string[]
-
-      // Some older clients accidentally persisted a UI storyboard format (missing assetId).
-      // If that happens, fall back to rendering in the current assets order.
-      if (present.length === 0 && project.assets && project.assets.length > 0) {
-        const fallbackFiles: string[] = []
-        for (const [index, asset] of project.assets.entries()) {
-          if (!asset?.dataUrl) continue
-          const m = asset.dataUrl.match(/^data:(image\/[^;]+);base64,(.*)$/)
-          if (!m) continue
-          const mime = m[1]
-          const base64Data = m[2]
-          const ext = mime.includes('png') ? 'png' : mime.includes('webp') ? 'webp' : 'jpg'
-          const filename = `frame_${index.toString().padStart(3, '0')}.${ext}`
-          const filePath = path.join(workDir, filename)
-          fs.writeFileSync(filePath, base64Data, 'base64')
-          fallbackFiles.push(filename)
-        }
-        present = fallbackFiles
-      }
-
-      if (present.length === 0) throw new Error('No images to render')
-
-      // 2. Calculate total duration for progress tracking
-      const defaultDuration = 5
-      let totalDurationSec = 0
-      const durations: number[] = []
-
-      for (const item of project.storyboard) {
-        const dur = item.durationSec || defaultDuration
-        durations.push(dur)
-        totalDurationSec += dur
-      }
-
-      // Ensure the video duration matches the audio duration.
-      // We enforce this in two ways:
-      // 1) Normalize per-scene durations to cover the audio length.
-      // 2) Pass -t <audioDur> to FFmpeg so the output cannot exceed the audio.
-      const getAudioDurationSec = async () => {
-        try {
-          const ffmpegPath = getFFmpegPath()
-          const p = spawn(ffmpegPath, ['-i', audioInput], { cwd: workDir })
-          let s = ''
-          for await (const chunk of p.stderr as any) s += chunk.toString()
-          const m = s.match(/Duration:\s*(\d+):(\d+):(\d+\.?\d*)/)
-          if (!m) return null
-          const h = Number(m[1])
-          const mi = Number(m[2])
-          const se = Number(m[3])
-          return h * 3600 + mi * 60 + se
-        } catch {
-          return null
-        }
-      }
-
-      const audioDur = await getAudioDurationSec()
-      const nScenes = Math.max(1, project.storyboard.length || present.length)
-      if (audioDur && nScenes > 0) {
-        const per = Math.max(1, Math.round((audioDur / nScenes) * 100) / 100)
-        for (let i = 0; i < durations.length; i++) durations[i] = per
-        totalDurationSec = audioDur
-      }
-
-      // 3. Build FFmpeg command based on whether crossfade is enabled
-      const outputFile = path.join(workDir, 'output.mp4')
-      const audioInputPath = audioInput
-      const videoFilters = buildVideoFilters(options)
-      const filterString = videoFilters.join(',')
-
-      let args: string[]
-
-      // If any scene has animation, use a filter_complex concat pipeline (per-scene control).
-      // Supported: zoom-in, zoom-out, pan-left, pan-right, pan-up, pan-down, fade-in, fade-out.
-      const animateTypes = (project.storyboard as any[]).map((s) => String(s.animateType || s.animation || (s.animate ? 'zoom-in' : 'none')))
-      const hasAnim = animateTypes.some((t) => t && t !== 'none')
-
-      // Write a helpful debug header to logTail (visible via /api/render/status)
-      let header = ''
-      try {
-        const sbLog = summarizeStoryboardForLog(project)
-        header = `TM-IA render debug\nformat=${options.format || 'horizontal'} quality=${options.quality || 'standard'}\nscenes=${project.storyboard.length}\n${sbLog}\n`
-        await updateJobProgress(userId, job.renderId, 5, header)
-      } catch {
-        // ignore
-      }
-
-      // NOTE: Crossfade (filter_complex + xfade) has proven brittle across FFmpeg builds.
-      // We'll use filter_complex only for per-scene animation; otherwise concat demuxer.
-      if (options.crossfade && present.length > 1) {
-        console.log('Crossfade requested but disabled for stability; using concat/filters approach.')
-      }
-
-      if (hasAnim) {
-        const fps = 30
-        const inputs: string[] = []
-        const filterParts: string[] = []
-        const labels: string[] = []
-
-        // Add each image as loop input
-        for (let i = 0; i < imageFiles.length; i++) {
-          const filename = imageFiles[i]
-          if (!filename) continue
-          const dur = durations[i] || defaultDuration
-          inputs.push('-loop', '1', '-t', String(dur), '-i', path.join(workDir, filename))
-        }
-
-        // audio input
-        const audioIndex = inputs.filter((x) => x === '-i').length
-        inputs.push('-i', audioInputPath)
-
-        // Build per-scene filters
-        let vIn = 0
-        for (let i = 0; i < imageFiles.length; i++) {
-          const filename = imageFiles[i]
-          if (!filename) continue
-          const dur = durations[i] || defaultDuration
-          const frames = Math.max(1, Math.round(dur * fps))
-          const anim = animateTypes[i] || 'none'
-          const out = `v${i}`
-
-          const base = `${filterString},fps=${fps}`
-          const res = RESOLUTIONS[options.quality || 'standard'][options.format || 'horizontal']
-          const sizeStr = `s=${res.width}x${res.height}`
-
-          if (anim === 'zoom-in') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='min(zoom+0.0015,1.10)':d=${frames}:fps=${fps}:${sizeStr},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
-          } else if (anim === 'zoom-out') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='if(eq(on,1),1.10,max(1.0,zoom-0.0015))':d=${frames}:fps=${fps}:${sizeStr},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
-          } else if (anim === 'pan-left') {
-            // Use `on` (output frame index) in zoompan expressions. `t` is not defined in zoompan.
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)*on/${Math.max(1, frames - 1)}':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
-          } else if (anim === 'pan-right') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)*(1-on/${Math.max(1, frames - 1)})':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
-          } else if (anim === 'pan-up') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(1-on/${Math.max(1, frames - 1)})':d=${frames}:fps=${fps}:${sizeStr},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
-          } else if (anim === 'pan-down') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*on/${Math.max(1, frames - 1)}':d=${frames}:fps=${fps}:${sizeStr},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
-          } else if (anim === 'fade-in') {
-            filterParts.push(`[${vIn}:v]${base},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS,fade=t=in:st=0:d=0.35[${out}]`)
-          } else if (anim === 'fade-out') {
-            const st = Math.max(0, Number((dur - 0.35).toFixed(2)))
-            filterParts.push(`[${vIn}:v]${base},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS,fade=t=out:st=${st}:d=0.35[${out}]`)
-          } else {
-            filterParts.push(`[${vIn}:v]${base},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
-          }
-
-          labels.push(`[${out}]`)
-          vIn++
-        }
-
-        filterParts.push(`${labels.join('')}concat=n=${labels.length}:v=1:a=0[vout]`)
-
-        args = [
-          ...inputs,
-          '-filter_complex', filterParts.join(';'),
-          '-map', '[vout]',
-          '-map', `${audioIndex}:a`,
-          '-c:v', 'libx264',
-          '-preset', PRESETS[options.quality || 'standard'],
-          '-crf', (options.quality || 'standard') === 'basic' ? '24' : (options.quality || 'standard') === 'pro' ? '21' : '23',
-          '-b:v', BITRATES[options.quality || 'standard'],
-          '-pix_fmt', 'yuv420p',
-          '-c:a', 'aac',
-          '-b:a', (options.quality || 'standard') === 'basic' ? '160k' : '192k',
-          ...(audioDur ? ['-t', String(Math.max(1, Math.round(audioDur * 100) / 100))] : []),
-          '-shortest',
-          '-movflags', '+faststart',
-          '-y',
-          outputFile,
-        ]
-      } else {
-        // Simple concat demuxer approach
-        const concatFile = path.join(workDir, 'input.txt')
-        const lines: string[] = []
-
-        project.storyboard.forEach((item, idx) => {
-          const filename = imageFiles[idx]
-          if (filename && fs.existsSync(path.join(workDir, filename))) {
-            lines.push(`file '${filename}'`)
-            lines.push(`duration ${durations[idx] || item.durationSec || defaultDuration}`)
-          }
-        })
-
-        // FFmpeg concat demuxer quirk: repeat last file
-        if (lines.length > 0) {
-          const lastFile = lines[lines.length - 2]
-          lines.push(lastFile)
-        }
-
-        fs.writeFileSync(concatFile, lines.join('\n'))
-
-        const q = options.quality || 'standard'
-        args = [
-          '-f', 'concat',
-          '-safe', '0',
-          '-i', concatFile,
-          '-i', audioInputPath,
-          '-vf', filterString,
-          '-c:v', 'libx264',
-          '-preset', PRESETS[q],
-          '-crf', q === 'basic' ? '24' : q === 'pro' ? '21' : '23',
-          '-b:v', BITRATES[q],
-          '-pix_fmt', 'yuv420p',
-          '-c:a', 'aac',
-          '-b:a', q === 'basic' ? '160k' : '192k',
-          ...(audioDur ? ['-t', String(Math.max(1, Math.round(audioDur * 100) / 100))] : []),
-          '-shortest',
-          '-movflags', '+faststart',
-          '-y',
-          outputFile,
-        ]
-      }
-
-      const ffmpegPath = getFFmpegPath()
-      console.log('Running FFmpeg:', ffmpegPath, args.join(' '))
-      // Persist a short command+binary hint into logTail so we can compare environments.
-      try {
-        const hint = `ffmpegPath=${ffmpegPathForLog}\ncmd=${String(args.join(' ')).slice(0, 600)}\n`
-        await updateJobProgress(userId, job.renderId, 5, (header + '\n' + hint).slice(-2000))
-      } catch {
-        // ignore
-      }
-
-      const proc = spawn(ffmpegPath, args, { cwd: workDir })
-
+    console.log('Running Final Concat:', ffmpegPath, concatArgs.join(' '))
+    
+    await new Promise<void>((resolve, reject) => {
+      const p = spawn(ffmpegPath, concatArgs)
       let stderr = ''
-      let lastProgress = 5
-
-      let lastLogWrite = 0
-      proc.stderr.on('data', async (data) => {
-        const chunk = data.toString()
-        stderr += chunk
-
-        // keep header + last ~1500 chars for UI
-        const tail = (header + '\n... [ffmpeg log] ...\n' + stderr).slice(-2000)
-
-        // Parse and update progress
-        const progress = parseFFmpegProgress(chunk, totalDurationSec)
-        const now = Date.now()
-        const shouldWriteLog = now - lastLogWrite > 1000
-
-        if (progress !== null && progress > lastProgress) {
-          lastProgress = progress
-          await updateJobProgress(userId, job.renderId, progress, tail)
-          lastLogWrite = now
-        } else if (shouldWriteLog) {
-          // update log tail even when time parsing doesn't advance
-          await updateJobProgress(userId, job.renderId, lastProgress, tail)
-          lastLogWrite = now
-        }
+      p.stderr.on('data', d => stderr += d.toString())
+      p.on('close', c => {
+        if (c === 0) resolve()
+        else reject(new Error(`Final concat failed: ${stderr.slice(-500)}`))
       })
+    })
 
-      await new Promise<void>((resolve) => {
-        proc.on('close', async (code) => {
-          if (code === 0) {
-            console.log('Render success:', outputFile)
-            try {
-              const buf = fs.readFileSync(outputFile)
-              const key = `renders/${job.projectId}/${job.renderId}.mp4`
-              const obj = await putBufferToR2(key, buf, 'video/mp4')
-              await updateJobStatus(userId, job.renderId, 'complete', obj.url)
-            } catch (err) {
-              // fallback: keep local path (may expire)
-              const downloadUrl = `${process.env.PUBLIC_BASE_URL || ''}/api/render/download?jobId=${job.renderId}`
-              await updateJobStatus(userId, job.renderId, 'complete', downloadUrl, `Blob upload failed: ${(err as Error).message}`)
-            }
-          } else {
-          console.error('Render failed with code', code)
-          console.error('FFmpeg stderr:', stderr.slice(-500))
-            await updateJobStatus(
-              userId,
-              job.renderId,
-              'failed',
-              undefined,
-              `FFmpeg exited with code ${code}. Log: ${stderr.slice(-200)}`
-            )
-          }
-          resolve()
-        })
+    // 6. Upload
+    console.log('Render success:', finalOutput)
+    try {
+      const buf = fs.readFileSync(finalOutput)
+      const key = `renders/${job.projectId}/${job.renderId}.mp4`
+      const obj = await putBufferToR2(key, buf, 'video/mp4')
+      await updateJobStatus(userId, job.renderId, 'complete', obj.url)
+    } catch (err) {
+      const downloadUrl = `${process.env.PUBLIC_BASE_URL || ''}/api/render/download?jobId=${job.renderId}`
+      await updateJobStatus(userId, job.renderId, 'complete', downloadUrl, `Upload failed: ${(err as Error).message}`)
+    }
 
-        proc.on('error', async (err) => {
-          console.error('FFmpeg spawn error:', err)
-          await updateJobStatus(userId, job.renderId, 'failed', undefined, err.message)
-          resolve()
-        })
-      })
   } catch (err) {
     console.error('Render worker exception:', err)
     await updateJobStatus(userId, job.renderId, 'failed', undefined, (err as Error).message)
