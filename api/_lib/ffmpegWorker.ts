@@ -385,20 +385,22 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
           const out = `v${i}`
 
           const base = `${filterString},fps=${fps}`
+          const res = RESOLUTIONS[options.quality || 'standard'][options.format || 'horizontal']
+          const sizeStr = `s=${res.width}x${res.height}`
 
           if (anim === 'zoom-in') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='min(zoom+0.0015,1.10)':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='min(zoom+0.0015,1.10)':d=${frames}:fps=${fps}:${sizeStr},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
           } else if (anim === 'zoom-out') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='if(eq(on,1),1.10,max(1.0,zoom-0.0015))':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='if(eq(on,1),1.10,max(1.0,zoom-0.0015))':d=${frames}:fps=${fps}:${sizeStr},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
           } else if (anim === 'pan-left') {
             // Use `on` (output frame index) in zoompan expressions. `t` is not defined in zoompan.
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)*on/${Math.max(1, frames - 1)}':y='(ih-oh)/2':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)*on/${Math.max(1, frames - 1)}':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
           } else if (anim === 'pan-right') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)*(1-on/${Math.max(1, frames - 1)})':y='(ih-oh)/2':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)*(1-on/${Math.max(1, frames - 1)})':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
           } else if (anim === 'pan-up') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(1-on/${Math.max(1, frames - 1)})':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(1-on/${Math.max(1, frames - 1)})':d=${frames}:fps=${fps}:${sizeStr},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
           } else if (anim === 'pan-down') {
-            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*on/${Math.max(1, frames - 1)}':d=${frames}:fps=${fps},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
+            filterParts.push(`[${vIn}:v]${base},zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*on/${Math.max(1, frames - 1)}':d=${frames}:fps=${fps}:${sizeStr},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS[${out}]`)
           } else if (anim === 'fade-in') {
             filterParts.push(`[${vIn}:v]${base},trim=duration=${dur.toFixed(2)},setpts=PTS-STARTPTS,fade=t=in:st=0:d=0.35[${out}]`)
           } else if (anim === 'fade-out') {
