@@ -64,14 +64,57 @@ type StoryboardScene = {
 // GLOBAL LOADING OVERLAY
 // ============================================================================
 
-function LoadingOverlay({ message }: { message: string }) {
+const MSG_ANALYZING = [
+  "Recebendo seu áudio...",
+  "Analisando o ritmo e o humor...",
+  "Transcrevendo a letra...",
+  "Identificando os melhores momentos...",
+  "Criando a estrutura dos segmentos..."
+]
+
+const MSG_GENERATING = [
+  "Interpretando a letra da música...",
+  "Criando prompts visuais únicos...",
+  "Gerando cenas cinematográficas...",
+  "Isso pode levar alguns minutos...",
+  "Dica: Você poderá editar qualquer cena depois!",
+  "Dica: Você pode subir suas próprias imagens se preferir.",
+  "Dica: Arraste as cenas para reordenar a história."
+]
+
+const MSG_RENDERING = [
+  "Compilando seu videoclipe...",
+  "Sincronizando áudio e transições...",
+  "Aplicando efeitos visuais...",
+  "Renderizando o arquivo final...",
+  "Quase lá..."
+]
+
+const MSG_SAVING = [
+  "Salvando alterações...",
+  "Sincronizando com a nuvem..."
+]
+
+function LoadingOverlay({ message, messages }: { message?: string, messages?: string[] }) {
+  const [currentIndex, setCurrentIndex] = useState(0)
+  
+  useEffect(() => {
+    if (!messages || messages.length === 0) return
+    const interval = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % messages.length)
+    }, 3500)
+    return () => clearInterval(interval)
+  }, [messages])
+
+  const text = messages ? messages[currentIndex] : message
+
   return (
     <div style={{
       position: 'fixed',
       inset: 0,
       zIndex: 9999,
-      background: 'rgba(0,0,0,0.7)',
-      backdropFilter: 'blur(4px)',
+      background: 'rgba(0,0,0,0.85)',
+      backdropFilter: 'blur(8px)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -79,8 +122,39 @@ function LoadingOverlay({ message }: { message: string }) {
       color: 'white',
       animation: 'fadeIn 0.3s ease'
     }}>
-      <div className="spinner" style={{ width: 48, height: 48, border: '4px solid rgba(255,255,255,0.3)', borderTopColor: 'var(--accent)' }} />
-      <div style={{ marginTop: 24, fontSize: 18, fontWeight: 600 }}>{message}</div>
+      <div className="spinner" style={{ width: 48, height: 48, border: '4px solid rgba(255,255,255,0.2)', borderTopColor: 'var(--accent)' }} />
+      <div style={{ 
+        marginTop: 32, 
+        fontSize: 18, 
+        fontWeight: 600, 
+        maxWidth: 400, 
+        textAlign: 'center',
+        lineHeight: 1.5,
+        minHeight: 54, // prevent layout jump
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <span key={currentIndex} style={{ animation: 'fadeIn 0.5s ease' }}>{text}</span>
+      </div>
+      
+      {messages && (
+        <div style={{ 
+          marginTop: 24, 
+          display: 'flex', 
+          gap: 6 
+        }}>
+          {messages.map((_, i) => (
+            <div key={i} style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: i === currentIndex ? 'var(--accent)' : 'rgba(255,255,255,0.2)',
+              transition: 'all 0.3s'
+            }} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -2738,11 +2812,11 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       )}
       
       {/* Global loading overlay (UX for slow transitions) */}
-      {(uploading || analyzing) && <LoadingOverlay message="Analisando áudio..." />}
-      {generating && <LoadingOverlay message="Gerando cenas com IA..." />}
-      {confirmingStep2 && <LoadingOverlay message="Salvando predefinições..." />}
-      {confirmingStep3 && <LoadingOverlay message="Salvando edições..." />}
-      {rendering && <LoadingOverlay message="Renderizando vídeo..." />}
+      {(uploading || analyzing) && <LoadingOverlay messages={MSG_ANALYZING} />}
+      {generating && <LoadingOverlay messages={MSG_GENERATING} />}
+      {confirmingStep2 && <LoadingOverlay messages={MSG_SAVING} />}
+      {confirmingStep3 && <LoadingOverlay messages={MSG_SAVING} />}
+      {rendering && <LoadingOverlay messages={MSG_RENDERING} />}
 
       {/* Global styles */}
       <style>{`
