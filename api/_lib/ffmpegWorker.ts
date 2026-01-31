@@ -211,6 +211,14 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
   // Update status to processing immediately
   await updateJobStatus(userId, job.renderId, 'processing')
 
+  // Log runtime ffmpeg binary info (helps debug differences between local vs VM/Vercel)
+  let ffmpegPathForLog = ''
+  try {
+    ffmpegPathForLog = getFFmpegPath()
+  } catch {
+    ffmpegPathForLog = '(unavailable)'
+  }
+
   try {
     const project = await getProject(job.projectId)
       if (!project) throw new Error('Project not found')
@@ -480,6 +488,13 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
 
       const ffmpegPath = getFFmpegPath()
       console.log('Running FFmpeg:', ffmpegPath, args.join(' '))
+      // Persist a short command+binary hint into logTail so we can compare environments.
+      try {
+        const hint = `ffmpegPath=${ffmpegPathForLog}\ncmd=${String(args.join(' ')).slice(0, 600)}\n`
+        await updateJobProgress(userId, job.renderId, 5, (header + '\n' + hint).slice(-2000))
+      } catch {
+        // ignore
+      }
 
       const proc = spawn(ffmpegPath, args, { cwd: workDir })
 
