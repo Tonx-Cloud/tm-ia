@@ -26,6 +26,10 @@ const optionalVars = [
   'MERCADOPAGO_PUBLIC_KEY',
   'PUBLIC_BASE_URL',
   'MP_NOTIFICATION_URL',
+
+  // External ASR (VM) - optional
+  'ASR_BASE_URL',
+  'ASR_TOKEN',
 ] as const
 
 type EnvKey = (typeof requiredVars)[number]

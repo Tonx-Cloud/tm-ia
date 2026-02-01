@@ -195,16 +195,52 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
   try {
     const openai = getOpenAI()
-    
+
     // 3. Transcription
     ctx.log('info', 'demo.analyze.transcribing', { projectId })
-    const transcription = await openai.audio.transcriptions.create({
-      file: fs.createReadStream(filePath),
-      model: 'whisper-1', // Reverted to Whisper-1 for stability
-      response_format: 'text',
-    })
 
-    const text = (transcription as any).text ?? (transcription as any) ?? ''
+    let text = ''
+
+    // Prefer external ASR (VM) if configured; fall back to OpenAI Whisper.
+    if (process.env.ASR_BASE_URL && audioUrl) {
+      try {
+        const startedAt = Date.now()
+        const ac = new AbortController()
+        const timeout = setTimeout(() => ac.abort(), 180_000)
+
+        const resp = await fetch(`${process.env.ASR_BASE_URL.replace(/\/$/, '')}/transcribe`, {
+          method: 'POST',
+          signal: ac.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(process.env.ASR_TOKEN ? { Authorization: `Bearer ${process.env.ASR_TOKEN}` } : {}),
+          },
+          body: JSON.stringify({ audioUrl, language: 'pt', model: 'small' }),
+        })
+
+        clearTimeout(timeout)
+
+        const json = await resp.json().catch(() => ({} as any))
+        if (resp.ok && json?.text) {
+          text = String(json.text)
+          ctx.log('info', 'demo.analyze.asr_ok', { projectId, ms: Date.now() - startedAt })
+        } else {
+          ctx.log('warn', 'demo.analyze.asr_failed', { projectId, status: resp.status, error: json?.error })
+        }
+      } catch (err) {
+        ctx.log('warn', 'demo.analyze.asr_error', { projectId, message: (err as Error).message })
+      }
+    }
+
+    if (!text) {
+      const transcription = await openai.audio.transcriptions.create({
+        file: fs.createReadStream(filePath),
+        model: 'whisper-1', // Reverted to Whisper-1 for stability
+        response_format: 'text',
+      })
+
+      text = (transcription as any).text ?? (transcription as any) ?? ''
+    }
     
     // 4. Hook Analysis
     // If transcript is large, create a short summary first to avoid huge prompts

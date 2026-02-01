@@ -135,8 +135,12 @@ export async function analyzeAudio(file: File, durationSeconds: number, token: s
   const upload = await uploadAudio(file, token, { projectId: existingProjectId })
 
   if (upload.audioUrl) {
+    const ac = new AbortController()
+    const timeout = window.setTimeout(() => ac.abort(), 180_000) // 3 min safety
+
     const res = await fetch(`${API}/api/demo/analyze`, {
       method: 'POST',
+      signal: ac.signal,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
@@ -149,6 +153,8 @@ export async function analyzeAudio(file: File, durationSeconds: number, token: s
         audioMime: upload.mime,
       }),
     })
+
+    window.clearTimeout(timeout)
 
     if (res.ok) {
       return res.json() as Promise<{
@@ -179,13 +185,21 @@ export async function analyzeAudio(file: File, durationSeconds: number, token: s
   formData.append('durationSeconds', String(durationSeconds))
   formData.append('projectId', existingProjectId || upload.projectId)
 
+  const ac2 = new AbortController()
+  const timeout2 = window.setTimeout(() => ac2.abort(), 180_000) // 3 min safety
+
   const res = await fetch(`${API}/api/demo/analyze`, {
     method: 'POST',
+    signal: ac2.signal,
     headers: { Authorization: `Bearer ${token}` },
     body: formData,
   })
 
+  window.clearTimeout(timeout2)
+
   if (!res.ok) {
+    // If the request was aborted (timeout), bubble a friendly message.
+    // Note: fetch abort often throws before we get here, but keep this just in case.
     const err = await res.json().catch(() => ({} as any))
     const msg = err?.error || `Analysis failed (${res.status})`
     const rid = err?.requestId

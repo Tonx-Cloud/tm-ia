@@ -1263,8 +1263,12 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     setError(null)
     
     try {
+      const ac = new AbortController()
+      const timeout = window.setTimeout(() => ac.abort(), 180_000) // 3 min safety
+
       const res = await fetch('/api/assets/generate', {
         method: 'POST',
+        signal: ac.signal,
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -1292,13 +1296,17 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       }
       
       const data = await res.json()
+      window.clearTimeout(timeout)
       setAssets(data.project?.assets || [])
       setStoryboard(data.storyboard || [])
       setBalance(data.balance || balance)
       setStep(3)
     } catch (err) {
-      setError((err as Error).message)
-      onError?.((err as Error).message)
+      const msg = (err as any)?.name === 'AbortError'
+        ? 'A geração demorou demais e foi cancelada. Tente novamente.'
+        : (err as Error).message
+      setError(msg)
+      onError?.(msg)
     } finally {
       setGenerating(false)
     }
