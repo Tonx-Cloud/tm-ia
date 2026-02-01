@@ -316,5 +316,5 @@ export async function animateAsset(projectId: string, assetId: string, token: st
     const err = await res.json().catch(() => ({}))
     throw new Error(err.error || 'Animation failed')
   }
-  return (await res.json()) as { status: string; jobId?: string; balance: number }
+  return (await res.json()) as { status: string; jobId?: string; balance: number; videoUrl?: string }
 }

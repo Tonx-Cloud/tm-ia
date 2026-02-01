@@ -12,7 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim()
   if (!clientId) {
     // Return a user-friendly error that suggests using email/password
-    return res.status(503).json({ 
+    return res.status(503).json({
       error: 'Google OAuth não configurado',
       message: 'Por favor, use login com email e senha.',
       code: 'OAUTH_NOT_CONFIGURED'
@@ -20,11 +20,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Determine the callback URL based on environment
-  const baseUrl = process.env.PUBLIC_BASE_URL || 
-    (process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : 'https://tm-ia.vercel.app')
-  
+  const baseUrl = (process.env.PUBLIC_BASE_URL ||
+    (process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : 'https://tm-ia.vercel.app')).trim()
+
   const redirectUri = `${baseUrl}/api/auth/google/callback`
-  
+
   // Build Google OAuth URL
   const params = new URLSearchParams({
     client_id: clientId,
@@ -34,14 +34,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     access_type: 'offline',
     prompt: 'consent',
     // State parameter for CSRF protection
-    state: Buffer.from(JSON.stringify({ 
+    state: Buffer.from(JSON.stringify({
       timestamp: Date.now(),
       redirect: req.query.redirect || '/'
     })).toString('base64')
   })
 
   const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
-  
+
   // Redirect to Google
   res.setHeader('Location', googleAuthUrl)
   return res.status(302).end()

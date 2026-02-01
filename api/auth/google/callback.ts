@@ -37,10 +37,10 @@ function saveUsers(users: User[]) {
 
 async function findOrCreateUser(googleUser: { email: string; name?: string; picture?: string; sub: string }): Promise<User> {
   const users = loadUsers()
-  
+
   // Find by Google ID first
   let user = users.find(u => u.googleId === googleUser.sub)
-  
+
   // Or by email
   if (!user) {
     user = users.find(u => u.email === googleUser.email)
@@ -52,7 +52,7 @@ async function findOrCreateUser(googleUser: { email: string; name?: string; pict
       saveUsers(users)
     }
   }
-  
+
   // Create new user
   if (!user) {
     user = {
@@ -66,11 +66,11 @@ async function findOrCreateUser(googleUser: { email: string; name?: string; pict
     }
     users.push(user)
     saveUsers(users)
-    
+
     // Give initial credits to new users
     await addCredits(user.id, 50, 'initial')
   }
-  
+
   return user
 }
 
@@ -110,14 +110,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Determine the callback URL
-  const baseUrl = process.env.PUBLIC_BASE_URL || 
-    (process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : 'https://tm-ia.vercel.app')
-  
+  const baseUrl = (process.env.PUBLIC_BASE_URL ||
+    (process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : 'https://tm-ia.vercel.app')).trim()
+
   const redirectUri = `${baseUrl}/api/auth/google/callback`
-  
-  console.log('Exchanging code for token:', { 
-    clientIdPrefix: clientId.substring(0, 10), 
-    redirectUri 
+
+  console.log('Exchanging code for token:', {
+    clientIdPrefix: clientId.substring(0, 10),
+    redirectUri
   })
 
   try {
@@ -173,11 +173,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Special ADMIN CREDITS for hiltonsf@gmail.com
     if (user.email === 'hiltonsf@gmail.com') {
-       // Ensure admin always has enough credits (top up if low)
-       const currentBalance = await getBalance(user.id)
-       if (currentBalance < 5000) {
-         await addCredits(user.id, 99999, 'admin_adjust')
-       }
+      // Ensure admin always has enough credits (top up if low)
+      const currentBalance = await getBalance(user.id)
+      if (currentBalance < 5000) {
+        await addCredits(user.id, 99999, 'admin_adjust')
+      }
     }
 
     // Generate JWT
@@ -199,10 +199,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const stateData = JSON.parse(Buffer.from(state, 'base64').toString())
         redirectPath = stateData.redirect || '/'
       }
-    } catch {}
+    } catch { }
 
     // Redirect to frontend with token
-    const frontendUrl = process.env.NODE_ENV === 'development' 
+    const frontendUrl = process.env.NODE_ENV === 'development'
       ? 'http://localhost:5173'
       : (process.env.PUBLIC_BASE_URL || 'https://tm-ia.vercel.app')
 
@@ -225,10 +225,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 }
 
 function redirectWithError(res: VercelResponse, message: string) {
-  const frontendUrl = process.env.NODE_ENV === 'development' 
+  const frontendUrl = process.env.NODE_ENV === 'development'
     ? 'http://localhost:5173'
     : (process.env.PUBLIC_BASE_URL || 'https://tm-ia.vercel.app')
-  
+
   const params = new URLSearchParams({ error: message })
   res.setHeader('Location', `${frontendUrl}/auth/callback?${params.toString()}`)
   return res.status(302).end()
