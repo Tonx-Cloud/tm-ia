@@ -111,7 +111,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Determine the callback URL
   const baseUrl = (process.env.PUBLIC_BASE_URL ||
-    (process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : 'https://tm-ia.vercel.app')).trim()
+    (process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : 'https://tm-ia.vercel.app')).replace(/\s+/g, '')
 
   const redirectUri = `${baseUrl}/api/auth/google/callback`
 
