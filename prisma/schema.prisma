@@ -28,6 +28,7 @@ model CreditEntry {
   reason    String
   projectId String?
   renderId  String?
+  assetId   String?
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)

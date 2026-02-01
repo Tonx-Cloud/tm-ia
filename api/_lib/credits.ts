@@ -27,6 +27,7 @@ export type CreditEntry = {
   reason: CreditReason
   projectId?: string
   renderId?: string
+  assetId?: string
   createdAt: number
 }
 
@@ -63,6 +64,7 @@ export async function getLedger(userId: string, limit = 10): Promise<CreditEntry
     reason: r.reason as any,
     projectId: r.projectId || undefined,
     renderId: r.renderId || undefined,
+    assetId: (r as any).assetId || undefined,
     createdAt: r.createdAt.getTime(),
   }))
 }
@@ -87,6 +89,7 @@ export async function addCredits(userId: string, amount: number, reason: CreditR
         reason,
         projectId: meta?.projectId,
         renderId: meta?.renderId,
+        assetId: meta?.assetId,
       },
     })
 
@@ -136,6 +139,7 @@ export async function spendCredits(userId: string, amount: number, reason: Credi
         reason,
         projectId: meta?.projectId,
         renderId: meta?.renderId,
+        assetId: meta?.assetId,
       },
     })
 

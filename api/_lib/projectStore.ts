@@ -205,3 +205,24 @@ export async function updateAsset(projectId: string, assetId: string, patch: Par
     },
   })
 }
+
+export async function getAsset(projectId: string, assetId: string): Promise<Asset | null> {
+  const a = await prisma.asset.findFirst({
+    where: { id: assetId, projectId }
+  })
+  if (!a) return null
+  return {
+    id: a.id,
+    projectId: a.projectId,
+    prompt: a.prompt,
+    status: a.status,
+    dataUrl: a.dataUrl,
+    fileKey: a.fileKey || undefined,
+    createdAt: a.createdAt.getTime(),
+    sceneNumber: a.sceneNumber || undefined,
+    timeCode: a.timeCode || undefined,
+    lyrics: a.lyrics || undefined,
+    visualNotes: a.visualNotes || undefined,
+    durationSec: undefined // Filled by storyboard usually, but asset doesn't track it directly
+  }
+}

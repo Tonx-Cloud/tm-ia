@@ -1,11 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getSession } from '../../_lib/auth.js'
-import { loadEnv } from '../../_lib/env.js'
-import { VeoClient } from '../../_lib/veo.js'
-import { spendCredits, getBalance } from '../../_lib/credits.js'
-import { getActionCost } from '../../_lib/pricing.js'
-import { withObservability } from '../../_lib/observability.js'
-import { getProject, getAsset, updateAsset } from '../../_lib/projectStore.js'
+import { getSession } from '../_lib/auth.js'
+import { loadEnv } from '../_lib/env.js'
+import { VeoClient } from '../_lib/veo.js'
+import { spendCredits, getBalance } from '../_lib/credits.js'
+import { getActionCost } from '../_lib/pricing.js'
+import { withObservability } from '../_lib/observability.js'
+import { getProject, getAsset, updateAsset } from '../_lib/projectStore.js'
 
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
