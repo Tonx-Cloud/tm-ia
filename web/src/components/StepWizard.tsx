@@ -590,10 +590,10 @@ type SceneModalProps = {
   onSave?: (assetId: string, newPrompt: string) => void
   onRegenerate?: (assetId: string, newPrompt: string) => void
   onAction?: (action: SceneAction, assetId: string) => void
-  onSetAnimation?: (assetId: string, animation: AnimationType) => void
+  onUpdateAnimation?: (assetId: string, animation: AnimationType) => void
 }
 
-function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenerate, onAction, onSetAnimation }: SceneModalProps) {
+function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenerate, onAction, onUpdateAnimation }: SceneModalProps) {
   const [editPrompt, setEditPrompt] = useState(asset?.prompt || '')
   const [isRegenerating, setIsRegenerating] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -793,6 +793,15 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
                     style={{ padding: '10px 12px' }}
                   >
                     ⭐ Favoritar
+                  </button>
+
+                  <button
+                    className="btn-ghost"
+                    onClick={() => onUpdateAnimation?.(asset.id, 'zoom-in')}
+                    style={{ padding: '10px 12px' }}
+                    title="Animar (50 💎)"
+                  >
+                    ✨ Animar
                   </button>
 
                   <div style={{
@@ -2892,7 +2901,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
               onSave={handleSavePrompt}
               onRegenerate={handleRegenerateAsset}
               onAction={handleSceneAction}
-              onSetAnimation={handleSetAnimation}
+              onUpdateAnimation={handleSetAnimation}
             />
           )}
         </div>

@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { withObservability } from '../../_lib/observability.js'
+import { withObservability } from '../_lib/observability.js'
 
 // Simple status endpoint for future polling
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {

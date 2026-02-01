@@ -307,7 +307,7 @@ export async function login(email: string, password: string): Promise<{ token: s
 }
 
 export async function animateAsset(projectId: string, assetId: string, token: string, prompt?: string) {
-  const res = await fetch(`${API}/api/assets/animate`, {
+  const res = await fetch(`${API}/api/assets/veo-animate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify({ projectId, assetId, prompt }),
