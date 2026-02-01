@@ -30,6 +30,11 @@ const optionalVars = [
   // External ASR (VM) - optional
   'ASR_BASE_URL',
   'ASR_TOKEN',
+
+  // Google Cloud / Vertex AI (Veo)
+  'GCLOUD_PROJECT',
+  'GCLOUD_LOCATION', // defaults to us-central1
+  'GOOGLE_APPLICATION_CREDENTIALS_JSON',
 ] as const
 
 type EnvKey = (typeof requiredVars)[number]

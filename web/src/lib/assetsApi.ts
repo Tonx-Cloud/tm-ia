@@ -6,6 +6,11 @@ export type Asset = {
   status: 'generated' | 'reused' | 'needs_regen'
   dataUrl: string
   fileKey?: string
+  animation?: {
+    status: 'pending' | 'completed' | 'failed'
+    videoUrl?: string
+    jobId?: string
+  }
 }
 
 export type StoryboardItem = {
@@ -299,4 +304,17 @@ export async function login(email: string, password: string): Promise<{ token: s
     throw new Error(body.error || 'Login failed')
   }
   return body
+}
+
+export async function animateAsset(projectId: string, assetId: string, token: string, prompt?: string) {
+  const res = await fetch(`${API}/api/assets/animate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ projectId, assetId, prompt }),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.error || 'Animation failed')
+  }
+  return (await res.json()) as { status: string; jobId?: string; balance: number }
 }

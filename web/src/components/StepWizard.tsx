@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Locale } from '@/i18n'
-import { analyzeAudio, createProject, fetchProject, type Asset } from '@/lib/assetsApi'
+import { analyzeAudio, createProject, fetchProject, animateAsset, type Asset } from '@/lib/assetsApi'
 
 // ============================================================================
 // TYPES
@@ -97,7 +97,7 @@ const MSG_SAVING = [
 
 function LoadingOverlay({ message, messages }: { message?: string, messages?: string[] }) {
   const [currentIndex, setCurrentIndex] = useState(0)
-  
+
   useEffect(() => {
     if (!messages || messages.length === 0) return
     const interval = setInterval(() => {
@@ -123,11 +123,11 @@ function LoadingOverlay({ message, messages }: { message?: string, messages?: st
       animation: 'fadeIn 0.3s ease'
     }}>
       <div className="spinner" style={{ width: 48, height: 48, border: '4px solid rgba(255,255,255,0.2)', borderTopColor: 'var(--accent)' }} />
-      <div style={{ 
-        marginTop: 32, 
-        fontSize: 18, 
-        fontWeight: 600, 
-        maxWidth: 400, 
+      <div style={{
+        marginTop: 32,
+        fontSize: 18,
+        fontWeight: 600,
+        maxWidth: 400,
         textAlign: 'center',
         lineHeight: 1.5,
         minHeight: 54, // prevent layout jump
@@ -137,12 +137,12 @@ function LoadingOverlay({ message, messages }: { message?: string, messages?: st
       }}>
         <span key={currentIndex} style={{ animation: 'fadeIn 0.5s ease' }}>{text}</span>
       </div>
-      
+
       {messages && (
-        <div style={{ 
-          marginTop: 24, 
-          display: 'flex', 
-          gap: 6 
+        <div style={{
+          marginTop: 24,
+          display: 'flex',
+          gap: 6
         }}>
           {messages.map((_, i) => (
             <div key={i} style={{
@@ -159,19 +159,19 @@ function LoadingOverlay({ message, messages }: { message?: string, messages?: st
   )
 }
 
-function CostBadge({ 
-  credits, 
-  label, 
-  breakdown 
-}: { 
+function CostBadge({
+  credits,
+  label,
+  breakdown
+}: {
   credits: number
   label?: string
   breakdown?: { item: string; cost: number }[]
 }) {
   const [showTooltip, setShowTooltip] = useState(false)
-  
+
   return (
-    <div 
+    <div
       style={{ position: 'relative', display: 'inline-flex' }}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
@@ -191,13 +191,13 @@ function CostBadge({
         <span style={{ fontSize: 14 }}>💎</span>
         <span style={{ fontWeight: 700, color: 'var(--accent)' }}>{credits}</span>
         {label && <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>{label}</span>}
-        <span style={{ 
-          opacity: 0.5, 
+        <span style={{
+          opacity: 0.5,
           fontSize: 11,
           marginLeft: 2
         }}>ⓘ</span>
       </div>
-      
+
       {showTooltip && breakdown && (
         <div style={{
           position: 'absolute',
@@ -217,8 +217,8 @@ function CostBadge({
             DETALHAMENTO DE CUSTOS
           </div>
           {breakdown.map((item, i) => (
-            <div key={i} style={{ 
-              display: 'flex', 
+            <div key={i} style={{
+              display: 'flex',
               justifyContent: 'space-between',
               padding: '6px 0',
               borderBottom: i < breakdown.length - 1 ? '1px solid var(--border)' : 'none',
@@ -228,8 +228,8 @@ function CostBadge({
               <span style={{ fontWeight: 600 }}>{item.cost} 💎</span>
             </div>
           ))}
-          <div style={{ 
-            display: 'flex', 
+          <div style={{
+            display: 'flex',
             justifyContent: 'space-between',
             marginTop: 12,
             paddingTop: 12,
@@ -334,16 +334,16 @@ type SceneCardProps = {
   onAction: (action: SceneAction, assetId: string) => void
 }
 
-function SceneCard({ 
-  asset, 
-  index, 
+function SceneCard({
+  asset,
+  index,
   totalCount,
-  aspectRatio, 
-  timeCode, 
+  aspectRatio,
+  timeCode,
   lyrics,
   isFavorite = false,
   isAnimated = false,
-  onAction 
+  onAction
 }: SceneCardProps) {
   const [isHovered, setIsHovered] = useState(false)
 
@@ -359,8 +359,8 @@ function SceneCard({
         background: 'var(--panel)',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
-        boxShadow: isHovered 
-          ? '0 12px 40px rgba(180, 59, 255, 0.2), 0 4px 12px rgba(0,0,0,0.3)' 
+        boxShadow: isHovered
+          ? '0 12px 40px rgba(180, 59, 255, 0.2), 0 4px 12px rgba(0,0,0,0.3)'
           : '0 2px 8px rgba(0,0,0,0.2)',
       }}
       onMouseEnter={() => { setIsHovered(true) }}
@@ -373,19 +373,36 @@ function SceneCard({
         overflow: 'hidden',
         cursor: 'pointer'
       }}
-      onClick={() => onAction('expand', asset.id)}
+        onClick={() => onAction('expand', asset.id)}
       >
-        <img
-          src={asset.dataUrl || PLACEHOLDER_IMG}
-          alt={`Cena ${index + 1}`}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transition: 'transform 0.3s',
-            transform: isHovered ? 'scale(1.05)' : 'scale(1)'
-          }}
-        />
+        {asset.animation?.status === 'completed' && asset.animation.videoUrl ? (
+          <video
+            src={asset.animation.videoUrl}
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transition: 'transform 0.3s',
+              transform: isHovered ? 'scale(1.05)' : 'scale(1)'
+            }}
+          />
+        ) : (
+          <img
+            src={asset.dataUrl || PLACEHOLDER_IMG}
+            alt={`Cena ${index + 1}`}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              transition: 'transform 0.3s',
+              transform: isHovered ? 'scale(1.05)' : 'scale(1)'
+            }}
+          />
+        )}
 
         {/* Scene Number Badge */}
         <div style={{
@@ -599,7 +616,7 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
   }
 
   return (
-    <div 
+    <div
       style={{
         position: 'fixed',
         inset: 0,
@@ -614,7 +631,7 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
       }}
       onClick={onClose}
     >
-      <div 
+      <div
         style={{
           background: 'var(--panel)',
           borderRadius: 20,
@@ -656,15 +673,15 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
         </div>
 
         {/* Content */}
-        <div style={{ 
-          padding: 20, 
+        <div style={{
+          padding: 20,
           overflow: 'auto',
           display: 'flex',
           flexDirection: mode === 'edit' ? 'column' : 'row',
           gap: 20
         }}>
           {/* Image */}
-          <div style={{ 
+          <div style={{
             flex: mode === 'edit' ? 'none' : 1,
             display: 'flex',
             justifyContent: 'center'
@@ -682,7 +699,7 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
           </div>
 
           {/* Info/Edit Panel */}
-          <div style={{ 
+          <div style={{
             flex: mode === 'edit' ? 'none' : '0 0 300px',
             display: 'flex',
             flexDirection: 'column',
@@ -734,8 +751,8 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
 
                 <div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>PROMPT</div>
-                  <div style={{ 
-                    fontSize: 13, 
+                  <div style={{
+                    fontSize: 13,
                     lineHeight: 1.5,
                     padding: 12,
                     background: 'var(--bg)',
@@ -792,39 +809,45 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
                       alignItems: 'center',
                       justifyContent: 'space-between'
                     }}>
-                      <span>ANIMAÇÃO (VEO 3 - SIMPLES)</span>
+                      <span>ANIMAÇÃO (VEO 2)</span>
                       <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                        {(scene?.animation && scene.animation !== 'none') ? 'Ativada' : 'Desativada'}
+                        {asset.animation?.status === 'completed' ? 'Gerada' : 'Estática'}
                       </span>
                     </div>
 
-                    <select
-                      value={scene?.animation || 'none'}
-                      onChange={(e) => onSetAnimation?.(asset.id, e.target.value as any)}
+                    <button
+                      className="btn-primary"
+                      onClick={() => onAction?.('animate', asset.id)}
+                      disabled={asset.animation?.status === 'pending' || asset.animation?.status === 'completed'}
                       style={{
                         width: '100%',
-                        padding: '12px 12px',
-                        borderRadius: 12,
-                        border: '1px solid var(--border)',
-                        background: 'var(--bg)',
-                        color: 'var(--text)',
-                        fontSize: 14,
-                        marginBottom: 8
+                        padding: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 8,
+                        background: asset.animation?.status === 'completed'
+                          ? 'rgba(16, 185, 129, 0.1)'
+                          : 'linear-gradient(135deg, #b43bff, #3b82f6)',
+                        border: asset.animation?.status === 'completed'
+                          ? '1px solid var(--success)'
+                          : 'none',
+                        color: asset.animation?.status === 'completed'
+                          ? 'var(--success)'
+                          : 'white'
                       }}
                     >
-                      <option value="none">Nenhuma</option>
-                      <option value="zoom-in">Zoom suave (aproximar)</option>
-                      <option value="zoom-out">Zoom suave (afastar)</option>
-                      <option value="pan-left">Pan (esquerda → direita)</option>
-                      <option value="pan-right">Pan (direita → esquerda)</option>
-                      <option value="pan-up">Pan (baixo → cima)</option>
-                      <option value="pan-down">Pan (cima → baixo)</option>
-                      <option value="fade-in">Fade in</option>
-                      <option value="fade-out">Fade out</option>
-                    </select>
+                      {asset.animation?.status === 'pending' ? (
+                        <>Iniciando...</>
+                      ) : asset.animation?.status === 'completed' ? (
+                        <>✅ Vídeo Gerado</>
+                      ) : (
+                        <>✨ Gerar Animação (50 💎)</>
+                      )}
+                    </button>
 
-                    <div style={{ marginTop: 4, fontSize: 12, color: 'var(--text-muted)' }}>
-                      Dica: selecione um movimento e gere o vídeo final.
+                    <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                      Transforma esta cena em um clipe de 5 segundos usando Veo 2.
                     </div>
                   </div>
 
@@ -842,11 +865,11 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
             {mode === 'edit' && (
               <>
                 <div>
-                  <label style={{ 
-                    display: 'block', 
-                    fontSize: 12, 
-                    color: 'var(--text-muted)', 
-                    marginBottom: 8 
+                  <label style={{
+                    display: 'block',
+                    fontSize: 12,
+                    color: 'var(--text-muted)',
+                    marginBottom: 8
                   }}>
                     DESCRIÇÃO DA CENA
                   </label>
@@ -870,8 +893,8 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
                   />
                 </div>
 
-                <div style={{ 
-                  display: 'flex', 
+                <div style={{
+                  display: 'flex',
                   gap: 12,
                   justifyContent: 'flex-end'
                 }}>
@@ -886,7 +909,7 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
                     className="btn-primary"
                     onClick={handleRegenerate}
                     disabled={isRegenerating}
-                    style={{ 
+                    style={{
                       padding: '10px 20px',
                       display: 'flex',
                       alignItems: 'center',
@@ -916,10 +939,10 @@ function createSegmentsFromTranscription(text: string, duration: number): Segmen
   if (!text || text.trim().length === 0) {
     return [{ id: '1', startTime: 0, endTime: duration, text: '[Instrumental]', type: 'instrumental' }]
   }
-  
+
   const sentences = text.split(/[.!?\n]+/).filter(s => s.trim().length > 0)
   const segmentDuration = duration / Math.max(sentences.length, 1)
-  
+
   return sentences.map((s, i) => ({
     id: `seg-${i}`,
     startTime: i * segmentDuration,
@@ -935,10 +958,10 @@ function createSegmentsFromTranscription(text: string, duration: number): Segmen
 
 export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: StepWizardProps) {
   void _locale
-  
+
   const [step, setStep] = useState<Step>(1)
   const [balance, setBalance] = useState(0)
-  
+
   // Step 1
   const [audio, setAudio] = useState<AudioFile | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -961,7 +984,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       audioRef.current = new Audio(audio.url)
       audioRef.current.onended = () => setIsPlaying(false)
     }
-    
+
     if (isPlaying) {
       audioRef.current?.pause()
     } else {
@@ -980,7 +1003,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       // (poll removed)
     }
   }, [audio])
-  
+
   // Step 2
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9:16')
   const [visualStyle, setVisualStyle] = useState<VisualStyle>('cinematic')
@@ -992,7 +1015,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const [storyboard, setStoryboard] = useState<StoryboardScene[]>([])
   const [step2Confirmed, setStep2Confirmed] = useState(false)
   const [confirmingStep2, setConfirmingStep2] = useState(false)
-  
+
   // Step 3
   const [assets, setAssets] = useState<Asset[]>([])
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
@@ -1005,11 +1028,11 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
 
   // Image generation controls
   // NOTE: We generate all images up-front (no preview/placeholders) to simplify UX.
-  
+
   // Modal state
   const [modalAsset, setModalAsset] = useState<Asset | null>(null)
   const [modalMode, setModalMode] = useState<'view' | 'edit'>('view')
-  
+
   const [error, setError] = useState<string | null>(null)
   const token = localStorage.getItem('tm_auth_token') || ''
 
@@ -1052,9 +1075,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       await fetch('/api/assets', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ 
-          projectId, 
-          storyboard: currentStoryboard 
+        body: JSON.stringify({
+          projectId,
+          storyboard: currentStoryboard
         }),
       })
       setStep3Confirmed(true)
@@ -1108,7 +1131,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           setStep(3)
         }
       })
-      .catch(() => {})
+      .catch(() => { })
   }, [token, projectId])
 
   // Fetch balance
@@ -1117,7 +1140,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       fetch('/api/credits', { headers: { Authorization: `Bearer ${token}` } })
         .then(r => r.json())
         .then(d => setBalance(d.balance || 0))
-        .catch(() => {})
+        .catch(() => { })
     }
   }, [token])
 
@@ -1179,7 +1202,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         return
       }
     }
-    
+
     // Reset all states for new upload
     setError(null)
     setSegments([])
@@ -1193,7 +1216,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       // Step 1: Get audio duration from browser
       const url = URL.createObjectURL(file)
       const audioEl = new Audio(url)
-      
+
       const duration = await new Promise<number>((resolve) => {
         audioEl.onloadedmetadata = () => resolve(audioEl.duration)
         audioEl.onerror = () => resolve(180) // Fallback to 3 min
@@ -1212,17 +1235,17 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       // Step 3: Analyze audio (Upload + Analyze in one go)
       console.log('[StepWizard] Starting analysis (uploading)...')
       setAnalyzing(true)
-      
+
       const analysis = await analyzeAudio(file, duration, token, ensuredProjectId || undefined)
       console.log('[StepWizard] Analysis complete:', analysis)
-      
+
       setProjectId(analysis.projectId)
       localStorage.setItem('tm_project_id', analysis.projectId)
-      
+
       // Step 4: Update state with analysis results
       const newSegments = createSegmentsFromTranscription(analysis.transcription || '', duration)
       console.log('[StepWizard] Created segments:', newSegments.length)
-      
+
       setSegments(newSegments)
       setHookText(analysis.hookText || '')
       setMood(analysis.mood || 'energetic')
@@ -1230,9 +1253,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       setBalance(analysis.balance || balance)
       setAnalyzing(false)
       setUploading(false)
-      
+
       console.log('[StepWizard] States updated - hookText:', analysis.hookText, 'segments:', newSegments.length)
-      
+
     } catch (err) {
       const message = (err as Error).message
       console.error('[StepWizard] Error:', message)
@@ -1258,10 +1281,10 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
 
   const handleGenerateImages = async () => {
     if (!projectId || !token) return
-    
+
     setGenerating(true)
     setError(null)
-    
+
     try {
       const ac = new AbortController()
       const timeout = window.setTimeout(() => ac.abort(), 180_000) // 3 min safety
@@ -1269,7 +1292,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       const res = await fetch('/api/assets/generate', {
         method: 'POST',
         signal: ac.signal,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
@@ -1288,13 +1311,13 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           realCount: imageCount,
         })
       })
-      
+
       if (!res.ok) {
         const err = await res.json().catch(() => ({} as any))
         const rid = err.requestId ? ` (id: ${err.requestId})` : ''
         throw new Error((err.error || 'Failed to generate') + rid)
       }
-      
+
       const data = await res.json()
       window.clearTimeout(timeout)
       setAssets(data.project?.assets || [])
@@ -1340,15 +1363,15 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
 
   const handleRender = async () => {
     if (!projectId || !token || assets.length === 0 || !audio) return
-    
+
     setRendering(true)
     setRenderProgress(0)
     setRenderLog('')
     setError(null)
-    
+
     try {
       const totalDuration = audio.duration
-      
+
       const idemStorageKey = `tm_render_idem_${projectId}`
       const idempotencyKey = localStorage.getItem(idemStorageKey) || (crypto?.randomUUID?.() ?? String(Date.now()))
       localStorage.setItem(idemStorageKey, idempotencyKey)
@@ -1392,17 +1415,17 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       }
       const jobId = data.renderId
       setBalance(data.balance || balance)
-      
+
       const pollInterval = setInterval(async () => {
         try {
           const statusRes = await fetch(`/api/render/status?renderId=${jobId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           })
           const status = await statusRes.json()
-          
+
           setRenderProgress(status.progress || 0)
           if (status.logTail) setRenderLog(status.logTail)
-          
+
           if (status.status === 'complete') {
             clearInterval(pollInterval)
             localStorage.removeItem(`tm_render_idem_${projectId}`)
@@ -1419,7 +1442,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           setRendering(false)
         }
       }, 2000)
-      
+
     } catch (err) {
       localStorage.removeItem(`tm_render_idem_${projectId}`)
       setError((err as Error).message)
@@ -1438,17 +1461,17 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     }
 
     if (!token) return
-    
+
     try {
       const res = await fetch(videoUrl, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      
+
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(err.error || 'Download failed')
       }
-      
+
       const blob = await res.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -1500,16 +1523,72 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         break
 
       case 'animate':
-        // Legacy toggle: cycle none <-> zoom-in
-        setStoryboard((prev) => {
+        // Check if already animating
+        if (assets[assetIndex].animation?.status === 'pending') return
+
+        const ANIMATION_COST = 50
+        if (balance < ANIMATION_COST) {
+          setError(`Saldo insuficiente. Necessário ${ANIMATION_COST} 💎`)
+          return
+        }
+
+        if (!confirm(`Animar esta cena custa ${ANIMATION_COST} créditos. Continuar?`)) return
+
+        // Set pending state
+        setAssets(prev => {
           const next = [...prev]
-          const cur = next[assetIndex] as any
-          const curAnim = (cur?.animation || 'none') as AnimationType
-          const nextAnim: AnimationType = curAnim === 'none' ? 'zoom-in' : 'none'
-          next[assetIndex] = { ...cur, animation: nextAnim }
-          void syncProjectEdits({ storyboard: buildStoryboardItems(next, assets) })
+          next[assetIndex] = {
+            ...next[assetIndex],
+            animation: { status: 'pending' }
+          }
           return next
         })
+
+        try {
+          const res = await animateAsset(projectId!, assetId, token!)
+          if (res.balance) setBalance(res.balance)
+
+          if (res.status === 'completed' && (res as any).videoUrl) {
+            setAssets(prev => {
+              const next = [...prev]
+              next[assetIndex] = {
+                ...next[assetIndex],
+                animation: {
+                  status: 'completed',
+                  videoUrl: (res as any).videoUrl,
+                  jobId: res.jobId
+                }
+              }
+              return next
+            })
+          } else {
+            // Job started
+            setAssets(prev => {
+              const next = [...prev]
+              next[assetIndex] = {
+                ...next[assetIndex],
+                animation: {
+                  status: 'pending',
+                  jobId: res.jobId
+                }
+              }
+              return next
+            })
+            // For now, in Mock Mode, it always returns completed.
+            // If we had real Async jobs, we would poll here.
+          }
+
+        } catch (err) {
+          setError((err as Error).message)
+          setAssets(prev => {
+            const next = [...prev]
+            next[assetIndex] = {
+              ...next[assetIndex],
+              animation: { status: 'failed' }
+            }
+            return next
+          })
+        }
         break
 
       case 'favorite':
@@ -1550,7 +1629,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         if (assetIndex > 0) {
           setAssets(prev => {
             const next = [...prev]
-            ;[next[assetIndex - 1], next[assetIndex]] = [next[assetIndex], next[assetIndex - 1]]
+              ;[next[assetIndex - 1], next[assetIndex]] = [next[assetIndex], next[assetIndex - 1]]
             // keep storyboard order in DB consistent with assets order
             void syncProjectEdits({
               assetOrder: next.map(a => a.id),
@@ -1560,7 +1639,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           })
           setStoryboard(prev => {
             const next = [...prev]
-            ;[next[assetIndex - 1], next[assetIndex]] = [next[assetIndex], next[assetIndex - 1]]
+              ;[next[assetIndex - 1], next[assetIndex]] = [next[assetIndex], next[assetIndex - 1]]
             return next
           })
         }
@@ -1570,7 +1649,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
         if (assetIndex < assets.length - 1) {
           setAssets(prev => {
             const next = [...prev]
-            ;[next[assetIndex], next[assetIndex + 1]] = [next[assetIndex + 1], next[assetIndex]]
+              ;[next[assetIndex], next[assetIndex + 1]] = [next[assetIndex + 1], next[assetIndex]]
             // keep storyboard order in DB consistent with assets order
             void syncProjectEdits({
               assetOrder: next.map(a => a.id),
@@ -1580,7 +1659,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           })
           setStoryboard(prev => {
             const next = [...prev]
-            ;[next[assetIndex], next[assetIndex + 1]] = [next[assetIndex + 1], next[assetIndex]]
+              ;[next[assetIndex], next[assetIndex + 1]] = [next[assetIndex + 1], next[assetIndex]]
             return next
           })
         }
@@ -1659,7 +1738,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   }
 
   const handleSavePrompt = (assetId: string, newPrompt: string) => {
-    setAssets(prev => prev.map(a => 
+    setAssets(prev => prev.map(a =>
       a.id === assetId ? { ...a, prompt: newPrompt } : a
     ))
     void syncProjectEdits({ assetsPatch: [{ id: assetId, prompt: newPrompt }] })
@@ -1686,14 +1765,14 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: '32px 20px', position: 'relative' }}>
-      
+
       <BalanceDisplay balance={balance} />
-      
+
       {/* Header */}
       <header style={{ textAlign: 'center', marginBottom: 32 }}>
-        <h1 style={{ 
-          fontSize: 32, 
-          fontWeight: 800, 
+        <h1 style={{
+          fontSize: 32,
+          fontWeight: 800,
           marginBottom: 8,
           background: 'linear-gradient(135deg, #b43bff, #3b82f6)',
           WebkitBackgroundClip: 'text',
@@ -1719,14 +1798,14 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
               borderRadius: 20,
               transition: 'all 0.3s'
             }}>
-              <span style={{ 
-                fontWeight: 700, 
+              <span style={{
+                fontWeight: 700,
                 fontSize: 14,
                 color: s <= step ? '#000' : 'var(--text-muted)'
               }}>
                 {s < step ? '✓' : s}
               </span>
-              <span style={{ 
+              <span style={{
                 fontSize: 13,
                 color: s <= step ? '#000' : 'var(--text-muted)',
                 fontWeight: s === step ? 600 : 400
@@ -1735,9 +1814,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
               </span>
             </div>
             {s < 3 && (
-              <div style={{ 
-                width: 24, 
-                height: 2, 
+              <div style={{
+                width: 24,
+                height: 2,
                 background: s < step ? 'var(--success)' : 'var(--border)',
                 transition: 'all 0.3s'
               }} />
@@ -1748,8 +1827,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
 
       {/* Error */}
       {error && (
-        <div style={{ 
-          background: 'rgba(255, 77, 109, 0.1)', 
+        <div style={{
+          background: 'rgba(255, 77, 109, 0.1)',
           border: '1px solid var(--danger)',
           borderRadius: 12,
           padding: 16,
@@ -1759,8 +1838,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           alignItems: 'center'
         }}>
           <span style={{ color: 'var(--danger)' }}>{error}</span>
-          <button 
-            onClick={() => setError(null)} 
+          <button
+            onClick={() => setError(null)}
             style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: 18 }}
           >
             ×
@@ -1837,7 +1916,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
               </button>
             </div>
           </div>
-          
+
           {!audio ? (
             <>
               <div
@@ -1862,9 +1941,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                   </div>
                 ) : (
                   <label style={{ cursor: 'pointer', display: 'block' }}>
-                    <input 
-                      type="file" 
-                      accept="audio/*" 
+                    <input
+                      type="file"
+                      accept="audio/*"
                       onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
                       style={{ display: 'none' }}
                     />
@@ -1875,19 +1954,19 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                   </label>
                 )}
               </div>
-              
-              <div style={{ 
-                marginTop: 20, 
-                padding: 16, 
-                background: 'var(--panel)', 
+
+              <div style={{
+                marginTop: 20,
+                padding: 16,
+                background: 'var(--panel)',
                 borderRadius: 12,
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center'
               }}>
                 <span style={{ color: 'var(--text-muted)' }}>Custo da análise:</span>
-                <CostBadge 
-                  credits={transcriptionCost + analysisCost} 
+                <CostBadge
+                  credits={transcriptionCost + analysisCost}
                   breakdown={[
                     { item: 'Transcrição (IA)', cost: transcriptionCost },
                     { item: 'Análise de hook', cost: analysisCost }
@@ -1898,19 +1977,19 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           ) : (
             <div>
               {/* Audio info */}
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 16, 
-                padding: 20, 
-                background: 'linear-gradient(135deg, rgba(180, 59, 255, 0.1), rgba(59, 130, 246, 0.1))', 
-                borderRadius: 16, 
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 16,
+                padding: 20,
+                background: 'linear-gradient(135deg, rgba(180, 59, 255, 0.1), rgba(59, 130, 246, 0.1))',
+                borderRadius: 16,
                 marginBottom: 24,
                 border: '1px solid rgba(180, 59, 255, 0.2)'
               }}>
-                <div style={{ 
-                  width: 56, 
-                  height: 56, 
+                <div style={{
+                  width: 56,
+                  height: 56,
                   borderRadius: 12,
                   background: 'var(--accent)',
                   display: 'flex',
@@ -1931,13 +2010,13 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                 >
                   {isPlaying ? '⏸' : '▶'} {isPlaying ? 'Pausar' : 'Ouvir'}
                 </button>
-                <button 
-                  className="btn-ghost" 
-                  onClick={() => { 
-                    setAudio(null); 
-                    setSegments([]); 
+                <button
+                  className="btn-ghost"
+                  onClick={() => {
+                    setAudio(null);
+                    setSegments([]);
                     setHookText('');
-                    if(isPlaying) togglePlay(); 
+                    if (isPlaying) togglePlay();
                   }}
                   style={{ fontSize: 13 }}
                 >
@@ -1966,11 +2045,11 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                 <>
                   {/* Analysis complete indicator */}
                   {!analyzing && audio && projectId && !hookText && segments.length === 0 && (
-                    <div style={{ 
-                      padding: 20, 
-                      background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.1), rgba(251, 191, 36, 0.1))', 
+                    <div style={{
+                      padding: 20,
+                      background: 'linear-gradient(135deg, rgba(234, 179, 8, 0.1), rgba(251, 191, 36, 0.1))',
                       border: '1px solid rgba(234, 179, 8, 0.3)',
-                      borderRadius: 16, 
+                      borderRadius: 16,
                       marginBottom: 20,
                       textAlign: 'center'
                     }}>
@@ -1981,28 +2060,28 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Hook detected */}
                   {hookText && (
-                    <div style={{ 
-                      padding: 20, 
-                      background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1))', 
+                    <div style={{
+                      padding: 20,
+                      background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1))',
                       border: '1px solid rgba(34, 197, 94, 0.3)',
-                      borderRadius: 16, 
-                      marginBottom: 20 
+                      borderRadius: 16,
+                      marginBottom: 20
                     }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
                         justifyContent: 'space-between',
-                        marginBottom: 8 
+                        marginBottom: 8
                       }}>
                         <div style={{
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: 8, 
-                          fontSize: 12, 
-                          color: 'var(--success)', 
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          fontSize: 12,
+                          color: 'var(--success)',
                           fontWeight: 600
                         }}>
                           <span>🎯</span> REFRÃO (HOOK)
@@ -2017,56 +2096,56 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                       </div>
 
                       {isEditingHook ? (
-                         <div style={{ display: 'flex', gap: 8, flexDirection: 'column' }}>
-                           <textarea
-                             value={hookText}
-                             onChange={(e) => setHookText(e.target.value)}
-                             style={{
-                               width: '100%',
-                               padding: 10,
-                               borderRadius: 8,
-                               border: '1px solid var(--border)',
-                               background: 'rgba(0,0,0,0.2)',
-                               color: 'var(--text)',
-                               fontSize: 16,
-                               fontStyle: 'italic',
-                               minHeight: 80
-                             }}
-                           />
-                           <button 
-                             className="btn-primary" 
-                             style={{ alignSelf: 'flex-end', padding: '6px 12px', fontSize: 12 }}
-                             onClick={() => setIsEditingHook(false)}
-                           >
-                             Salvar
-                           </button>
-                         </div>
+                        <div style={{ display: 'flex', gap: 8, flexDirection: 'column' }}>
+                          <textarea
+                            value={hookText}
+                            onChange={(e) => setHookText(e.target.value)}
+                            style={{
+                              width: '100%',
+                              padding: 10,
+                              borderRadius: 8,
+                              border: '1px solid var(--border)',
+                              background: 'rgba(0,0,0,0.2)',
+                              color: 'var(--text)',
+                              fontSize: 16,
+                              fontStyle: 'italic',
+                              minHeight: 80
+                            }}
+                          />
+                          <button
+                            className="btn-primary"
+                            style={{ alignSelf: 'flex-end', padding: '6px 12px', fontSize: 12 }}
+                            onClick={() => setIsEditingHook(false)}
+                          >
+                            Salvar
+                          </button>
+                        </div>
                       ) : (
                         <div style={{ fontSize: 18, fontWeight: 600, fontStyle: 'italic' }}>
                           "{hookText}"
                         </div>
                       )}
 
-                      <div style={{ 
-                        display: 'flex', 
-                        gap: 16, 
+                      <div style={{
+                        display: 'flex',
+                        gap: 16,
                         marginTop: 12,
                         fontSize: 13
                       }}>
                         {mood && (
-                          <span style={{ 
-                            padding: '4px 12px', 
-                            background: 'rgba(180, 59, 255, 0.2)', 
-                            borderRadius: 12 
+                          <span style={{
+                            padding: '4px 12px',
+                            background: 'rgba(180, 59, 255, 0.2)',
+                            borderRadius: 12
                           }}>
                             Mood: {mood}
                           </span>
                         )}
                         {genre && (
-                          <span style={{ 
-                            padding: '4px 12px', 
-                            background: 'rgba(59, 130, 246, 0.2)', 
-                            borderRadius: 12 
+                          <span style={{
+                            padding: '4px 12px',
+                            background: 'rgba(59, 130, 246, 0.2)',
+                            borderRadius: 12
                           }}>
                             Gênero: {genre}
                           </span>
@@ -2078,18 +2157,18 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                   {/* Segments preview */}
                   {segments.length > 0 && (
                     <div style={{ marginBottom: 24 }}>
-                      <div style={{ 
-                        fontSize: 12, 
-                        color: 'var(--text-muted)', 
+                      <div style={{
+                        fontSize: 12,
+                        color: 'var(--text-muted)',
                         marginBottom: 12,
-                        fontWeight: 600 
+                        fontWeight: 600
                       }}>
                         TRANSCRIÇÃO ({segments.length} segmentos)
                       </div>
-                      <div style={{ 
-                        maxHeight: 200, 
-                        overflow: 'auto', 
-                        background: 'var(--panel)', 
+                      <div style={{
+                        maxHeight: 200,
+                        overflow: 'auto',
+                        background: 'var(--panel)',
                         borderRadius: 12,
                         padding: 4
                       }}>
@@ -2100,15 +2179,15 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                             padding: '10px 12px',
                             borderBottom: i < 5 ? '1px solid var(--border)' : 'none'
                           }}>
-                            <span style={{ 
-                              color: 'var(--accent)', 
+                            <span style={{
+                              color: 'var(--accent)',
                               fontFamily: 'monospace',
                               fontSize: 12,
                               minWidth: 50
                             }}>
                               {formatTime(seg.startTime)}
                             </span>
-                            <span style={{ 
+                            <span style={{
                               fontSize: 14,
                               color: seg.type === 'instrumental' ? 'var(--text-muted)' : 'var(--text)',
                               fontStyle: seg.type === 'instrumental' ? 'italic' : 'normal'
@@ -2118,8 +2197,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                           </div>
                         ))}
                         {segments.length > 6 && (
-                          <div style={{ 
-                            padding: '10px 12px', 
+                          <div style={{
+                            padding: '10px 12px',
                             color: 'var(--text-muted)',
                             fontSize: 13,
                             textAlign: 'center'
@@ -2131,8 +2210,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                     </div>
                   )}
 
-                  <button 
-                    className="btn-primary" 
+                  <button
+                    className="btn-primary"
                     style={{ width: '100%', padding: 16, fontSize: 16 }}
                     onClick={() => setStep(2)}
                   >
@@ -2150,14 +2229,14 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       {/* ================================================================== */}
       {step === 2 && (
         <div className="card" style={{ padding: 24 }}>
-          
+
           {/* Format */}
           <div style={{ marginBottom: 28, pointerEvents: step2Confirmed ? 'none' : 'auto', opacity: step2Confirmed ? 0.5 : 1 }}>
-            <label style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
               justifyContent: 'space-between',
-              marginBottom: 12 
+              marginBottom: 12
             }}>
               <span style={{ fontWeight: 600 }}>Formato do Vídeo</span>
             </label>
@@ -2363,15 +2442,15 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           </div>
 
           {/* Cost summary */}
-          <div style={{ 
-            padding: 20, 
-            background: 'var(--panel)', 
-            borderRadius: 16, 
+          <div style={{
+            padding: 20,
+            background: 'var(--panel)',
+            borderRadius: 16,
             marginBottom: 24
           }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
               marginBottom: 16
             }}>
@@ -2381,14 +2460,14 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                   IA vai criar prompts únicos baseados na letra
                 </div>
               </div>
-              <CostBadge 
+              <CostBadge
                 credits={imageCost}
                 breakdown={[
                   { item: `${imageCount} imagens × 30`, cost: imageCost }
                 ]}
               />
             </div>
-            
+
             {balance < imageCost && (
               <div style={{
                 padding: 12,
@@ -2418,8 +2497,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
               {step2Confirmed ? '✅ Predefinições confirmadas' : '✅ Confirmar predefinições'}
             </button>
 
-            <button 
-              className="btn-primary" 
+            <button
+              className="btn-primary"
               style={{ flex: 2, minWidth: 200 }}
               onClick={handleGenerateImages}
               disabled={!step2Confirmed || generating || balance < imageCost}
@@ -2443,7 +2522,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       {/* ================================================================== */}
       {step === 3 && (
         <div>
-          
+
           {/* Header with music info + controls */}
           <div style={{
             marginBottom: 20,
@@ -2538,12 +2617,12 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
             <span>• <strong>🔄</strong> Regenerar (30💎)</span>
             <span>• <strong>✏️</strong> Editar prompt</span>
           </div>
-          
+
           {/* Scene Cards Grid */}
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: aspectRatio === '9:16' 
-              ? 'repeat(auto-fill, minmax(140px, 1fr))' 
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: aspectRatio === '9:16'
+              ? 'repeat(auto-fill, minmax(140px, 1fr))'
               : aspectRatio === '16:9'
                 ? 'repeat(auto-fill, minmax(220px, 1fr))'
                 : 'repeat(auto-fill, minmax(160px, 1fr))',
@@ -2599,16 +2678,16 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           <div className="card" style={{ padding: 24 }}>
             {!videoUrl ? (
               <>
-                <div style={{ 
-                  padding: 20, 
+                <div style={{
+                  padding: 20,
                   background: 'linear-gradient(135deg, rgba(180, 59, 255, 0.08), rgba(59, 130, 246, 0.08))',
                   border: '1px solid rgba(180, 59, 255, 0.2)',
-                  borderRadius: 16, 
+                  borderRadius: 16,
                   marginBottom: 24
                 }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
                     gap: 12,
                     flexWrap: 'wrap'
@@ -2621,7 +2700,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                         {audio?.durationFmt || '3:00'} de vídeo • {assets.length} cenas • Crossfade suave
                       </div>
                     </div>
-                    <CostBadge 
+                    <CostBadge
                       credits={renderCost}
                       breakdown={[
                         { item: `Render (${Math.ceil((audio?.duration || 180) / 60)} min)`, cost: renderCost }
@@ -2633,9 +2712,9 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                 {/* Progress */}
                 {rendering && (
                   <div style={{ marginBottom: 24 }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
                       marginBottom: 8,
                       fontSize: 14
                     }}>
@@ -2645,15 +2724,15 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                       </span>
                       <span style={{ fontWeight: 700, color: 'var(--accent)' }}>{renderProgress}%</span>
                     </div>
-                    <div style={{ 
-                      height: 10, 
-                      background: 'var(--panel)', 
-                      borderRadius: 5, 
-                      overflow: 'hidden' 
+                    <div style={{
+                      height: 10,
+                      background: 'var(--panel)',
+                      borderRadius: 5,
+                      overflow: 'hidden'
                     }}>
-                      <div style={{ 
-                        width: `${renderProgress}%`, 
-                        height: '100%', 
+                      <div style={{
+                        width: `${renderProgress}%`,
+                        height: '100%',
                         background: 'linear-gradient(90deg, var(--accent), #3b82f6)',
                         transition: 'width 0.3s ease',
                         borderRadius: 5
@@ -2713,17 +2792,17 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                 </div>
 
                 <div style={{ display: 'flex', gap: 12 }}>
-                  <button 
-                    className="btn-ghost" 
-                    style={{ flex: 1 }} 
-                    onClick={() => setStep(2)} 
+                  <button
+                    className="btn-ghost"
+                    style={{ flex: 1 }}
+                    onClick={() => setStep(2)}
                     disabled={rendering}
                   >
                     ← Voltar
                   </button>
-                  <button 
-                    className="btn-primary" 
-                    style={{ 
+                  <button
+                    className="btn-primary"
+                    style={{
                       flex: 2,
                       display: 'flex',
                       alignItems: 'center',
@@ -2745,11 +2824,11 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
             ) : (
               <>
                 {/* Success */}
-                <div style={{ 
-                  padding: 40, 
-                  background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1))', 
+                <div style={{
+                  padding: 40,
+                  background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1))',
                   border: '1px solid var(--success)',
-                  borderRadius: 16, 
+                  borderRadius: 16,
                   textAlign: 'center',
                   marginBottom: 24
                 }}>
@@ -2759,11 +2838,11 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                     Seu clipe musical foi gerado com sucesso
                   </div>
                   <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button 
-                      className="btn-primary" 
+                    <button
+                      className="btn-primary"
                       onClick={handleDownload}
-                      style={{ 
-                        padding: '16px 32px', 
+                      style={{
+                        padding: '16px 32px',
                         fontSize: 16,
                         display: 'flex',
                         alignItems: 'center',
@@ -2772,8 +2851,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                     >
                       ⬇️ Baixar Vídeo MP4
                     </button>
-                    <button 
-                      className="btn-ghost" 
+                    <button
+                      className="btn-ghost"
                       onClick={() => window.open(videoUrl, '_blank')}
                       style={{ padding: '16px 24px' }}
                     >
@@ -2783,15 +2862,15 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                 </div>
 
                 <div style={{ display: 'flex', gap: 12 }}>
-                  <button 
-                    className="btn-ghost" 
+                  <button
+                    className="btn-ghost"
                     style={{ flex: 1 }}
                     onClick={() => { setVideoUrl(null); setRenderProgress(0) }}
                   >
                     ✏️ Editar Cenas
                   </button>
-                  <button 
-                    className="btn-ghost" 
+                  <button
+                    className="btn-ghost"
                     style={{ flex: 1 }}
                     onClick={resetWizard}
                   >
@@ -2818,7 +2897,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
           )}
         </div>
       )}
-      
+
       {/* Global loading overlay (UX for slow transitions) */}
       {(uploading || analyzing) && <LoadingOverlay messages={MSG_ANALYZING} />}
       {generating && <LoadingOverlay messages={MSG_GENERATING} />}
