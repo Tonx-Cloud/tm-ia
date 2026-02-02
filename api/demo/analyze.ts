@@ -5,7 +5,7 @@ import os from 'os'
 import crypto from 'crypto'
 import Busboy from 'busboy'
 import { putBufferToR2 } from '../_lib/r2.js'
-import { getSession } from '../_lib/auth.js'
+import { getSessionFromRequest } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { getOpenAI } from '../_lib/openaiClient.js'
 import { createProject, upsertProject, getProject } from '../_lib/projectStore.js'
@@ -27,7 +27,7 @@ export const config = {
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const session = getSession(req)
+  const session = await getSessionFromRequest(req)
   if (!session) {
     ctx.log('warn', 'auth.missing')
     return res.status(401).json({ error: 'Auth required', code: 'UNAUTH', requestId: ctx.requestId })

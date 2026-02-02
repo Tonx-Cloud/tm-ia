@@ -1,11 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getSession } from '../_lib/auth.js'
+import { getSessionFromRequest } from '../_lib/auth.js'
 import { listRenderJobs } from '../_lib/renderPipeline.js'
 import { withObservability } from '../_lib/observability.js'
 
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
-  const session = getSession(req)
+  const session = await getSessionFromRequest(req)
   if (!session) return res.status(401).json({ error: 'Auth required', requestId: ctx.requestId })
   ctx.userId = session.userId
 

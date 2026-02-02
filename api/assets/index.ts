@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import crypto from 'crypto'
-import { getSession } from '../_lib/auth.js'
+import { getSessionFromRequest } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { addAssets, createProject, getProject, upsertProject, type Asset } from '../_lib/projectStore.js'
 import { withObservability } from '../_lib/observability.js'
@@ -8,7 +8,7 @@ import { checkRateLimit } from '../_lib/rateLimit.js'
 import { spendCredits, getBalance, addCredits } from '../_lib/credits.js'
 
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
-  const session = getSession(req)
+  const session = await getSessionFromRequest(req)
   if (!session) {
     ctx.log('warn', 'auth.missing')
     return res.status(401).json({ error: 'Auth required', code: 'UNAUTH', requestId: ctx.requestId })

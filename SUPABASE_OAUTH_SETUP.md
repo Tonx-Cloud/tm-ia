@@ -20,6 +20,23 @@ URL: https://supabase.com/dashboard/project/ibwecmqihluczufnjnur/auth/providers
    - **Authorized Redirect URI**: `https://tm-ia.vercel.app/api/auth/callback`
 4. Clique em **Save**
 
+### 3. Configurar URL Configuration no Supabase (MUITO IMPORTANTE)
+
+Se você estava mexendo em **outros projetos** (ex: barbearia) usando o **mesmo projeto do Supabase**, o Supabase pode redirecionar para o *Site URL* errado.
+
+Vá em: Dashboard → Authentication → **URL Configuration**
+
+- **Site URL**: `https://tm-ia.vercel.app`
+- **Additional Redirect URLs** (adicione TODAS que você usa):
+  - `https://tm-ia.vercel.app/auth/callback`
+  - `https://tm-ia.vercel.app/**`
+  - `http://localhost:5173/auth/callback`
+  - `http://localhost:5173/**`
+
+Se existir alguma URL da barbearia aqui e você não quer esse comportamento, **remova**.
+
+> Sintoma clássico de config errada: você inicia login no TM-IA, autentica no Google, e volta para o site da barbearia.
+
 ### 3. Configurar Google Cloud Console
 
 Acesse: https://console.cloud.google.com/apis/credentials

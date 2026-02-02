@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import crypto from 'crypto'
 import { MercadoPagoConfig, Payment } from 'mercadopago'
-import { getSession } from '../_lib/auth.js'
+import { getSessionFromRequest } from '../_lib/auth.js'
 import { withObservability } from '../_lib/observability.js'
 import { checkRateLimit } from '../_lib/rateLimit.js'
 import { savePayment, type PaymentRecord } from '../_lib/payments.js'
@@ -9,7 +9,7 @@ import { savePayment, type PaymentRecord } from '../_lib/payments.js'
 // PIX charge: tries Mercado Pago if MP_ACCESS_TOKEN is set, otherwise falls back to mock.
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-  const session = getSession(req)
+  const session = await getSessionFromRequest(req)
   if (!session) return res.status(401).json({ error: 'Auth required', requestId: ctx.requestId })
   ctx.userId = session.userId
 

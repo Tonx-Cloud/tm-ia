@@ -1,14 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getSession } from '../_lib/auth.js'
+import { getSessionFromRequest } from '../_lib/auth.js'
 import { addCredits } from '../_lib/credits.js'
 import { withObservability } from '../_lib/observability.js'
 import { createLogger } from '../_lib/logger.js'
 
-export default withObservability(function handler(req: VercelRequest, res: VercelResponse, ctx) {
+export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
-  const session = getSession(req)
+  const session = await getSessionFromRequest(req)
   if (!session || session.role !== 'admin') {
     return res.status(403).json({ error: 'Admin required', requestId: ctx.requestId })
   }
@@ -20,7 +20,7 @@ export default withObservability(function handler(req: VercelRequest, res: Verce
     return res.status(400).json({ error: 'userId, amount, reason required', requestId: ctx.requestId })
   }
   try {
-    const balance = addCredits(userId, amount, (reason as any) || 'admin_adjust')
+    const balance = await addCredits(userId, amount, (reason as any) || 'admin_adjust')
     logger.info('credits.admin.add', { target: userId, amount })
     return res.status(200).json({ ok: true, balance, requestId: ctx.requestId })
   } catch (err) {

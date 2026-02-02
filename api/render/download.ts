@@ -2,13 +2,13 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
-import { getSession } from '../_lib/auth.js'
+import { getSessionFromRequest } from '../_lib/auth.js'
 import { withObservability } from '../_lib/observability.js'
 import { checkRateLimit } from '../_lib/rateLimit.js'
 import { getRenderJob, cleanupRenderJob } from '../_lib/renderPipeline.js'
 
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
-  const session = getSession(req)
+  const session = await getSessionFromRequest(req)
   if (!session) {
     ctx.log('warn', 'auth.missing')
     return res.status(401).json({ error: 'Auth required', code: 'UNAUTH', requestId: ctx.requestId })

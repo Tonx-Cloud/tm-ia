@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { loadEnv } from '../_lib/env.js'
-import { getSession } from '../_lib/auth.js'
+import { getSessionFromRequest } from '../_lib/auth.js'
 import { checkDemoLimit, logDemoUsage } from '../_lib/demoUsage.js'
 import { withObservability } from '../_lib/observability.js'
 import { checkRateLimit } from '../_lib/rateLimit.js'
@@ -10,7 +10,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const session = getSession(req)
+  const session = await getSessionFromRequest(req)
   if (!session) {
     ctx.log('warn', 'auth.missing')
     return res.status(401).json({ error: 'Auth required', code: 'UNAUTH', requestId: ctx.requestId })

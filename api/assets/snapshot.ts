@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import crypto from 'crypto'
-import { getSession } from '../_lib/auth.js'
+import { getSessionFromRequest } from '../_lib/auth.js'
 import { getProject, upsertProject, type Project } from '../_lib/projectStore.js'
 import { withObservability } from '../_lib/observability.js'
 import { checkRateLimit } from '../_lib/rateLimit.js'
@@ -17,7 +17,7 @@ function snapshotHash(project: Project) {
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const session = getSession(req)
+  const session = await getSessionFromRequest(req)
   if (!session) return res.status(401).json({ error: 'Auth required', requestId: ctx.requestId })
   ctx.userId = session.userId
 

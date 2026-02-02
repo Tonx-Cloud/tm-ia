@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getSession } from '../_lib/auth.js'
+import { getSessionFromRequest } from '../_lib/auth.js'
 import { getBalance } from '../_lib/credits.js'
 import { 
   PRICING, 
@@ -31,7 +31,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const session = getSession(req)
+  const session = await getSessionFromRequest(req)
   if (!session) {
     ctx.log('warn', 'auth.missing')
     return res.status(401).json({ error: 'Auth required', requestId: ctx.requestId })

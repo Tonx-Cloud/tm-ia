@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getSession } from '../_lib/auth.js'
+import { getSessionFromRequest } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { VeoClient } from '../_lib/veo.js'
 import { spendCredits, getBalance } from '../_lib/credits.js'
@@ -10,7 +10,7 @@ import { getProject, getAsset, updateAsset } from '../_lib/projectStore.js'
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-    const session = getSession(req)
+    const session = await getSessionFromRequest(req)
     if (!session) return res.status(401).json({ error: 'Auth required' })
     ctx.userId = session.userId
 

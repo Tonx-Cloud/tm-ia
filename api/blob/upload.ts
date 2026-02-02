@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getSession } from '../_lib/auth.js'
+import { getSessionFromRequest } from '../_lib/auth.js'
 import { withObservability } from '../_lib/observability.js'
 import { presignPutToR2 } from '../_lib/r2.js'
 
@@ -9,7 +9,7 @@ import { presignPutToR2 } from '../_lib/r2.js'
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const session = getSession(req)
+  const session = await getSessionFromRequest(req)
   if (!session) {
     return res.status(401).json({ error: 'Auth required', code: 'UNAUTH', requestId: ctx.requestId })
   }
