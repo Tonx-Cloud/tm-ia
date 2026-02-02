@@ -364,7 +364,7 @@ function App() {
     const url = new URL(window.location.href)
     const pathname = url.pathname
 
-    // Check if this is an OAuth callback
+    // Check if this is an OAuth callback with actual data to process
     if (pathname === '/auth/callback') {
       const token = url.searchParams.get('token')
       const error = url.searchParams.get('error')
@@ -373,36 +373,58 @@ function App() {
 
       console.log('[OAuth Callback] Detected:', { token: token?.substring(0, 10), error, email, provider })
 
-      if (error) {
-        // Show error after a small delay to ensure toaster is ready
-        setTimeout(() => {
-          push({ type: 'error', text: `Erro no login: ${error}` })
-        }, 100)
-      } else if (token) {
-        // Save token and authenticate
-        localStorage.setItem('tm_auth_token', token)
-        console.log('[OAuth Callback] Token saved to localStorage')
-        setAuthToken(token)
-        console.log('[OAuth Callback] State updated with token')
+      // Only process if we have actual callback data (token or error)
+      if (token || error) {
+        if (error) {
+          // Show error after a small delay to ensure toaster is ready
+          setTimeout(() => {
+            push({ type: 'error', text: `Erro no login: ${error}` })
+          }, 100)
+        } else if (token) {
+          // Save token and authenticate
+          localStorage.setItem('tm_auth_token', token)
+          console.log('[OAuth Callback] Token saved to localStorage')
+          setAuthToken(token)
+          console.log('[OAuth Callback] State updated with token')
 
-        const providerName = provider === 'google' ? 'Google' : 'email'
-        setTimeout(() => {
-          push({ type: 'success', text: `Login com ${providerName} realizado!${email ? ` (${email})` : ''}` })
-        }, 100)
+          const providerName = provider === 'google' ? 'Google' : 'email'
+          setTimeout(() => {
+            push({ type: 'success', text: `Login com ${providerName} realizado!${email ? ` (${email})` : ''}` })
+          }, 100)
+        }
 
         // Mark callback processing as complete
         setIsProcessingCallback(false)
-      } else {
-        // No token and no error
-        setIsProcessingCallback(false)
-      }
 
-      // Clean up URL - remove query params and redirect to home
-      window.history.replaceState({}, '', '/')
-      console.log('[OAuth Callback] URL cleaned')
+        // Clean up URL - remove query params and redirect to home
+        window.history.replaceState({}, '', '/')
+        console.log('[OAuth Callback] URL cleaned')
+      } else {
+        // No token and no error - user accessed /auth/callback directly without data
+        // Don't stay in loading state, just redirect to home
+        console.log('[OAuth Callback] No data to process, redirecting to home')
+        setIsProcessingCallback(false)
+        window.history.replaceState({}, '', '/')
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Run only once on mount
+
+  // Safety timeout: ensure we never get stuck in loading state
+  useEffect(() => {
+    if (!isProcessingCallback) return
+
+    const safetyTimeout = setTimeout(() => {
+      console.log('[OAuth Callback] Safety timeout triggered - forcing exit from loading state')
+      setIsProcessingCallback(false)
+      // If we're still on callback URL without data, redirect to home
+      if (window.location.pathname === '/auth/callback') {
+        window.history.replaceState({}, '', '/')
+      }
+    }, 5000) // 5 second safety timeout
+
+    return () => clearTimeout(safetyTimeout)
+  }, [isProcessingCallback])
 
   // Detect mobile
   useEffect(() => {
