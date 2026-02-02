@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { loadJwtEnv } from '../../_lib/env.js'
+import { loadJwtEnv } from '../_lib/env.js'
 
 /**
  * GET /api/auth/test-config
