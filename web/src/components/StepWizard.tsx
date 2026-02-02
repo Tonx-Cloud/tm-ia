@@ -47,6 +47,18 @@ type AnimationType =
   | 'fade-in'
   | 'fade-out'
 
+const SIMPLE_ANIMATIONS: Array<{ id: AnimationType; label: string }> = [
+  { id: 'none', label: 'Nenhuma (estática)' },
+  { id: 'zoom-in', label: 'Zoom in' },
+  { id: 'zoom-out', label: 'Zoom out' },
+  { id: 'pan-left', label: 'Pan esquerda' },
+  { id: 'pan-right', label: 'Pan direita' },
+  { id: 'pan-up', label: 'Pan cima' },
+  { id: 'pan-down', label: 'Pan baixo' },
+  { id: 'fade-in', label: 'Fade in' },
+  { id: 'fade-out', label: 'Fade out' },
+]
+
 type StoryboardScene = {
   sceneNumber: number
   timeCode: string
@@ -686,16 +698,33 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
             display: 'flex',
             justifyContent: 'center'
           }}>
-            <img
-              src={asset.dataUrl || PLACEHOLDER_IMG}
-              alt="Scene"
-              style={{
-                maxWidth: '100%',
-                maxHeight: mode === 'edit' ? 200 : '70vh',
-                borderRadius: 12,
-                border: '1px solid var(--border)'
-              }}
-            />
+            {asset.animation?.status === 'completed' && asset.animation.videoUrl ? (
+              <video
+                src={asset.animation.videoUrl}
+                controls
+                autoPlay
+                loop
+                muted
+                playsInline
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: mode === 'edit' ? 200 : '70vh',
+                  borderRadius: 12,
+                  border: '1px solid var(--border)'
+                }}
+              />
+            ) : (
+              <img
+                src={asset.dataUrl || PLACEHOLDER_IMG}
+                alt="Scene"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: mode === 'edit' ? 200 : '70vh',
+                  borderRadius: 12,
+                  border: '1px solid var(--border)'
+                }}
+              />
+            )
           </div>
 
           {/* Info/Edit Panel */}
@@ -795,14 +824,28 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
                     ⭐ Favoritar
                   </button>
 
-                  <button
-                    className="btn-ghost"
-                    onClick={() => onUpdateAnimation?.(asset.id, 'zoom-in')}
-                    style={{ padding: '10px 12px' }}
-                    title="Animar (50 💎)"
-                  >
-                    ✨ Animar
-                  </button>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>ANIMAÇÃO SIMPLES (FFMPEG)</div>
+                    <select
+                      value={((scene as any)?.animation || 'none') as any}
+                      onChange={(e) => onUpdateAnimation?.(asset.id, e.target.value as any)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: 10,
+                        border: '1px solid var(--border)',
+                        background: 'var(--bg)',
+                        color: 'var(--text)'
+                      }}
+                    >
+                      {SIMPLE_ANIMATIONS.map((opt) => (
+                        <option key={opt.id} value={opt.id}>{opt.label}</option>
+                      ))}
+                    </select>
+                    <div style={{ marginTop: 6, fontSize: 12, color: 'var(--text-muted)' }}>
+                      Essa animação é aplicada no render final pelo FFmpeg.
+                    </div>
+                  </div>
 
                   <div style={{
                     gridColumn: '1 / -1',

@@ -74,6 +74,12 @@ model Asset {
   status      String   @default("generated") // generated, reused, needs_regen
   dataUrl     String
 
+  // Veo / animated video (optional)
+  animationStatus   String?  // pending | completed | failed
+  animationVideoUrl String?
+  animationJobId    String?
+  animationProvider String?
+
   // Audit / naming
   fileKey     String?  // e.g. tmia__<project>__YYYYMMDD-HHmmss__s03__a1b2c3d4
 

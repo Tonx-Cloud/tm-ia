@@ -265,66 +265,99 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
 
     for (let i = 0; i < storyboard.length; i++) {
       const item = storyboard[i]
-      const asset = project.assets.find(a => a.id === item.assetId)
-      if (!asset || !asset.dataUrl) continue
+      const asset: any = project.assets.find(a => a.id === item.assetId)
+      if (!asset) continue
 
-      // Save Image
-      const m = asset.dataUrl.match(/^data:(image\/[^;]+);base64,(.*)$/)
-      if (!m) continue
-      const ext = m[1].includes('png') ? 'png' : 'jpg'
-      const imgPath = path.join(workDir, `src_${i}.${ext}`)
-      fs.writeFileSync(imgPath, m[2], 'base64')
-
-      // Generate Clip
       const dur = item.durationSec || 5
       const frames = Math.max(1, Math.round(dur * fps))
       const anim = String((item as any).animateType || (item as any).animation || (item.animate ? 'zoom-in' : 'none'))
       const clipName = `clip_${String(i).padStart(3, '0')}.mp4`
       const clipPath = path.join(workDir, clipName)
 
-      // Build Filter for this specific clip
-      // Force scale before AND after zoompan to ensure 100% compliance with target resolution
-      const sizeStr = `s=${res.width}x${res.height}`
-      const scaleFilter = `scale=${res.width}:${res.height}:force_original_aspect_ratio=decrease,pad=${res.width}:${res.height}:(ow-iw)/2:(oh-ih)/2:black`
-      
-      let vf = `${scaleFilter},setsar=1,fps=${fps}` // setsar=1 fixes aspect ratio glitches
+      // If this asset has a completed video animation (Veo / external), render should use the VIDEO.
+      // Otherwise, fall back to still-image + simple FFmpeg animation.
+      const videoUrl = asset?.animation?.status === 'completed' ? asset?.animation?.videoUrl : undefined
 
-      if (anim === 'zoom-in') {
-        vf += `,zoompan=z='min(zoom+0.0015,1.10)':d=${frames}:fps=${fps}:${sizeStr}`
-      } else if (anim === 'zoom-out') {
-        vf += `,zoompan=z='if(eq(on,1),1.10,max(1.0,zoom-0.0015))':d=${frames}:fps=${fps}:${sizeStr}`
-      } else if (anim === 'pan-left') {
-        vf += `,zoompan=z='1.05':x='(iw-ow)*on/${Math.max(1, frames - 1)}':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr}`
-      } else if (anim === 'pan-right') {
-        vf += `,zoompan=z='1.05':x='(iw-ow)*(1-on/${Math.max(1, frames - 1)})':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr}`
-      } else if (anim === 'pan-up') {
-        vf += `,zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(1-on/${Math.max(1, frames - 1)})':d=${frames}:fps=${fps}:${sizeStr}`
-      } else if (anim === 'pan-down') {
-        vf += `,zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*on/${Math.max(1, frames - 1)}':d=${frames}:fps=${fps}:${sizeStr}`
-      } else if (anim === 'fade-in') {
-        vf += `,fade=t=in:st=0:d=0.5`
-      } else if (anim === 'fade-out') {
-        vf += `,fade=t=out:st=${(dur - 0.5).toFixed(2)}:d=0.5`
+      // Build common scale filter
+      const scaleFilter = `scale=${res.width}:${res.height}:force_original_aspect_ratio=decrease,pad=${res.width}:${res.height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps=${fps}`
+
+      if (videoUrl && /^https?:\/\//i.test(videoUrl)) {
+        // Download the video to local temp (serverless-safe)
+        const vidPath = path.join(workDir, `src_${i}.mp4`)
+        const resp = await fetch(videoUrl)
+        if (!resp.ok) throw new Error(`Video download failed for scene ${i + 1}`)
+        fs.writeFileSync(vidPath, Buffer.from(await resp.arrayBuffer()))
+
+        // Loop the clip if needed to reach dur, then scale/pad
+        const vf = `${scaleFilter}`
+        const args = [
+          '-stream_loop', '-1',
+          '-i', vidPath,
+          '-t', dur.toFixed(2),
+          '-vf', vf,
+          '-an',
+          '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
+          '-pix_fmt', 'yuv420p',
+          '-y', clipPath,
+        ]
+
+        await new Promise<void>((resolve, reject) => {
+          const p = spawn(ffmpegPath, args)
+          p.on('close', c => c === 0 ? resolve() : reject(new Error(`Clip ${i} (video) failed`)))
+          p.on('error', reject)
+        })
+
+      } else {
+        if (!asset.dataUrl) continue
+
+        // Save Image
+        const m = asset.dataUrl.match(/^data:(image\/[^;]+);base64,(.*)$/)
+        if (!m) continue
+        const ext = m[1].includes('png') ? 'png' : 'jpg'
+        const imgPath = path.join(workDir, `src_${i}.${ext}`)
+        fs.writeFileSync(imgPath, m[2], 'base64')
+
+        // Build Filter for this specific clip (simple animation)
+        const sizeStr = `s=${res.width}x${res.height}`
+        let vf = `${scaleFilter}`
+
+        if (anim === 'zoom-in') {
+          vf += `,zoompan=z='min(zoom+0.0015,1.10)':d=${frames}:fps=${fps}:${sizeStr}`
+        } else if (anim === 'zoom-out') {
+          vf += `,zoompan=z='if(eq(on,1),1.10,max(1.0,zoom-0.0015))':d=${frames}:fps=${fps}:${sizeStr}`
+        } else if (anim === 'pan-left') {
+          vf += `,zoompan=z='1.05':x='(iw-ow)*on/${Math.max(1, frames - 1)}':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr}`
+        } else if (anim === 'pan-right') {
+          vf += `,zoompan=z='1.05':x='(iw-ow)*(1-on/${Math.max(1, frames - 1)})':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr}`
+        } else if (anim === 'pan-up') {
+          vf += `,zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(1-on/${Math.max(1, frames - 1)})':d=${frames}:fps=${fps}:${sizeStr}`
+        } else if (anim === 'pan-down') {
+          vf += `,zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*on/${Math.max(1, frames - 1)}':d=${frames}:fps=${fps}:${sizeStr}`
+        } else if (anim === 'fade-in') {
+          vf += `,fade=t=in:st=0:d=0.5`
+        } else if (anim === 'fade-out') {
+          vf += `,fade=t=out:st=${(dur - 0.5).toFixed(2)}:d=0.5`
+        }
+
+        // Safety scale again to catch zoompan resets
+        vf += `,scale=${res.width}:${res.height}`
+
+        const args = [
+          '-loop', '1',
+          '-t', dur.toFixed(2),
+          '-i', imgPath,
+          '-vf', vf,
+          '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
+          '-pix_fmt', 'yuv420p',
+          '-y', clipPath
+        ]
+
+        await new Promise<void>((resolve, reject) => {
+          const p = spawn(ffmpegPath, args)
+          p.on('close', c => c === 0 ? resolve() : reject(new Error(`Clip ${i} failed`)))
+          p.on('error', reject)
+        })
       }
-
-      // Safety scale again to catch zoompan resets
-      vf += `,scale=${res.width}:${res.height}`
-
-      const args = [
-        '-loop', '1',
-        '-t', dur.toFixed(2),
-        '-i', imgPath,
-        '-vf', vf,
-        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23', // Fast intermediate encode
-        '-pix_fmt', 'yuv420p',
-        '-y', clipPath
-      ]
-
-      await new Promise<void>((resolve, reject) => {
-        const p = spawn(ffmpegPath, args)
-        p.on('close', c => c === 0 ? resolve() : reject(new Error(`Clip ${i} failed`)))
-        p.on('error', reject)
-      })
 
       clipFiles.push(clipPath)
       

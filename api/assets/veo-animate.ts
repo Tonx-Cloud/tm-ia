@@ -37,7 +37,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
     const balance = await getBalance(session.userId)
 
     // VIP bypass
-    const vip = session.email === 'hiltonsf@gmail.com' || session.email.toLowerCase().includes('felipe')
+    const vip = session.email === 'hiltonsf@gmail.com'
 
     if (!vip && balance < COST) {
         return res.status(402).json({ error: 'Insufficient credits', required: COST, balance })
@@ -78,14 +78,15 @@ export default withObservability(async function handler(req: VercelRequest, res:
                 animation: {
                     status: 'completed',
                     videoUrl: 'https://cdn.pixabay.com/video/2024/02/09/199958-911694865_large.mp4', // Mock video
-                    cost: COST,
+                    jobId: 'mock-job-' + Date.now(),
                     provider: 'mock-veo'
                 }
             } as any)
 
+            const jobId = 'mock-job-' + Date.now()
             return res.status(200).json({
                 status: 'completed',
-                jobId: 'mock-job-' + Date.now(),
+                jobId,
                 balance: await getBalance(session.userId),
                 videoUrl: 'https://cdn.pixabay.com/video/2024/02/09/199958-911694865_large.mp4'
             })

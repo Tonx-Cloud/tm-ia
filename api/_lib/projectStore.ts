@@ -8,6 +8,14 @@ export type Asset = {
   status: string
   dataUrl: string
   fileKey?: string
+
+  animation?: {
+    status: 'pending' | 'completed' | 'failed'
+    videoUrl?: string
+    jobId?: string
+    provider?: string
+  }
+
   createdAt: number
   sceneNumber?: number
   timeCode?: string
@@ -81,6 +89,14 @@ function mapProject(p: any): Project {
       status: a.status,
       dataUrl: a.dataUrl,
       fileKey: a.fileKey || undefined,
+      animation: a.animationStatus
+        ? {
+            status: a.animationStatus,
+            videoUrl: a.animationVideoUrl || undefined,
+            jobId: a.animationJobId || undefined,
+            provider: a.animationProvider || undefined,
+          }
+        : undefined,
       createdAt: a.createdAt.getTime(),
       sceneNumber: a.sceneNumber || undefined,
       timeCode: a.timeCode || undefined,
@@ -196,6 +212,10 @@ export async function updateAsset(projectId: string, assetId: string, patch: Par
       prompt: patch.prompt,
       status: patch.status,
       dataUrl: patch.dataUrl,
+      animationStatus: patch.animation?.status,
+      animationVideoUrl: patch.animation?.videoUrl,
+      animationJobId: patch.animation?.jobId,
+      animationProvider: patch.animation?.provider,
       fileKey: (patch as any).fileKey,
       sceneNumber: (patch as any).sceneNumber,
       timeCode: (patch as any).timeCode,
@@ -218,6 +238,14 @@ export async function getAsset(projectId: string, assetId: string): Promise<Asse
     status: a.status,
     dataUrl: a.dataUrl,
     fileKey: a.fileKey || undefined,
+    animation: a.animationStatus
+      ? {
+          status: a.animationStatus as any,
+          videoUrl: (a as any).animationVideoUrl || undefined,
+          jobId: (a as any).animationJobId || undefined,
+          provider: (a as any).animationProvider || undefined,
+        }
+      : undefined,
     createdAt: a.createdAt.getTime(),
     sceneNumber: a.sceneNumber || undefined,
     timeCode: a.timeCode || undefined,
