@@ -18,7 +18,8 @@ export type Session = {
 export function isVipEmail(email: string | undefined | null) {
   if (!email) return false
   const lower = email.toLowerCase()
-  return lower === 'hiltonsf@gmail.com' || lower.includes('felipe')
+  // VIP allowlist (keep tight)
+  return lower === 'wiltonsf@gmail.com'
 }
 
 export function getSession(req: VercelRequest): Session | null {
