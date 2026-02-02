@@ -1772,8 +1772,11 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
       if (s?.assetId) byAssetId.set(String(s.assetId), s)
     }
 
-    return assetsList.map((a) => {
-      const s = byAssetId.get(a.id)
+    const hasAnyAssetId = byAssetId.size > 0
+
+    return assetsList.map((a, i) => {
+      // Fallback to index-based mapping when UI scenes don't carry assetId
+      const s = (hasAnyAssetId ? (byAssetId.get(a.id) || (scenes as any[])[i]) : (scenes as any[])[i])
       const anim = String(s?.animation || s?.animateType || s?.animationType || (s?.animate ? 'zoom-in' : 'none') || 'none')
 
       return {
@@ -1812,7 +1815,8 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
     setStoryboard((prev) => {
       const next = [...prev]
       const cur = next[idx] as any
-      next[idx] = { ...cur, animation }
+      // Keep an explicit assetId link when possible (prevents animation loss on reorder)
+      next[idx] = { ...cur, animation, assetId }
       void syncProjectEdits({ storyboard: buildStoryboardItems(next, assets) })
       return next
     })
