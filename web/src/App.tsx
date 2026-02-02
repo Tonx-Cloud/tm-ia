@@ -14,7 +14,7 @@ import './styles/theme.css'
 
 function PlaceholderSection({ title, description, icon }: { title: string; description: string; icon: string }) {
   return (
-    <div style={{ 
+    <div style={{
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -23,16 +23,16 @@ function PlaceholderSection({ title, description, icon }: { title: string; descr
       textAlign: 'center',
       padding: 40
     }}>
-      <div style={{ 
-        fontSize: 64, 
+      <div style={{
+        fontSize: 64,
         marginBottom: 24,
         filter: 'grayscale(0.3)'
       }}>
         {icon}
       </div>
-      <h2 style={{ 
-        fontSize: 28, 
-        fontWeight: 700, 
+      <h2 style={{
+        fontSize: 28,
+        fontWeight: 700,
         marginBottom: 12,
         background: 'linear-gradient(135deg, #b43bff, #3b82f6)',
         WebkitBackgroundClip: 'text',
@@ -40,8 +40,8 @@ function PlaceholderSection({ title, description, icon }: { title: string; descr
       }}>
         {title}
       </h2>
-      <p style={{ 
-        color: 'var(--text-muted)', 
+      <p style={{
+        color: 'var(--text-muted)',
         fontSize: 16,
         maxWidth: 400,
         lineHeight: 1.6,
@@ -208,10 +208,10 @@ function SettingsSection({ onLogout }: { onLogout: () => void }) {
       {/* Account Section */}
       <div className="card" style={{ padding: 20, marginBottom: 16 }}>
         <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Conta</h3>
-        
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           padding: '12px 0',
           borderBottom: '1px solid var(--border)'
@@ -223,9 +223,9 @@ function SettingsSection({ onLogout }: { onLogout: () => void }) {
           <div style={{ fontSize: 14, color: 'var(--text-muted)' }}>***@***</div>
         </div>
 
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           padding: '12px 0'
         }}>
@@ -242,10 +242,10 @@ function SettingsSection({ onLogout }: { onLogout: () => void }) {
       {/* Preferences Section */}
       <div className="card" style={{ padding: 20, marginBottom: 16 }}>
         <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Preferências</h3>
-        
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           padding: '12px 0',
           borderBottom: '1px solid var(--border)'
@@ -267,9 +267,9 @@ function SettingsSection({ onLogout }: { onLogout: () => void }) {
           </select>
         </div>
 
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           padding: '12px 0'
         }}>
@@ -309,17 +309,17 @@ function SettingsSection({ onLogout }: { onLogout: () => void }) {
       {/* Danger Zone */}
       <div className="card" style={{ padding: 20, border: '1px solid rgba(239, 68, 68, 0.3)' }}>
         <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, color: '#ef4444' }}>Zona de Perigo</h3>
-        
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center'
         }}>
           <div>
             <div style={{ fontWeight: 500 }}>Sair da conta</div>
             <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Encerrar sessão atual</div>
           </div>
-          <button 
+          <button
             onClick={onLogout}
             style={{
               padding: '8px 16px',
@@ -350,7 +350,7 @@ function App() {
   const [wizardKey, setWizardKey] = useState(1)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  
+
   const credits = useCredits(authToken || undefined)
   const { push, ToastContainer } = useToaster()
   const isAuthenticated = !!authToken
@@ -359,14 +359,16 @@ function App() {
   useEffect(() => {
     const url = new URL(window.location.href)
     const pathname = url.pathname
-    
+
     // Check if this is an OAuth callback
     if (pathname === '/auth/callback') {
       const token = url.searchParams.get('token')
       const error = url.searchParams.get('error')
       const email = url.searchParams.get('email')
       const provider = url.searchParams.get('provider')
-      
+
+      console.log('[OAuth Callback] Detected:', { token: token?.substring(0, 10), error, email, provider })
+
       if (error) {
         // Show error after a small delay to ensure toaster is ready
         setTimeout(() => {
@@ -375,18 +377,21 @@ function App() {
       } else if (token) {
         // Save token and authenticate
         localStorage.setItem('tm_auth_token', token)
+        console.log('[OAuth Callback] Token saved to localStorage')
         setAuthToken(token)
-        
+        console.log('[OAuth Callback] State updated with token')
+
         const providerName = provider === 'google' ? 'Google' : 'email'
         setTimeout(() => {
           push({ type: 'success', text: `Login com ${providerName} realizado!${email ? ` (${email})` : ''}` })
         }, 100)
       }
-      
+
       // Clean up URL - remove query params and redirect to home
       window.history.replaceState({}, '', '/')
+      console.log('[OAuth Callback] URL cleaned')
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Run only once on mount
 
   // Detect mobile
@@ -432,43 +437,43 @@ function App() {
     switch (activeSection) {
       case 'music-video':
         return <StepWizard key={wizardKey} locale="pt" />
-      
+
       case 'image':
         return (
-          <PlaceholderSection 
-            title="Criar Imagem" 
+          <PlaceholderSection
+            title="Criar Imagem"
             description="Gere imagens únicas com IA a partir de descrições textuais. Perfeito para capas, thumbnails e arte visual."
             icon="🎨"
           />
         )
-      
+
       case 'animate':
         return (
-          <PlaceholderSection 
-            title="Animar Imagem" 
+          <PlaceholderSection
+            title="Animar Imagem"
             description="Transforme imagens estáticas em animações dinâmicas. Dê vida às suas criações com movimentos suaves."
             icon="✨"
           />
         )
-      
+
       case 'text-video':
         return (
-          <PlaceholderSection 
-            title="Texto → Vídeo" 
+          <PlaceholderSection
+            title="Texto → Vídeo"
             description="Crie vídeos a partir de descrições textuais. A IA gera cenas completas baseadas no seu roteiro."
             icon="📝"
           />
         )
-      
+
       case 'image-video':
         return (
-          <PlaceholderSection 
-            title="Imagem → Vídeo" 
+          <PlaceholderSection
+            title="Imagem → Vídeo"
             description="Transforme uma sequência de imagens em um vídeo fluido com transições e efeitos profissionais."
             icon="🖼️"
           />
         )
-      
+
       case 'projects':
         return (
           <ProjectsSection
@@ -480,44 +485,44 @@ function App() {
             }}
           />
         )
-      
+
       case 'history':
         return <HistorySection token={authToken} />
-      
+
       case 'settings':
         return <SettingsSection onLogout={handleLogout} />
-      
+
       default:
         return <StepWizard locale="pt" />
     }
   }
 
   return (
-    <div style={{ 
+    <div style={{
       minHeight: '100vh',
       background: 'var(--bg)',
       color: 'var(--text)'
     }}>
-      
+
       {/* Landing Page (not authenticated) */}
       {!isAuthenticated ? (
         <>
-          <LandingPage 
+          <LandingPage
             locale="pt"
-            onGetStarted={() => setShowAuthModal(true)} 
+            onGetStarted={() => setShowAuthModal(true)}
             onSignIn={() => setShowAuthModal(true)}
           />
-          <AuthModal 
-            open={showAuthModal} 
-            onClose={() => setShowAuthModal(false)} 
+          <AuthModal
+            open={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
             onAuth={handleAuth}
           />
         </>
       ) : (
         <>
           {/* Sidebar */}
-          <Sidebar 
-            activeSection={activeSection} 
+          <Sidebar
+            activeSection={activeSection}
             onSectionChange={setActiveSection}
             onNewProject={handleNewProject}
             balance={credits.balance ?? 0}
@@ -528,7 +533,7 @@ function App() {
           />
 
           {/* Main Content */}
-          <main style={{ 
+          <main style={{
             marginLeft: sidebarWidth,
             minHeight: '100vh',
             transition: 'margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
