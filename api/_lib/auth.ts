@@ -19,8 +19,7 @@ export function isVipEmail(email: string | undefined | null) {
   if (!email) return false
   const lower = email.toLowerCase()
   // VIP allowlist (keep tight)
-  // NOTE: Hilton sometimes references this email with a typo. Accept both.
-  return lower === 'wiltonsf@gmail.com' || lower === 'hiltonsf@gmail.com'
+  return lower === 'hiltonsf@gmail.com'
 }
 
 export function getSession(req: VercelRequest): Session | null {
