@@ -350,6 +350,10 @@ function App() {
   const [wizardKey, setWizardKey] = useState(1)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isProcessingCallback, setIsProcessingCallback] = useState(() => {
+    // Check if we're on callback page on initial load
+    return window.location.pathname === '/auth/callback'
+  })
 
   const credits = useCredits(authToken || undefined)
   const { push, ToastContainer } = useToaster()
@@ -385,6 +389,12 @@ function App() {
         setTimeout(() => {
           push({ type: 'success', text: `Login com ${providerName} realizado!${email ? ` (${email})` : ''}` })
         }, 100)
+
+        // Mark callback processing as complete
+        setIsProcessingCallback(false)
+      } else {
+        // No token and no error
+        setIsProcessingCallback(false)
       }
 
       // Clean up URL - remove query params and redirect to home
@@ -495,6 +505,25 @@ function App() {
       default:
         return <StepWizard locale="pt" />
     }
+  }
+
+  // Show loading during callback processing
+  if (isProcessingCallback) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--bg)',
+        color: 'var(--text)'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="spinner" style={{ margin: '0 auto 20px' }} />
+          <div style={{ fontSize: 18, color: 'var(--text-muted)' }}>Completing sign in...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
