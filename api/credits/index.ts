@@ -1,34 +1,34 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getSession } from '../_lib/auth.js'
+import { getSessionFromRequest, isVipEmail } from '../_lib/auth.js'
 import { addCredits, getBalance, getLedger } from '../_lib/credits.js'
 import { withObservability } from '../_lib/observability.js'
 import { createLogger } from '../_lib/logger.js'
+
+const VIP_TARGET_BALANCE = 999999
 
 export default withObservability(async function handler(req: VercelRequest, res: VercelResponse, ctx) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
-  const session = getSession(req)
+
+  // IMPORTANT: TM-IA now uses Supabase access_token as tm_auth_token.
+  // So we must accept Supabase JWTs here.
+  const session = await getSessionFromRequest(req)
   if (!session) {
     return res.status(401).json({ error: 'Auth required', requestId: ctx.requestId })
   }
+
   ctx.userId = session.userId
   const logger = createLogger({ requestId: ctx.requestId, userId: session.userId })
 
   try {
     let balance = await getBalance(session.userId)
-    
-    // HARDCODE override for Admin (Hilton) and friend (Felipe)
-    // This bypasses the ephemeral /tmp storage issue on Vercel
-    const isAdmin = session.email === 'hiltonsf@gmail.com'
-    const isFelipe = session.email.toLowerCase().includes('felipe')
-    
-    if (isAdmin || isFelipe) {
-      balance = 99999
-    } else if (balance === 0) {
-      // Seed demo balance if empty
-      await addCredits(session.userId, 50, 'initial')
-      balance = 50
+
+    // VIP/admin top-up (Hilton, etc.)
+    if (isVipEmail(session.email) && balance < VIP_TARGET_BALANCE) {
+      const toAdd = VIP_TARGET_BALANCE - balance
+      await addCredits(session.userId, toAdd, 'admin_adjust')
+      balance = await getBalance(session.userId)
     }
 
     const recentEntries = await getLedger(session.userId, 10)
