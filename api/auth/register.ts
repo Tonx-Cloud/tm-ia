@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { supabase } from '../_lib/supabase.js'
+import { supabase, supabaseAdmin } from '../_lib/supabase.js'
 import { withObservability } from '../_lib/observability.js'
-import { addCredits, getBalance } from '../_lib/credits.js'
+import { getBalance } from '../_lib/credits.js'
 
 /**
  * POST /api/auth/register
@@ -21,29 +21,53 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
 
   try {
+    const fullName = name || email.split('@')[0]
+
+    // For test flows, we may want to auto-confirm email/password users so they can login immediately.
+    // This avoids the "no session/token until email confirmation" behavior.
+    const allowAutoConfirm = process.env.AUTH_AUTO_CONFIRM_EMAIL_PASSWORD === '1'
+    const isProd = process.env.VERCEL_ENV === 'production'
+    const isHiltonTestEmail = /^hiltonsf\+.*@gmail\.com$/i.test(String(email))
+
     // Register with Supabase Auth
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: name || email.split('@')[0]
-        }
-      }
-    })
+    const { data, error } = allowAutoConfirm && (!isProd || isHiltonTestEmail)
+      ? await (async () => {
+          // Admin create user with email_confirm=true
+          const created = await (supabaseAdmin as any).auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true,
+            user_metadata: { full_name: fullName },
+          })
+
+          if (created.error) return { data: { user: null, session: null }, error: created.error }
+
+          // Then sign-in to return a session/token
+          const signed = await supabase.auth.signInWithPassword({ email, password })
+          return { data: { user: created.data?.user || signed.data?.user, session: signed.data?.session }, error: signed.error }
+        })()
+      : await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName
+            }
+          }
+        })
 
     if (error) {
       ctx.log('warn', 'auth.register.failed', { email, error: error.message })
-      
+
       // Handle specific error cases
-      if (error.message.includes('already registered') || error.message.includes('already exists')) {
-        return res.status(409).json({ 
+      if (error.message.includes('already registered') || error.message.includes('already exists') || error.message.includes('User already registered')) {
+        return res.status(409).json({
           error: 'User with this email already exists',
           message: error.message
         })
       }
-      
-      return res.status(400).json({ 
+
+      return res.status(400).json({
         error: 'Registration failed',
         message: error.message
       })
