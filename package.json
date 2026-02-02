@@ -10,7 +10,7 @@
     "build:web": "npm --prefix web run build",
     "worker": "npx tsx worker.ts",
     "build": "npm run build:api",
-    "build:vercel": "npx prisma generate && npm run build:api && npm run build:web"
+    "build:vercel": "npx prisma migrate deploy && npx prisma generate && npm run build:api && npm run build:web"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.975.0",
