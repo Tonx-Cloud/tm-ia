@@ -1,49 +1,46 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { supabase } from '../_lib/supabase.js'
 
 /**
  * GET /api/auth/google
- * Redirects user to Google OAuth consent screen
+ * Redirects user to Supabase Google OAuth
+ * This aligns with the frontend usage of signInWithGoogle
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim()
-  if (!clientId) {
-    // Return a user-friendly error that suggests using email/password
-    return res.status(503).json({
-      error: 'Google OAuth não configurado',
-      message: 'Por favor, use login com email e senha.',
-      code: 'OAUTH_NOT_CONFIGURED'
-    })
-  }
-
   // Determine the callback URL based on environment
-  const baseUrl = process.env.NODE_ENV === 'development'
-    ? 'http://localhost:5173'
+  const origin = process.env.NODE_ENV === 'development' 
+    ? 'http://localhost:5173' 
     : 'https://tm-ia.vercel.app'
+  
+  const redirectTo = `${origin}/auth/callback`
 
-  const redirectUri = `${baseUrl}/api/auth/google/callback`
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    })
 
-  // Build Google OAuth URL
-  const params = new URLSearchParams({
-    client_id: clientId,
-    redirect_uri: redirectUri,
-    response_type: 'code',
-    scope: 'openid email profile',
-    access_type: 'offline',
-    prompt: 'consent',
-    // State parameter for CSRF protection
-    state: Buffer.from(JSON.stringify({
-      timestamp: Date.now(),
-      redirect: req.query.redirect || '/'
-    })).toString('base64')
-  })
+    if (error) throw error
 
-  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
+    if (data?.url) {
+      res.setHeader('Location', data.url)
+      return res.status(302).end()
+    }
 
-  // Redirect to Google
-  res.setHeader('Location', googleAuthUrl)
-  return res.status(302).end()
+    return res.status(500).json({ error: 'Failed to generate OAuth URL' })
+
+  } catch (err) {
+    console.error('OAuth redirect error:', err)
+    return res.status(500).json({ error: 'Internal Server Error' })
+  }
 }

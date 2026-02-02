@@ -34,13 +34,29 @@ export type CreditEntry = {
 async function ensureUser(userId: string) {
   const existing = await prisma.user.findUnique({ where: { id: userId } })
   if (existing) return existing
-  // Fallback email placeholder; real email should be upserted by auth endpoints.
-  return prisma.user.create({
-    data: {
-      id: userId,
-      email: `user-${userId}@tm.local`,
-      credits: 0,
-    },
+
+  // Create new user in public schema with 50 initial credits
+  // This ensures both OAuth and Email users get credits on first interaction
+  return prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
+      data: {
+        id: userId,
+        email: `user-${userId}@tm.local`, // Will be updated if we have real email
+        credits: 50,
+      },
+    })
+
+    await tx.creditEntry.create({
+      data: {
+        id: crypto.randomUUID(),
+        userId,
+        type: 'earn',
+        amount: 50,
+        reason: 'initial',
+      },
+    })
+
+    return user
   })
 }
 

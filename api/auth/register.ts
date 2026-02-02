@@ -57,18 +57,10 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
     const user = data.user
 
-    // Add initial credits for new user
-    try {
-      await addCredits(user.id, 50, 'initial')
-      ctx.log('info', 'auth.register.credits_added', { userId: user.id, amount: 50 })
-    } catch (err) {
-      ctx.log('warn', 'auth.register.credits_failed', { 
-        userId: user.id, 
-        error: (err as Error).message 
-      })
-    }
+    // Initial credits are now handled automatically by ensureUser() when getBalance is called
+    // This unifies the logic for both Email and OAuth users
 
-    // Get user's credit balance
+    // Get user's credit balance (this triggers ensureUser + 50 credits if new)
     const balance = await getBalance(user.id)
 
     ctx.log('info', 'auth.register.success', { 

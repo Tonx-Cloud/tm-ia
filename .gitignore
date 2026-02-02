@@ -43,6 +43,10 @@ SOUL.md
 TOOLS.md
 USER.md
 ACTION_PLAN.md
+
+# Agent tooling workspace
+.agent/
+
 .vercel
 .env*.local
 
