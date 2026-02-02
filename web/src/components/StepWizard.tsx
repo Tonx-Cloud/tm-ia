@@ -724,7 +724,7 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
                   border: '1px solid var(--border)'
                 }}
               />
-            )
+            )}
           </div>
 
           {/* Info/Edit Panel */}
