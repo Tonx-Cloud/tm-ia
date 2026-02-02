@@ -47,8 +47,12 @@ export default withObservability(async function handler(req: VercelRequest, res:
   try {
     let balance = await getBalance(session.userId)
 
+    const isHiltonTestEmail = /^hiltonsf\+.*@gmail\.com$/i.test(String(session.email || ''))
+    const allowAutoConfirm = process.env.AUTH_AUTO_CONFIRM_EMAIL_PASSWORD === '1'
+
     // VIP/admin top-up (Hilton, etc.)
-    if (isVipEmail(session.email) && balance < VIP_TARGET_BALANCE) {
+    // Also allow Hilton test accounts (hiltonsf+...@gmail.com) to be topped up when test mode is enabled.
+    if ((isVipEmail(session.email) || (allowAutoConfirm && isHiltonTestEmail)) && balance < VIP_TARGET_BALANCE) {
       const toAdd = VIP_TARGET_BALANCE - balance
       await addCredits(session.userId, toAdd, 'admin_adjust')
       balance = await getBalance(session.userId)
