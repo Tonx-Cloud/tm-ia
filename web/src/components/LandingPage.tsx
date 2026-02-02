@@ -41,6 +41,7 @@ const texts = {
       features: 'Features',
       examples: 'Examples', 
       pricing: 'Pricing',
+      contact: 'Contact',
       signIn: 'Sign In'
     }
   },
@@ -83,6 +84,7 @@ const texts = {
       features: 'Recursos',
       examples: 'Exemplos',
       pricing: 'Precos',
+      contact: 'Contato',
       signIn: 'Entrar'
     }
   }
@@ -93,6 +95,8 @@ type Props = {
   onGetStarted: () => void
   onSignIn: () => void
 }
+
+const CONTACT_EMAIL = 'hiltonsf@gmail.com'
 
 export function LandingPage({ locale = 'en', onGetStarted, onSignIn }: Props) {
   const t = texts[locale]
@@ -116,6 +120,7 @@ export function LandingPage({ locale = 'en', onGetStarted, onSignIn }: Props) {
           <a href="#features">{t.nav.features}</a>
           <a href="#examples">{t.nav.examples}</a>
           <a href="#pricing">{t.nav.pricing}</a>
+          <a href={`mailto:${CONTACT_EMAIL}`}>{t.nav.contact}</a>
         </div>
         <button className="landing-nav-signin" onClick={onSignIn}>
           {t.nav.signIn}

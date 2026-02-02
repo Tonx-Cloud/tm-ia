@@ -212,6 +212,24 @@ const styles = {
     gap: 8,
   },
 
+  contactBtn: (collapsed: boolean) => ({
+    width: '100%',
+    padding: collapsed ? '12px 8px' : '12px 16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    background: 'rgba(59, 130, 246, 0.08)',
+    color: 'var(--text)',
+    border: '1px solid rgba(59, 130, 246, 0.25)',
+    borderRadius: 10,
+    cursor: 'pointer',
+    fontSize: 14,
+    fontWeight: 500,
+    transition: 'all 0.2s',
+    justifyContent: collapsed ? 'center' : 'flex-start',
+    textDecoration: 'none',
+  }),
+
   logoutBtn: (collapsed: boolean) => ({
     width: '100%',
     padding: collapsed ? '12px 8px' : '12px 16px',
@@ -287,6 +305,8 @@ const styles = {
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
+
+const CONTACT_EMAIL = 'hiltonsf@gmail.com'
 
 export function Sidebar({
   activeSection,
@@ -454,6 +474,16 @@ export function Sidebar({
               {collapsed ? '→' : '←'}
             </button>
           )}
+
+          {/* Contato */}
+          <a
+            href={`mailto:${CONTACT_EMAIL}`}
+            style={styles.contactBtn(isCollapsed) as any}
+            title={isCollapsed ? `Contato: ${CONTACT_EMAIL}` : undefined}
+          >
+            <span>✉️</span>
+            {!isCollapsed && <span>Contato</span>}
+          </a>
 
           {/* Logout */}
           <button
