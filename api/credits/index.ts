@@ -31,6 +31,12 @@ export default withObservability(async function handler(req: VercelRequest, res:
       balance = await getBalance(session.userId)
     }
 
+    // Non-VIP safety net: if a user record exists with 0 credits (legacy / earlier bug), seed 50.
+    if (!isVipEmail(session.email) && balance === 0) {
+      await addCredits(session.userId, 50, 'initial')
+      balance = await getBalance(session.userId)
+    }
+
     const recentEntries = await getLedger(session.userId, 10)
     logger.info('credits.read', { balance, count: recentEntries.length, email: session.email })
     return res.status(200).json({ balance, recentEntries, requestId: ctx.requestId })
