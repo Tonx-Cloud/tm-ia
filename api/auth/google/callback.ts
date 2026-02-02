@@ -220,8 +220,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(302).end()
 
   } catch (err) {
-    console.error('Google OAuth error:', err)
-    return redirectWithError(res, 'Authentication failed')
+    const errorMessage = err instanceof Error ? err.message : String(err)
+    console.error('Google OAuth error:', { message: errorMessage, stack: err instanceof Error ? err.stack : undefined })
+    return redirectWithError(res, `Authentication failed: ${errorMessage.substring(0, 150)}`)
   }
 }
 
