@@ -280,7 +280,8 @@ export async function regenAsset(projectId: string, assetId: string, token: stri
 }
 
 // --- Auth Functions ---
-export async function register(email: string, password: string): Promise<{ token: string }> {
+export type RegisterResp = { token?: string; message?: string; user?: any; balance?: number }
+export async function register(email: string, password: string): Promise<RegisterResp> {
   const res = await fetch(`${API}/api/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -293,7 +294,7 @@ export async function register(email: string, password: string): Promise<{ token
   return body
 }
 
-export async function login(email: string, password: string): Promise<{ token: string }> {
+export async function login(email: string, password: string): Promise<{ token: string; user?: any; balance?: number }> {
   const res = await fetch(`${API}/api/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

@@ -73,13 +73,22 @@ export function AuthModal({ locale = 'en', open, onClose, onAuth, onSkipDemo }: 
     }
 
     try {
-      let resp: { token: string }
       if (mode === 'signup') {
-        resp = await register(email, password)
+        const resp = await register(email, password)
+
+        // If Supabase requires email confirmation, signUp returns no session/token.
+        // In that case, show a clear message and switch to login.
+        if (!resp.token) {
+          setError(resp.message || 'Conta criada. Verifique seu e-mail para confirmar e depois faça login.')
+          setMode('login')
+          return
+        }
+
+        onAuth(resp.token)
       } else {
-        resp = await login(email, password)
+        const resp = await login(email, password)
+        onAuth(resp.token)
       }
-      onAuth(resp.token)
     } catch (err) {
       setError((err as Error).message)
     } finally {
