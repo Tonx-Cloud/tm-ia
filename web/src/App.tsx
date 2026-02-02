@@ -6,6 +6,7 @@ import { Sidebar, type SidebarSection, getSidebarWidth } from '@/components/Side
 import { RenderHistory } from '@/components/RenderHistory'
 import { useToaster } from '@/components/Toaster'
 import { useCredits } from '@/hooks/useCredits'
+import { supabase, onAuthStateChange } from '@/lib/supabase'
 import './styles/theme.css'
 
 // ============================================================================
@@ -359,54 +360,59 @@ function App() {
   const { push, ToastContainer } = useToaster()
   const isAuthenticated = !!authToken
 
-  // Handle OAuth callback - check URL for token on mount
+  // Handle Supabase OAuth callback and session management
   useEffect(() => {
+    // Check if we're on the callback URL
     const url = new URL(window.location.href)
     const pathname = url.pathname
 
-    // Check if this is an OAuth callback with actual data to process
+    // Process callback if on /auth/callback path
     if (pathname === '/auth/callback') {
-      const token = url.searchParams.get('token')
-      const error = url.searchParams.get('error')
-      const email = url.searchParams.get('email')
-      const provider = url.searchParams.get('provider')
+      console.log('[Supabase OAuth] Processing callback...')
 
-      console.log('[OAuth Callback] Detected:', { token: token?.substring(0, 10), error, email, provider })
-
-      // Only process if we have actual callback data (token or error)
-      if (token || error) {
+      // Supabase handles the hash fragment automatically
+      // We just need to get the session after redirect
+      supabase.auth.getSession().then(({ data: { session }, error }) => {
         if (error) {
-          // Show error after a small delay to ensure toaster is ready
-          setTimeout(() => {
-            push({ type: 'error', text: `Erro no login: ${error}` })
-          }, 100)
-        } else if (token) {
-          // Save token and authenticate
-          localStorage.setItem('tm_auth_token', token)
-          console.log('[OAuth Callback] Token saved to localStorage')
-          setAuthToken(token)
-          console.log('[OAuth Callback] State updated with token')
-
-          const providerName = provider === 'google' ? 'Google' : 'email'
-          setTimeout(() => {
-            push({ type: 'success', text: `Login com ${providerName} realizado!${email ? ` (${email})` : ''}` })
-          }, 100)
+          console.error('[Supabase OAuth] Error:', error.message)
+          push({ type: 'error', text: `Erro no login: ${error.message}` })
+          setIsProcessingCallback(false)
+          window.history.replaceState({}, '', '/')
+          return
         }
 
-        // Mark callback processing as complete
-        setIsProcessingCallback(false)
+        if (session) {
+          console.log('[Supabase OAuth] Session found:', session.user?.email)
 
-        // Clean up URL - remove query params and redirect to home
-        window.history.replaceState({}, '', '/')
-        console.log('[OAuth Callback] URL cleaned')
-      } else {
-        // No token and no error - user accessed /auth/callback directly without data
-        // Don't stay in loading state, just redirect to home
-        console.log('[OAuth Callback] No data to process, redirecting to home')
+          // Use Supabase access token as our auth token
+          localStorage.setItem('tm_auth_token', session.access_token)
+          setAuthToken(session.access_token)
+
+          push({ type: 'success', text: `Login com Google realizado! (${session.user?.email})` })
+        }
+
         setIsProcessingCallback(false)
         window.history.replaceState({}, '', '/')
-      }
+      })
     }
+
+    // Subscribe to auth state changes
+    const { data: { subscription } } = onAuthStateChange((session) => {
+      if (session) {
+        console.log('[Supabase Auth] Session changed:', (session as { user?: { email?: string } })?.user?.email)
+        const accessToken = (session as { access_token?: string })?.access_token
+        if (accessToken) {
+          localStorage.setItem('tm_auth_token', accessToken)
+          setAuthToken(accessToken)
+        }
+      } else {
+        // Session ended
+        localStorage.removeItem('tm_auth_token')
+        setAuthToken('')
+      }
+    })
+
+    return () => subscription?.unsubscribe()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Run only once on mount
 
