@@ -1,6 +1,7 @@
 import type { VercelRequest } from '@vercel/node'
 import jwt from 'jsonwebtoken'
 import { loadJwtEnv } from './env.js'
+import { supabase } from './supabase.js'
 
 const isDevEnv = () =>
   process.env.NODE_ENV === 'development' ||
@@ -81,4 +82,68 @@ export function verifyToken(token: string): TokenPayload | null {
   } catch {
     return null
   }
+}
+
+/**
+ * Verify Supabase JWT token and return user session
+ * This validates the token against Supabase Auth
+ */
+export async function verifySupabaseToken(token: string): Promise<Session | null> {
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser(token)
+    
+    if (error || !user) {
+      return null
+    }
+
+    return {
+      userId: user.id,
+      email: user.email || '',
+      role: user.app_metadata?.role || 'user'
+    }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Get session from request using Supabase Auth
+ * Falls back to legacy JWT verification if Supabase fails
+ */
+export async function getSessionFromRequest(req: VercelRequest): Promise<Session | null> {
+  const rawHeader = (req.headers['authorization'] ?? (req.headers as Record<string, unknown>)['Authorization']) as
+    | string
+    | string[]
+    | undefined
+
+  const headerValue = Array.isArray(rawHeader) ? rawHeader[0] : rawHeader
+  const bearer = headerValue?.toString().trim()
+  const token = bearer?.replace(/^Bearer\s+/i, '')
+  
+  if (!token) return null
+
+  const hostHeader = (req.headers['x-forwarded-host'] as string) || (req.headers['host'] as string) || ''
+  const isLocal = hostHeader.includes('localhost') || hostHeader.includes('127.0.0.1')
+  const isDev = isDevEnv() || isLocal
+
+  const devToken = process.env.DEV_TOKEN || 'dev-token'
+
+  if (isDev && token === devToken) {
+    logMaskedToken(token, 'dev.bypass')
+    return { userId: 'dev-user', email: 'dev@example.com', role: 'user' }
+  }
+
+  // Try Supabase first
+  const supabaseSession = await verifySupabaseToken(token)
+  if (supabaseSession) {
+    return supabaseSession
+  }
+
+  // Fall back to legacy JWT for backwards compatibility
+  const legacySession = getSession(req)
+  if (legacySession && isDev) {
+    console.log('[Auth] Legacy JWT token used - consider migrating to Supabase')
+  }
+  
+  return legacySession
 }
