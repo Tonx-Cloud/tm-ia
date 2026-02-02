@@ -204,7 +204,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Redirect to frontend with token
     const frontendUrl = process.env.NODE_ENV === 'development'
       ? 'http://localhost:5173'
-      : (process.env.PUBLIC_BASE_URL || 'https://tm-ia.vercel.app')
+      : 'https://tm-ia.vercel.app'
 
     const params = new URLSearchParams({
       token: jwtToken,
@@ -227,7 +227,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 function redirectWithError(res: VercelResponse, message: string) {
   const frontendUrl = process.env.NODE_ENV === 'development'
     ? 'http://localhost:5173'
-    : (process.env.PUBLIC_BASE_URL || 'https://tm-ia.vercel.app')
+    : 'https://tm-ia.vercel.app'
 
   const params = new URLSearchParams({ error: message })
   res.setHeader('Location', `${frontendUrl}/auth/callback?${params.toString()}`)
