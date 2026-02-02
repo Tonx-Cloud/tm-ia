@@ -827,7 +827,7 @@ function SceneModal({ asset, scene, mode, onClose, onSetMode, onSave, onRegenera
                   <div style={{ gridColumn: '1 / -1' }}>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>ANIMAÇÃO SIMPLES (FFMPEG)</div>
                     <select
-                      value={((scene as any)?.animation || 'none') as any}
+                      value={(((scene as any)?.animation || (scene as any)?.animateType || (scene as any)?.animationType || 'none')) as any}
                       onChange={(e) => onUpdateAnimation?.(asset.id, e.target.value as any)}
                       style={{
                         width: '100%',
@@ -1763,10 +1763,19 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
   const buildStoryboardItems = (scenes: StoryboardScene[], assetsList: Asset[]) => {
     // DB/render expects [{ assetId, durationSec, animate, animateType }]
     // CRITICAL: duration must follow the AUDIO length, not whatever UI happens to have.
+    // IMPORTANT: don't rely on array index; assets can be reordered.
     const total = audio?.duration || 180
     const per = Math.max(1, Math.round((total / Math.max(assetsList.length, 1)) * 100) / 100)
-    return assetsList.map((a, i) => {
-      const anim = (scenes[i] as any)?.animation || 'none'
+
+    const byAssetId = new Map<string, any>()
+    for (const s of (scenes || []) as any[]) {
+      if (s?.assetId) byAssetId.set(String(s.assetId), s)
+    }
+
+    return assetsList.map((a) => {
+      const s = byAssetId.get(a.id)
+      const anim = String(s?.animation || s?.animateType || s?.animationType || (s?.animate ? 'zoom-in' : 'none') || 'none')
+
       return {
         assetId: a.id,
         durationSec: per,
@@ -2695,7 +2704,7 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
                     timeCode={scene?.timeCode}
                     lyrics={scene?.lyrics}
                     isFavorite={favorites.has(asset.id)}
-                    isAnimated={((scene as any)?.animation || 'none') !== 'none'}
+                    isAnimated={(((scene as any)?.animation || (scene as any)?.animateType || (scene as any)?.animationType || 'none')) !== 'none'}
                     onAction={handleSceneAction}
                   />
                 </div>
