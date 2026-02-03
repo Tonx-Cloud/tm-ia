@@ -61,36 +61,70 @@ export function AuthModal({ locale = 'en', open, onClose, onAuth, onSkipDemo }: 
 
   if (!open) return null
 
+  const isValidEmail = (value: string) => /.+@.+\..+/.test(value.trim())
+
+  const localizeError = (msg: string) => {
+    const m = (msg || '').toLowerCase()
+
+    if (locale === 'pt') {
+      if (m.includes('passwords do not match')) return 'As senhas não coincidem'
+      if (m.includes('invalid credentials')) return 'Email ou senha inválidos'
+      if (m.includes('user with this email already exists') || m.includes('already registered') || m.includes('already exists')) return 'Já existe uma conta com esse email'
+      if (m.includes('email and password are required')) return 'Informe email e senha'
+      if (m.includes('password should be at least') || m.includes('password') && m.includes('too short')) return 'Senha muito curta (mínimo 8 caracteres)'
+    }
+
+    // EN fallback
+    if (m.includes('user with this email already exists') || m.includes('already registered') || m.includes('already exists')) return 'An account with this email already exists'
+    if (m.includes('invalid credentials')) return 'Invalid email or password'
+    return msg
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    setLoading(true)
 
-    if (mode === 'signup' && password !== confirmPassword) {
-      setError('Passwords do not match')
-      setLoading(false)
+    const cleanEmail = email.trim()
+
+    if (!isValidEmail(cleanEmail)) {
+      setError(locale === 'pt' ? 'Email inválido' : 'Invalid email')
       return
     }
 
+    if (mode === 'signup') {
+      if (password.length < 8) {
+        setError(locale === 'pt' ? 'Senha muito curta (mínimo 8 caracteres)' : 'Password too short (min 8 characters)')
+        return
+      }
+      if (password !== confirmPassword) {
+        setError(locale === 'pt' ? 'As senhas não coincidem' : 'Passwords do not match')
+        return
+      }
+    }
+
+    setLoading(true)
+
     try {
       if (mode === 'signup') {
-        const resp = await register(email, password)
+        const resp = await register(cleanEmail, password)
 
         // If Supabase requires email confirmation, signUp returns no session/token.
         // In that case, show a clear message and switch to login.
         if (!resp.token) {
-          setError(resp.message || 'Conta criada. Verifique seu e-mail para confirmar e depois faça login.')
+          setError(resp.message || (locale === 'pt'
+            ? 'Conta criada. Verifique seu e-mail para confirmar e depois faça login.'
+            : 'Account created. Please check your email to confirm, then sign in.'))
           setMode('login')
           return
         }
 
         onAuth(resp.token)
       } else {
-        const resp = await login(email, password)
+        const resp = await login(cleanEmail, password)
         onAuth(resp.token)
       }
     } catch (err) {
-      setError((err as Error).message)
+      setError(localizeError((err as Error).message))
     } finally {
       setLoading(false)
     }
@@ -160,7 +194,7 @@ export function AuthModal({ locale = 'en', open, onClose, onAuth, onSkipDemo }: 
           )}
           {error && <div className="auth-error">{error}</div>}
           <button type="submit" className="auth-submit" disabled={loading}>
-            {loading ? '...' : mode === 'signup' ? t.getStarted : t.signIn}
+            {loading ? (locale === 'pt' ? 'Aguarde...' : 'Please wait...') : mode === 'signup' ? t.getStarted : t.signIn}
           </button>
         </form>
         <div className="auth-divider">

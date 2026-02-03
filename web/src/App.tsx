@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { LandingPage } from '@/components/LandingPage'
 import { AuthModal } from '@/components/AuthModal'
+import { detectLocale } from '@/i18n'
 import { StepWizard } from '@/components/StepWizard'
 import { Sidebar, type SidebarSection, getSidebarWidth } from '@/components/Sidebar'
 import { RenderHistory } from '@/components/RenderHistory'
@@ -347,6 +348,7 @@ function SettingsSection({ onLogout }: { onLogout: () => void }) {
 function App() {
   const [authToken, setAuthToken] = useState<string>(() => localStorage.getItem('tm_auth_token') || '')
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [locale] = useState(() => detectLocale())
   const [activeSection, setActiveSection] = useState<SidebarSection>('music-video')
   const [wizardKey, setWizardKey] = useState(1)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
@@ -565,11 +567,12 @@ function App() {
       {!isAuthenticated ? (
         <>
           <LandingPage
-            locale="pt"
+            locale={locale}
             onGetStarted={() => setShowAuthModal(true)}
             onSignIn={() => setShowAuthModal(true)}
           />
           <AuthModal
+            locale={locale}
             open={showAuthModal}
             onClose={() => setShowAuthModal(false)}
             onAuth={handleAuth}
