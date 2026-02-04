@@ -432,7 +432,7 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         const den = Math.max(1, frames - 1)
         // Make animation unmissable (Hilton requested stronger / faster).
         const maxZoom = 1.60
-        const speedFactor = 10
+        const maxSpeedFactor = 10, speedFactor = maxSpeedFactor * 2
 
         if (anim === 'zoom-in') {
           // Robust zoom for still images:
