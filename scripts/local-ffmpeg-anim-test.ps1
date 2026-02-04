@@ -88,8 +88,11 @@ try {
   & ffmpeg -hide_banner -loglevel error -y -ss 2.5 -i $OutPath -frames:v 1 $f2
 
   Write-Host "\nFrame hashes (should be different if there is motion):"
-  & certutil -hashfile $f1 SHA256 | Select-String -Pattern '^[0-9a-f]{64}$'
-  & certutil -hashfile $f2 SHA256 | Select-String -Pattern '^[0-9a-f]{64}$'
+  $h1 = (& certutil -hashfile $f1 SHA256 | Select-String -Pattern '^[0-9a-f]{64}$').ToString().Trim()
+  $h2 = (& certutil -hashfile $f2 SHA256 | Select-String -Pattern '^[0-9a-f]{64}$').ToString().Trim()
+  Write-Host $h1
+  Write-Host $h2
+  if ($h1 -eq $h2) { throw "Animation check failed: frame hashes are identical (no visible motion)" }
 
 } finally {
   if ($KeepTemp) {
