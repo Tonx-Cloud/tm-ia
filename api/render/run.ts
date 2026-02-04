@@ -57,12 +57,20 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
   ctx.log('info', 'render.run.start', { renderId, opts })
 
+  function clean(v?: string): string {
+    return String(v || '')
+      .trim()
+      .replace(/[\r\n]+/g, '')
+  }
+
   // If a VM worker is configured, delegate rendering to it (preferred for production).
-  const renderBaseUrl = process.env.RENDER_BASE_URL || process.env.ASR_BASE_URL
-  const workerToken = process.env.RENDER_TOKEN || process.env.ASR_TOKEN
+  const renderBaseUrl = clean(process.env.RENDER_BASE_URL || process.env.ASR_BASE_URL)
+  const workerToken = clean(process.env.RENDER_TOKEN || process.env.ASR_TOKEN)
 
   if (renderBaseUrl) {
     const base = renderBaseUrl.replace(/\/$/, '')
+
+    const publicBase = clean(process.env.PUBLIC_BASE_URL)
 
     // Mark as processing and note delegation.
     await prisma.render.updateMany({
@@ -70,12 +78,12 @@ export default withObservability(async function handler(req: VercelRequest, res:
       data: {
         status: 'processing',
         progress: 5,
-        logTail: `Delegated to VM worker: ${base}`,
+        logTail: `Delegated to VM worker: ${base}\nPUBLIC_BASE_URL=${publicBase || '(empty)'}`,
       },
     })
 
-    const payloadUrl = `${process.env.PUBLIC_BASE_URL || ''}/api/render/worker/payload`
-    const callbackUrl = `${process.env.PUBLIC_BASE_URL || ''}/api/render/worker/callback`
+    const payloadUrl = `${publicBase}/api/render/worker/payload`
+    const callbackUrl = `${publicBase}/api/render/worker/callback`
 
     const resp = await fetch(`${base}/render`, {
       method: 'POST',
