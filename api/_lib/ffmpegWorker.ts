@@ -430,17 +430,19 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         let vf = `${scaleFilter}`
 
         const den = Math.max(1, frames - 1)
-        const maxZoom = 1.20
+        // Make animation unmissable (Hilton requested stronger / faster).
+        const maxZoom = 1.60
+        const speedFactor = 10
 
         if (anim === 'zoom-in') {
           // Robust zoom for still images:
           // - drive zoom based on output frame index (on)
           // - keep d=1 to avoid multiplying frames when using -loop 1
-          const z = `1+(${maxZoom}-1)*on/${den}`
+          const z = `min(1+(${maxZoom}-1)*on/${den}*${speedFactor},${maxZoom})`
           vf += `,zoompan=z='${z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:${sizeStr}`
           vf += `,fps=${fps}`
         } else if (anim === 'zoom-out') {
-          const z = `${maxZoom}-(${maxZoom}-1)*on/${den}`
+          const z = `max(${maxZoom}-(${maxZoom}-1)*on/${den}*${speedFactor},1.0)`
           vf += `,zoompan=z='${z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:${sizeStr}`
           vf += `,fps=${fps}`
         } else if (anim === 'pan-left') {
@@ -507,7 +509,10 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       '-f', 'concat', '-safe', '0',
       '-i', concatList,
       '-i', audioInput,
-      '-c:v', 'copy', // Copy video stream (fast!) since clips are already correct
+      // Re-encode final output to FORCE fps=30 (avoid any 25fps defaults / player dropping frames)
+      '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
+      '-pix_fmt', 'yuv420p',
+      '-r', String(fps),
       '-c:a', 'aac', '-b:a', '192k',
       '-shortest',
       '-movflags', '+faststart',
