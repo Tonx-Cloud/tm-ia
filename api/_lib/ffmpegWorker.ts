@@ -537,6 +537,8 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       '-fps_mode', 'cfr',
       '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
       '-pix_fmt', 'yuv420p',
+      // Community tip: set MP4 track timescale to avoid 25fps defaults (12800) when forcing CFR.
+      '-video_track_timescale', '15360',
       '-r', String(fps),
       '-c:a', 'aac', '-b:a', '192k',
       '-shortest',
