@@ -27,6 +27,7 @@ server.log
 # Large/local test assets
 test.mp3
 out-local-anim.mp4
+out-local-from-project.mp4
 
 # OS / editor
 .DS_Store
