@@ -429,20 +429,33 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         const sizeStr = `s=${res.width}x${res.height}`
         let vf = `${scaleFilter}`
 
+        const den = Math.max(1, frames - 1)
+        const maxZoom = 1.20
+
         if (anim === 'zoom-in') {
-          // Stronger (more noticeable) zoom. Old value was too subtle and often looked static.
-          vf += `,zoompan=z='min(zoom+0.0035,1.20)':d=${frames}:fps=${fps}:${sizeStr}`
+          // Robust zoom for still images:
+          // - drive zoom based on output frame index (on)
+          // - keep d=1 to avoid multiplying frames when using -loop 1
+          const z = `1+(${maxZoom}-1)*on/${den}`
+          vf += `,zoompan=z='${z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:${sizeStr}`
+          vf += `,fps=${fps}`
         } else if (anim === 'zoom-out') {
-          vf += `,zoompan=z='if(eq(on,1),1.20,max(1.0,zoom-0.0035))':d=${frames}:fps=${fps}:${sizeStr}`
+          const z = `${maxZoom}-(${maxZoom}-1)*on/${den}`
+          vf += `,zoompan=z='${z}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:${sizeStr}`
+          vf += `,fps=${fps}`
         } else if (anim === 'pan-left') {
-          vf += `,zoompan=z='1.05':x='(iw-ow)*on/${Math.max(1, frames - 1)}':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr}`
+          vf += `,zoompan=z='1.05':x='(iw-ow)*on/${den}':y='(ih-oh)/2':d=1:${sizeStr}`
+          vf += `,fps=${fps}`
         } else if (anim === 'pan-right') {
-          vf += `,zoompan=z='1.05':x='(iw-ow)*(1-on/${Math.max(1, frames - 1)})':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr}`
+          vf += `,zoompan=z='1.05':x='(iw-ow)*(1-on/${den})':y='(ih-oh)/2':d=1:${sizeStr}`
+          vf += `,fps=${fps}`
         } else if (anim === 'pan-up') {
-          vf += `,zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(1-on/${Math.max(1, frames - 1)})':d=${frames}:fps=${fps}:${sizeStr}`
+          vf += `,zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*(1-on/${den})':d=1:${sizeStr}`
+          vf += `,fps=${fps}`
         } else if (anim === 'pan-down') {
-          vf += `,zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*on/${Math.max(1, frames - 1)}':d=${frames}:fps=${fps}:${sizeStr}`
-        } else if (anim === 'fade-in') {
+          vf += `,zoompan=z='1.05':x='(iw-ow)/2':y='(ih-oh)*on/${den}':d=1:${sizeStr}`
+          vf += `,fps=${fps}`
+        } else if (anim === 'fade-in') { 
           vf += `,fade=t=in:st=0:d=0.5`
         } else if (anim === 'fade-out') {
           vf += `,fade=t=out:st=${(dur - 0.5).toFixed(2)}:d=0.5`
