@@ -441,9 +441,10 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         let vf = `${scaleFilter}`
 
         const den = Math.max(1, frames - 1)
-        // Make animation unmissable (Hilton requested stronger / faster).
-        const maxZoom = 1.60
-        const maxSpeedFactor = 10, speedFactor = maxSpeedFactor * 2
+        // Animation tuning (slower / more cinematic by default).
+        // Hilton requested a slower test (previous speedFactor was intentionally extreme).
+        const maxZoom = 1.25
+        const speedFactor = 3
 
         if (anim === 'zoom-in') {
           // Robust zoom for still images:
