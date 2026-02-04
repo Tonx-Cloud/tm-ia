@@ -430,9 +430,10 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         let vf = `${scaleFilter}`
 
         if (anim === 'zoom-in') {
-          vf += `,zoompan=z='min(zoom+0.0015,1.10)':d=${frames}:fps=${fps}:${sizeStr}`
+          // Stronger (more noticeable) zoom. Old value was too subtle and often looked static.
+          vf += `,zoompan=z='min(zoom+0.0035,1.20)':d=${frames}:fps=${fps}:${sizeStr}`
         } else if (anim === 'zoom-out') {
-          vf += `,zoompan=z='if(eq(on,1),1.10,max(1.0,zoom-0.0015))':d=${frames}:fps=${fps}:${sizeStr}`
+          vf += `,zoompan=z='if(eq(on,1),1.20,max(1.0,zoom-0.0035))':d=${frames}:fps=${fps}:${sizeStr}`
         } else if (anim === 'pan-left') {
           vf += `,zoompan=z='1.05':x='(iw-ow)*on/${Math.max(1, frames - 1)}':y='(ih-oh)/2':d=${frames}:fps=${fps}:${sizeStr}`
         } else if (anim === 'pan-right') {
@@ -452,10 +453,14 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         if (watermarkFilter) vf += `,${watermarkFilter}`
 
         const args = [
+          // Force a deterministic frame rate for still images. Without this, ffmpeg often defaults to 25fps,
+          // which makes zoompan animations barely noticeable and inconsistent across environments.
+          '-framerate', String(fps),
           '-loop', '1',
           '-t', dur.toFixed(2),
           '-i', imgPath,
           '-vf', vf,
+          '-r', String(fps),
           '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
           '-pix_fmt', 'yuv420p',
           '-y', clipPath
