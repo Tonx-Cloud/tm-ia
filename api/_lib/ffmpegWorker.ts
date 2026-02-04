@@ -441,10 +441,9 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         let vf = `${scaleFilter}`
 
         const den = Math.max(1, frames - 1)
-        // Animation tuning (slower / more cinematic by default).
-        // Hilton requested a slower test (previous speedFactor was intentionally extreme).
-        const maxZoom = 1.25
-        const speedFactor = 3
+        // Make animation unmissable (Hilton requested stronger / faster).
+        const maxZoom = 1.60
+        const maxSpeedFactor = 10, speedFactor = maxSpeedFactor * 2
 
         if (anim === 'zoom-in') {
           // Robust zoom for still images:
@@ -521,8 +520,8 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
     for (const f of clipFiles) concatArgs.push('-i', f)
     concatArgs.push('-i', audioInput)
 
-    // Build filter_complex concat (community-proven recipe)
-    // Ref pattern: settb=AVTB,setpts=N/30/TB,fps=30 to force CFR timeline.
+    // Build filter_complex concat
+    // Example: [0:v][1:v][2:v]concat=n=3:v=1:a=0,settb=AVTB,setpts=N/30/TB,fps=30[v]
     const vIns = clipFiles.map((_, i) => `[${i}:v]`).join('')
     const n = clipFiles.length
     const fc = `${vIns}concat=n=${n}:v=1:a=0,settb=AVTB,setpts=N/${fps}/TB,fps=${fps}[v]`
@@ -545,7 +544,6 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       finalOutput
     ]
 
-    console.log('FINAL_MUX=filter_complex_concat')
     console.log('Running Final Concat:', ffmpegPath, fullArgs.join(' '))
     
     await new Promise<void>((resolve, reject) => {
