@@ -558,9 +558,11 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       '-map', `${n}:a:0`,
       // Force CFR in container
       '-fps_mode', 'cfr',
+      // Older ffmpeg builds often behave better with -vsync cfr than fps_mode.
+      '-vsync', 'cfr',
       '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
       '-pix_fmt', 'yuv420p',
-      // Community tip: set MP4 track timescale to avoid 25fps defaults (12800) when forcing CFR.
+      // Force MP4 track timescale to a 30fps-friendly value.
       '-video_track_timescale', '15360',
       '-r', String(fps),
       '-c:a', 'aac', '-b:a', '192k',
