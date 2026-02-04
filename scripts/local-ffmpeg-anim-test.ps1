@@ -33,14 +33,14 @@ try {
   Write-Host "Audio: $AudioPath (dur used: $dur sec)"
 
   # Generate 3 synthetic images locally (so we don't depend on DB/R2)
-  # Scene 1: red, Scene 2: green, Scene 3: blue
+  # Use test patterns so zoom is visually measurable (solid colors won't show zoom).
   $img1 = Join-Path $tmp 'img1.png'
   $img2 = Join-Path $tmp 'img2.png'
   $img3 = Join-Path $tmp 'img3.png'
 
-  & ffmpeg -hide_banner -loglevel error -y -f lavfi -i "color=c=red:s=${Width}x${Height}:d=0.1" -frames:v 1 $img1
-  & ffmpeg -hide_banner -loglevel error -y -f lavfi -i "color=c=green:s=${Width}x${Height}:d=0.1" -frames:v 1 $img2
-  & ffmpeg -hide_banner -loglevel error -y -f lavfi -i "color=c=blue:s=${Width}x${Height}:d=0.1" -frames:v 1 $img3
+  & ffmpeg -hide_banner -loglevel error -y -f lavfi -i "testsrc2=s=${Width}x${Height}:r=$Fps" -frames:v 1 $img1
+  & ffmpeg -hide_banner -loglevel error -y -f lavfi -i "testsrc2=s=${Width}x${Height}:r=$Fps,eq=contrast=1.2:saturation=1.3" -frames:v 1 $img2
+  & ffmpeg -hide_banner -loglevel error -y -f lavfi -i "testsrc2=s=${Width}x${Height}:r=$Fps,hue=h=60" -frames:v 1 $img3
 
   $sceneDur = [Math]::Round($dur / 3.0, 2)
   $frames = [Math]::Max(1, [int][Math]::Round($sceneDur * $Fps))
@@ -55,8 +55,15 @@ try {
   # - Use zoompan with noticeable step so it's obvious even on mobile.
   $scale = "scale=${Width}:${Height}:force_original_aspect_ratio=decrease,pad=${Width}:${Height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps=${Fps}"
 
-  $vfZoom = "$scale,zoompan=z='min(zoom+0.0035,$MaxZoom)':d=$frames:fps=$Fps:$sizeStr,scale=${Width}:${Height}"
-  $vfNone = "$scale,scale=${Width}:${Height}"
+  # Some ffmpeg builds are picky about zoompan options; keep it simple and apply fps as a separate filter.
+  # IMPORTANT: when the input is a looped still image, ffmpeg will produce many input frames.
+  # If we set zoompan d=<frames>, it multiplies frames and can create huge clips.
+  # So we drive zoom based on output frame index (on) and keep d=1.
+  $den = [Math]::Max(1, $frames - 1)
+  # on goes from 0..(frames-1), so this reaches exactly MaxZoom on the last frame (no min()/comma needed)
+  $zoomExpr = "1+(${MaxZoom}-1)*on/$den"
+  $vfZoom = "$scale,zoompan=z='$zoomExpr':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:$sizeStr,fps=$Fps,scale=${Width}:${Height}"
+  $vfNone = "$scale,fps=$Fps,scale=${Width}:${Height}"
 
   & ffmpeg -hide_banner -loglevel error -y -framerate $Fps -loop 1 -t $sceneDur -i $img1 -vf $vfZoom -r $Fps -c:v libx264 -preset fast -crf 23 -pix_fmt yuv420p $clip1
   & ffmpeg -hide_banner -loglevel error -y -framerate $Fps -loop 1 -t $sceneDur -i $img2 -vf $vfZoom -r $Fps -c:v libx264 -preset fast -crf 23 -pix_fmt yuv420p $clip2
@@ -67,7 +74,7 @@ try {
     "file '$clip1'",
     "file '$clip2'",
     "file '$clip3'"
-  ) | Set-Content -NoNewline -Path $concat
+  ) | Set-Content -Path $concat
 
   # Mux with audio
   & ffmpeg -hide_banner -loglevel error -y -f concat -safe 0 -i $concat -i $AudioPath -c:v copy -c:a aac -b:a 192k -shortest -movflags +faststart $OutPath
