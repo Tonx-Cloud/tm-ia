@@ -511,6 +511,8 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       '-i', audioInput,
       // Re-encode final output to FORCE fps=30 (avoid any 25fps defaults / player dropping frames)
       '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
+      // Force CFR output at 30fps regardless of concat timestamps.
+      '-vf', `fps=${fps}`,
       '-pix_fmt', 'yuv420p',
       '-r', String(fps),
       '-c:a', 'aac', '-b:a', '192k',
