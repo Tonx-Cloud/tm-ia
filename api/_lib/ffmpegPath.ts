@@ -9,7 +9,7 @@ export function getFFmpegPath(): string {
   if (override && fs.existsSync(override)) return override
 
   const p = ffmpegStatic as unknown as string | null
-  const onVercel = !!process.env.VERCEL
+  const onVercel = !!process.env.VERCEL || !!process.env.VERCEL_REGION || !!process.env.VERCEL_URL
   if (onVercel) {
     if (!p) throw new Error('ffmpeg-static returned null on Vercel')
     return p
