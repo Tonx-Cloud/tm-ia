@@ -6,6 +6,16 @@ services:
     environment:
       - WHISPER_MODEL=small
       - USE_GPU=false
+      # Auth (shared with Vercel)
+      - JWT_SECRET=${JWT_SECRET}
+      - ASR_TOKEN=${ASR_TOKEN}
+      - RENDER_TOKEN=${RENDER_TOKEN}
+      # R2 upload (same vars as Vercel)
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
+      - R2_BUCKET=${R2_BUCKET}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
+      - R2_PUBLIC_BASE_URL=${R2_PUBLIC_BASE_URL}
     volumes:
       - ./tmp:/tmp/work
     restart: unless-stopped

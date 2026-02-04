@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { loadEnv, loadJwtEnv } from '../_lib/env.js'
 import { startFFmpegRender, type RenderFormat, type RenderOptions } from '../_lib/ffmpegWorker.js'
+import { prisma } from '../_lib/prisma.js'
 import { getRenderJob } from '../_lib/renderPipeline.js'
 import { withObservability } from '../_lib/observability.js'
 
@@ -56,7 +57,58 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
   ctx.log('info', 'render.run.start', { renderId, opts })
 
-  // Run render (updates job progress/errors internally)
+  // If a VM worker is configured, delegate rendering to it (preferred for production).
+  const renderBaseUrl = process.env.RENDER_BASE_URL || process.env.ASR_BASE_URL
+  const workerToken = process.env.RENDER_TOKEN || process.env.ASR_TOKEN
+
+  if (renderBaseUrl) {
+    const base = renderBaseUrl.replace(/\/$/, '')
+
+    // Mark as processing and note delegation.
+    await prisma.render.updateMany({
+      where: { id: renderId, userId },
+      data: {
+        status: 'processing',
+        progress: 5,
+        logTail: `Delegated to VM worker: ${base}`,
+      },
+    })
+
+    const payloadUrl = `${process.env.PUBLIC_BASE_URL || ''}/api/render/worker/payload`
+    const callbackUrl = `${process.env.PUBLIC_BASE_URL || ''}/api/render/worker/callback`
+
+    const resp = await fetch(`${base}/render`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(workerToken ? { Authorization: `Bearer ${workerToken}` } : {}),
+      },
+      body: JSON.stringify({
+        userId,
+        renderId,
+        payloadUrl,
+        callbackUrl,
+      }),
+    })
+
+    const txt = await resp.text()
+    if (!resp.ok) {
+      await prisma.render.updateMany({
+        where: { id: renderId, userId },
+        data: {
+          status: 'failed',
+          progress: 100,
+          error: `Worker render failed: ${resp.status} ${txt.slice(0, 500)}`,
+        },
+      })
+      return res.status(502).json({ error: 'Worker render failed', details: txt.slice(0, 500), requestId: ctx.requestId })
+    }
+
+    ctx.log('info', 'render.run.delegated', { renderId, base })
+    return res.status(200).json({ ok: true, delegated: true, requestId: ctx.requestId })
+  }
+
+  // Fallback: serverless ffmpeg render (deprecated for production)
   await startFFmpegRender(userId, job as any, opts)
 
   ctx.log('info', 'render.run.done', { renderId })
