@@ -31,6 +31,10 @@ const optionalVars = [
   'ASR_BASE_URL',
   'ASR_TOKEN',
 
+  // External render worker (VM) - optional
+  'RENDER_BASE_URL',
+  'RENDER_TOKEN',
+
   // Google Cloud / Vertex AI (Veo)
   'GCLOUD_PROJECT',
   'GCLOUD_LOCATION', // defaults to us-central1
