@@ -84,14 +84,37 @@ async function updateJobStatus(
   })
 }
 
+const LOG_TAIL_MAX_CHARS = 12_000
+
+async function appendJobLogTail(userId: string, renderId: string, chunk: string) {
+  // IMPORTANT: never overwrite logs with progress updates. Append instead,
+  // so we don't lose vital debugging context (ffmpeg path/version, storyboard summary, per-scene assetIds).
+  const r = await prisma.render.findFirst({
+    where: { id: renderId, userId },
+    select: { logTail: true },
+  })
+
+  const prev = (r?.logTail || '')
+  const next = (prev ? prev + '\n' : '') + chunk
+  const trimmed = next.length > LOG_TAIL_MAX_CHARS ? next.slice(-LOG_TAIL_MAX_CHARS) : next
+
+  await prisma.render.updateMany({
+    where: { id: renderId, userId, status: 'processing' },
+    data: { logTail: trimmed },
+  })
+}
+
 async function updateJobProgress(userId: string, renderId: string, progress: number, logTail?: string) {
   await prisma.render.updateMany({
     where: { id: renderId, userId, status: 'processing' },
     data: {
       progress: Math.min(99, Math.max(5, progress)),
-      logTail: logTail ?? undefined,
     },
   })
+
+  if (logTail) {
+    await appendJobLogTail(userId, renderId, logTail)
+  }
 }
 
 // ============================================================================
@@ -308,7 +331,7 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       // ignore
     }
 
-    const header = `TM-IA render (sequential)\n${ffmpegVersionLine ? `ffmpeg=${ffmpegVersionLine}\n` : ''}format=${format} quality=${quality} (${res.width}x${res.height})\nscenes=${storyboard.length}\n${sbLog}\n`
+    const header = `TM-IA render (sequential)\nffmpegPath=${ffmpegPath}\n${ffmpegVersionLine ? `ffmpeg=${ffmpegVersionLine}\n` : ''}format=${format} quality=${quality} (${res.width}x${res.height})\nscenes=${storyboard.length}\n${sbLog}\n`
     await updateJobProgress(userId, job.renderId, 5, header)
 
     const hasAnimatedVideo = storyboard.some(s => {
