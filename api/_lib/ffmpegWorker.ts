@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
-import { spawn } from 'child_process'
+import { spawn, spawnSync } from 'child_process'
 import { getFFmpegPath } from './ffmpegPath.js'
 import { getProject } from './projectStore.js'
 import { prisma } from './prisma.js'
@@ -324,7 +324,6 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
     // Capture ffmpeg version (helps diagnose env differences: Vercel vs local vs VM).
     let ffmpegVersionLine = ''
     try {
-      const { spawnSync } = await import('child_process')
       const v = spawnSync(ffmpegPath, ['-version'], { encoding: 'utf-8' })
       ffmpegVersionLine = (v.stdout || v.stderr || '').split('\n')[0]?.trim() || ''
     } catch {
@@ -571,8 +570,11 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       finalOutput
     ]
 
+    const argsForLog = fullArgs.map(a => (a.includes(' ') ? JSON.stringify(a) : a)).join(' ')
+    await updateJobProgress(userId, job.renderId, 92, `Final mux cmd: ${ffmpegPath} ${argsForLog}`)
+
     console.log('Running Final Concat:', ffmpegPath, fullArgs.join(' '))
-    
+
     await new Promise<void>((resolve, reject) => {
       const p = spawn(ffmpegPath, fullArgs)
       let stderr = ''
@@ -582,6 +584,21 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
         else reject(new Error(`Final concat failed: ${stderr.slice(-500)}`))
       })
     })
+
+    // Probe BEFORE upload to confirm what we actually produced in /tmp
+    try {
+      const fp = spawnSync('ffprobe', [
+        '-v', 'error',
+        '-select_streams', 'v:0',
+        '-show_entries', 'stream=r_frame_rate,avg_frame_rate,time_base',
+        '-of', 'default=nk=1:nw=1',
+        finalOutput,
+      ], { encoding: 'utf-8' })
+      const probeOut = (fp.stdout || fp.stderr || '').trim()
+      if (probeOut) await updateJobProgress(userId, job.renderId, 93, `Pre-upload ffprobe:\n${probeOut}`)
+    } catch {
+      // ignore
+    }
 
     // 6. Upload
     console.log('Render success:', finalOutput)
