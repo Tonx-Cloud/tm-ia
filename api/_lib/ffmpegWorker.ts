@@ -69,11 +69,12 @@ async function updateJobStatus(
   error?: string,
   logTail?: string
 ) {
+  // IMPORTANT: status updates must NOT overwrite logTail.
+  // We append separately to preserve header + command lines + probes.
   const data: any = {
     status,
     outputUrl: outputUrl ?? undefined,
     error: error ?? undefined,
-    logTail: logTail ?? undefined,
   }
   if (status === 'processing') data.progress = 5
   if (status === 'complete') data.progress = 100
@@ -82,6 +83,10 @@ async function updateJobStatus(
     where: { id: renderId, userId },
     data,
   })
+
+  if (logTail) {
+    await appendJobLogTail(userId, renderId, logTail)
+  }
 }
 
 const LOG_TAIL_MAX_CHARS = 12_000
