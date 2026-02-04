@@ -20,7 +20,7 @@ export type R2Env = {
 }
 
 export function loadR2Env(): R2Env {
-  const e = loadEnv() as any
+  loadEnv()
   return {
     R2_ACCOUNT_ID: must('R2_ACCOUNT_ID', process.env.R2_ACCOUNT_ID),
     R2_BUCKET: must('R2_BUCKET', process.env.R2_BUCKET),

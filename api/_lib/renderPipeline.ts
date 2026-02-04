@@ -1,5 +1,5 @@
 import { prisma } from './prisma.js'
-import { startFFmpegRender, cleanupRenderJob, cleanupOldRenders, type RenderOptions, type RenderFormat } from './ffmpegWorker.js'
+import { startFFmpegRender, cleanupRenderJob, type RenderOptions, type RenderFormat } from './ffmpegWorker.js'
 
 export type RenderJobStatus = 'pending' | 'processing' | 'complete' | 'failed'
 

@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+﻿import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getSessionFromRequest } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { spendCredits, getBalance, addCredits } from '../_lib/credits.js'
@@ -17,7 +17,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   ctx.userId = session.userId
 
   const rateKey = `hook:${session.userId}`
-  const rate = checkRateLimit(req, { limit: 5, windowMs: 60_000, key: rateKey, ctx })
+  const rate = await checkRateLimit(req, { limit: 5, windowMs: 60_000, key: rateKey, ctx })
   if (!rate.allowed) {
     res.setHeader('Retry-After', String(rate.retryAfterSeconds))
     return res.status(429).json({ error: 'Too many requests', retryAfter: rate.retryAfterSeconds, requestId: ctx.requestId })
@@ -67,3 +67,4 @@ export default withObservability(async function handler(req: VercelRequest, res:
   ctx.log('info', 'demo.hook.ok', { hasTranscription: Boolean(transcription), cost, balance })
   return res.status(200).json({ hook, style, cost, balance, requestId: ctx.requestId })
 })
+

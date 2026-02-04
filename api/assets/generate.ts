@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+﻿import type { VercelRequest, VercelResponse } from '@vercel/node'
 import crypto from 'crypto'
 import { getSessionFromRequest } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
@@ -74,7 +74,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
   ctx.userId = session.userId
 
-  const rate = checkRateLimit(req, { limit: 5, windowMs: 60_000, ctx })
+  const rate = await checkRateLimit(req, { limit: 5, windowMs: 60_000, ctx })
   if (!rate.allowed) {
     return res.status(429).json({ error: 'Too many requests', retryAfter: rate.retryAfterSeconds, requestId: ctx.requestId })
   }
@@ -327,7 +327,6 @@ Return ONLY a JSON array with exactly ${imageCount} objects:
 
   for (let i = 0; i < imageCount; i++) {
     const scene = storyboard[i]
-    const slot = timeSlots[i]
     const durationSec = Math.max(1, Math.round((slotDuration || 5) * 100) / 100)
 
     const id = crypto.randomUUID()
@@ -406,9 +405,10 @@ function formatTime(seconds: number): string {
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
 
-function createPlaceholderImage(width: number, height: number, index: number): string {
+function createPlaceholderImage(_width: number, _height: number, _index: number): string {
     // A simple 1x1 pixel base64 (not efficient but prevents null)
     // Actually, let's return a valid small SVG or PNG base64
     // This is a 1x1 gray pixel PNG
     return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
 }
+

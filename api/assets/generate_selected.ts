@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+﻿import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getSessionFromRequest } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { withObservability } from '../_lib/observability.js'
@@ -14,7 +14,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   if (!session) return res.status(401).json({ error: 'Auth required', requestId: ctx.requestId })
   ctx.userId = session.userId
 
-  const rate = checkRateLimit(req, { limit: 5, windowMs: 60_000, ctx })
+  const rate = await checkRateLimit(req, { limit: 5, windowMs: 60_000, ctx })
   if (!rate.allowed) {
     return res.status(429).json({ error: 'Too many requests', retryAfter: rate.retryAfterSeconds, requestId: ctx.requestId })
   }
@@ -70,3 +70,4 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
   return res.status(200).json({ ok: true, enqueued: assetIds.length, cost: vip ? 0 : totalCost, balance, requestId: ctx.requestId })
 })
+

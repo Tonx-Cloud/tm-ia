@@ -67,7 +67,7 @@ export function RenderProgress({ renderId, token, onComplete }: Props) {
       <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>{progress}%</div>
       {downloadUrl && (
         <a className="btn-primary" href={downloadUrl} target="_blank" rel="noreferrer">
-          Download (mock)
+          Download
         </a>
       )}
       {error && <div className="badge-soft" style={{ color: '#ffb3c0' }}>{error}</div>}

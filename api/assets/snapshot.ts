@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+﻿import type { VercelRequest, VercelResponse } from '@vercel/node'
 import crypto from 'crypto'
 import { getSessionFromRequest } from '../_lib/auth.js'
 import { getProject, upsertProject, type Project } from '../_lib/projectStore.js'
@@ -21,7 +21,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   if (!session) return res.status(401).json({ error: 'Auth required', requestId: ctx.requestId })
   ctx.userId = session.userId
 
-  const rate = checkRateLimit(req, { limit: 5, windowMs: 60_000, ctx })
+  const rate = await checkRateLimit(req, { limit: 5, windowMs: 60_000, ctx })
   if (!rate.allowed) {
     return res.status(429).json({ error: 'Too many requests', retryAfter: rate.retryAfterSeconds, requestId: ctx.requestId })
   }
@@ -45,3 +45,4 @@ export default withObservability(async function handler(req: VercelRequest, res:
   ctx.log('info', 'assets.snapshot.saved', { projectId, renderId })
   return res.status(200).json({ ok: true, reused: false, renderId, cost: 0, snapshotHash: hash, requestId: ctx.requestId })
 })
+

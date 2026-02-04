@@ -319,3 +319,23 @@ export async function animateAsset(projectId: string, assetId: string, token: st
   }
   return (await res.json()) as { status: string; jobId?: string; balance: number; videoUrl?: string }
 }
+
+export async function getAnimateStatus(
+  jobId: string,
+  token: string,
+  projectId?: string,
+  assetId?: string
+) {
+  const params = new URLSearchParams({ jobId })
+  if (projectId) params.set('projectId', projectId)
+  if (assetId) params.set('assetId', assetId)
+  const res = await fetch(`${API}/api/assets/animate/status?${params.toString()}`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const body = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(body.error || 'Animation status failed')
+  }
+  return body as { status: string; videoUrl?: string; error?: string }
+}

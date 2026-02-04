@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+﻿import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getSessionFromRequest } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { withObservability } from '../_lib/observability.js'
@@ -14,7 +14,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   ctx.userId = session.userId
 
   const rateKey = `preview:${session.userId}`
-  const rate = checkRateLimit(req, { limit: 3, windowMs: 60_000, key: rateKey, ctx })
+  const rate = await checkRateLimit(req, { limit: 3, windowMs: 60_000, key: rateKey, ctx })
   if (!rate.allowed) {
     res.setHeader('Retry-After', String(rate.retryAfterSeconds))
     return res.status(429).json({ error: 'Too many requests', retryAfter: rate.retryAfterSeconds, requestId: ctx.requestId })
@@ -38,3 +38,4 @@ export default withObservability(async function handler(req: VercelRequest, res:
   ctx.log('info', 'demo.preview.mock_ready', { hasFile: Boolean(filePath), hasHook: Boolean(hook), style })
   return res.status(200).json({ previewUrl, requestId: ctx.requestId })
 })
+

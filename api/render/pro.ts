@@ -39,6 +39,45 @@ function mapAspectRatioToFormat(aspectRatio: string): RenderFormat {
   }
 }
 
+function isProdEnv() {
+  return process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production'
+}
+
+function isLocalHost(host: string) {
+  return host.includes('localhost') || host.includes('127.0.0.1')
+}
+
+function normalizeBaseUrl(url: string) {
+  return url.replace(/\/+$/, '')
+}
+
+function resolveBaseUrl(req: VercelRequest, publicBaseUrl?: string) {
+  if (publicBaseUrl) {
+    return { baseUrl: normalizeBaseUrl(publicBaseUrl), source: 'PUBLIC_BASE_URL' }
+  }
+
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return { baseUrl: `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`, source: 'VERCEL_PROJECT_PRODUCTION_URL' }
+  }
+
+  if (process.env.VERCEL_URL) {
+    return { baseUrl: `https://${process.env.VERCEL_URL}`, source: 'VERCEL_URL' }
+  }
+
+  const host = (req.headers['x-forwarded-host'] as string) || (req.headers['host'] as string) || ''
+  if (host) {
+    const protoHeader = (req.headers['x-forwarded-proto'] as string) || ''
+    const proto = isLocalHost(host) ? 'http' : (protoHeader.split(',')[0] || 'https')
+    return { baseUrl: `${proto}://${host}`, source: 'host' }
+  }
+
+  if (isProdEnv()) {
+    return { baseUrl: undefined, error: 'PUBLIC_BASE_URL is required in production' }
+  }
+
+  return { baseUrl: undefined, error: 'Could not determine base URL' }
+}
+
 export const config = {
   api: {
     bodyParser: false, // Enable manual parsing for multipart
@@ -55,8 +94,9 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
   ctx.userId = session.userId
 
+  let env: ReturnType<typeof loadEnv>
   try {
-    loadEnv()
+    env = loadEnv()
   } catch (err) {
     ctx.log('error', 'env.missing', { message: (err as Error).message })
     return res.status(500).json({ error: (err as Error).message, requestId: ctx.requestId })
@@ -209,6 +249,12 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
   const amount = cfg?.estimatedCredits ?? (typeof cost === 'number' && cost > 0 ? cost : 30)
 
+  const baseUrlResult = resolveBaseUrl(req, env.PUBLIC_BASE_URL)
+  if (!baseUrlResult.baseUrl) {
+    ctx.log('error', 'render.pro.base_url_missing', { reason: baseUrlResult.error })
+    return res.status(500).json({ error: 'Render trigger misconfigured', requestId: ctx.requestId })
+  }
+
   // Seed demo balance in dev if empty
   if (await getBalance(session.userId) === 0) {
     await addCredits(session.userId, 50, 'initial')
@@ -281,48 +327,29 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
   // Trigger render in a separate invocation (reliable on serverless)
   try {
-    const jwtEnv = loadEnv()
-    const host = (req.headers['x-forwarded-host'] as string) || (req.headers['host'] as string) || ''
-    const proto = ((req.headers['x-forwarded-proto'] as string) || 'https').split(',')[0]
-    
-    // Robust URL detection for Vercel
-    let baseUrl = jwtEnv.PUBLIC_BASE_URL
-    if (!baseUrl) {
-      if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-        baseUrl = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      } else if (process.env.VERCEL_URL) {
-        baseUrl = `https://${process.env.VERCEL_URL}`
-      } else if (host) {
-        baseUrl = `${proto}://${host}`
-      }
-    }
-
-    if (baseUrl) {
-      ctx.log('info', 'render.pro.trigger', { baseUrl, renderId })
-      // Fire and forget, but log error if fails
-      fetch(`${baseUrl}/api/render/run`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-internal-render-secret': jwtEnv.JWT_SECRET,
+    const baseUrl = baseUrlResult.baseUrl
+    ctx.log('info', 'render.pro.trigger', { baseUrl, renderId, source: baseUrlResult.source })
+    // Fire and forget, but log error if fails
+    fetch(`${baseUrl}/api/render/run`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-internal-render-secret': env.JWT_SECRET,
+      },
+      body: JSON.stringify({
+        userId: session.userId,
+        renderId,
+        options: {
+          format,
+          quality: (renderOptions as any)?.quality || 'standard',
+          watermark: renderOptions?.watermark ?? false,
+          crossfade: renderOptions?.crossfade ?? false,
+          crossfadeDuration: renderOptions?.crossfadeDuration ?? 0.5,
         },
-        body: JSON.stringify({
-          userId: session.userId,
-          renderId,
-          options: {
-            format,
-            quality: (renderOptions as any)?.quality || 'standard',
-            watermark: renderOptions?.watermark ?? false,
-            crossfade: renderOptions?.crossfade ?? false,
-            crossfadeDuration: renderOptions?.crossfadeDuration ?? 0.5,
-          },
-        }),
-      }).catch((err) => {
-         console.error('Failed to trigger render:', err)
-      })
-    } else {
-        console.error('Could not determine base URL for render trigger')
-    }
+      }),
+    }).catch((err) => {
+      console.error('Failed to trigger render:', err)
+    })
   } catch {
     // best-effort
   }

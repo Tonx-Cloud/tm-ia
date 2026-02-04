@@ -1,9 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import crypto from 'crypto'
+import { MercadoPagoConfig, Payment } from 'mercadopago'
 import { getSessionFromRequest } from '../_lib/auth.js'
-import { addCredits, getBalance } from '../_lib/credits.js'
-import { CREDIT_PACKAGES, getPackageById, type CreditPackageId } from '../_lib/pricing.js'
+import { addCredits } from '../_lib/credits.js'
+import { CREDIT_PACKAGES, getPackageById } from '../_lib/pricing.js'
 import { withObservability } from '../_lib/observability.js'
 import { checkRateLimit } from '../_lib/rateLimit.js'
+import { savePayment, type PaymentRecord } from '../_lib/payments.js'
 
 /**
  * Buy credit packages
@@ -24,7 +27,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
   ctx.userId = session.userId
 
-  const rate = checkRateLimit(req, { limit: 3, windowMs: 60_000, ctx })
+  const rate = await checkRateLimit(req, { limit: 3, windowMs: 60_000, ctx })
   if (!rate.allowed) {
     return res.status(429).json({ error: 'Too many requests', retryAfter: rate.retryAfterSeconds, requestId: ctx.requestId })
   }
@@ -50,7 +53,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(400).json({ 
       error: 'packageId required', 
       availablePackages: CREDIT_PACKAGES.map(p => p.id),
-      requestId: ctx.requestId 
+      requestId: ctx.requestId,
     })
   }
 
@@ -59,7 +62,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
     return res.status(400).json({ 
       error: 'Invalid packageId', 
       availablePackages: CREDIT_PACKAGES.map(p => p.id),
-      requestId: ctx.requestId 
+      requestId: ctx.requestId,
     })
   }
 
@@ -73,7 +76,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
         packageId: pkg.id, 
         credits: pkg.credits, 
         priceUSD: pkg.priceUSD,
-        balance 
+        balance,
       })
       return res.status(200).json({ 
         ok: true, 
@@ -81,7 +84,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
         package: pkg,
         added: pkg.credits, 
         balance, 
-        requestId: ctx.requestId 
+        requestId: ctx.requestId,
       })
     } catch (err) {
       ctx.log('error', 'credits.buy.error', { message: (err as Error).message })
@@ -90,14 +93,67 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
 
   // Production: initiate PIX payment flow
-  // TODO: Create Mercado Pago preference and return payment URL
-  ctx.log('info', 'credits.buy.initiate', { packageId: pkg.id, priceUSD: pkg.priceUSD })
-  return res.status(200).json({
-    ok: true,
-    mock: false,
-    package: pkg,
-    paymentUrl: null, // TODO: Return MP preference URL
-    message: 'Payment flow not yet implemented in production',
-    requestId: ctx.requestId,
-  })
+  const mpToken = process.env.MP_ACCESS_TOKEN
+  if (!mpToken) {
+    return res.status(500).json({ error: 'MP_ACCESS_TOKEN not configured', requestId: ctx.requestId })
+  }
+
+  const baseUrl = process.env.MP_NOTIFICATION_URL || process.env.PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined)
+  const idempotencyKey = crypto.randomUUID()
+  const description = `TM-IA Credits - ${pkg.name}`
+
+  try {
+    const client = new MercadoPagoConfig({ accessToken: mpToken })
+    const payment = await new Payment(client).create({
+      body: {
+        transaction_amount: pkg.priceBRL,
+        description,
+        payment_method_id: 'pix',
+        payer: {
+          email: session.email || `${session.userId}@tm-ia.app`,
+        },
+        metadata: { userId: session.userId, credits: pkg.credits, packageId: pkg.id },
+        external_reference: `${session.userId}:${idempotencyKey}`,
+        notification_url: baseUrl ? `${baseUrl}/api/payments/webhook` : undefined,
+      },
+    })
+
+    const mpId = String(payment.id)
+    const qrBase64 = payment.point_of_interaction?.transaction_data?.qr_code_base64
+    const copyCode = payment.point_of_interaction?.transaction_data?.qr_code
+    const expiresAt = payment.date_of_expiration ? new Date(payment.date_of_expiration).getTime() : undefined
+
+    const recMp: PaymentRecord = {
+      paymentId: mpId,
+      provider: 'mp',
+      status: payment.status === 'pending' ? 'pending' : 'pending',
+      amount: pkg.priceBRL,
+      createdAt: Date.now(),
+      userId: session.userId,
+      email: session.email,
+      description,
+      externalRef: `${session.userId}:${idempotencyKey}`,
+      qrBase64,
+      copyCode,
+      expiresAt,
+    }
+    savePayment(recMp)
+
+    ctx.log('info', 'credits.buy.initiate', { packageId: pkg.id, priceBRL: pkg.priceBRL, paymentId: mpId })
+    return res.status(200).json({
+      ok: true,
+      mock: false,
+      package: pkg,
+      paymentId: mpId,
+      status: payment.status,
+      qrBase64,
+      qrCode: copyCode,
+      expiresAt,
+      provider: 'mp',
+      requestId: ctx.requestId,
+    })
+  } catch (err) {
+    ctx.log('error', 'credits.buy.mp_error', { message: (err as Error).message })
+    return res.status(500).json({ error: 'Mercado Pago error', details: (err as Error).message, requestId: ctx.requestId })
+  }
 })

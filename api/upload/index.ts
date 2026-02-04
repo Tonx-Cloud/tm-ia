@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+﻿import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { Buffer } from 'node:buffer'
 import Busboy from 'busboy'
 import crypto from 'crypto'
@@ -36,7 +36,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   ctx.userId = session.userId
   logger.child({ userId: session.userId })
 
-  const rate = checkRateLimit(req, { limit: 10, windowMs: 60_000, ctx })
+  const rate = await checkRateLimit(req, { limit: 10, windowMs: 60_000, ctx })
   if (!rate.allowed) {
     res.setHeader('Retry-After', String(rate.retryAfterSeconds))
     return res.status(429).json({ error: 'Too many requests', retryAfter: rate.retryAfterSeconds, requestId: ctx.requestId })
@@ -185,3 +185,4 @@ export default withObservability(async function handler(req: VercelRequest, res:
     requestId: ctx.requestId,
   })
 })
+

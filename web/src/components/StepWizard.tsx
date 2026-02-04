@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Locale } from '@/i18n'
-import { analyzeAudio, createProject, fetchProject, animateAsset, type Asset } from '@/lib/assetsApi'
+import { analyzeAudio, createProject, fetchProject, animateAsset, getAnimateStatus, type Asset } from '@/lib/assetsApi'
 
 // ============================================================================
 // TYPES
@@ -1626,8 +1626,62 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
               }
               return next
             })
-            // For now, in Mock Mode, it always returns completed.
-            // If we had real Async jobs, we would poll here.
+            const jobId = res.jobId
+            if (jobId) {
+              const maxAttempts = 30
+              const intervalMs = 4000
+              let attempts = 0
+
+              const poll = async () => {
+                attempts += 1
+                try {
+                  const status = await getAnimateStatus(
+                    jobId,
+                    token,
+                    projectId || undefined,
+                    assetId || undefined
+                  )
+                  if (status.status === 'completed' && status.videoUrl) {
+                    setAssets(prev => {
+                      const next = [...prev]
+                      next[assetIndex] = {
+                        ...next[assetIndex],
+                        animation: {
+                          status: 'completed',
+                          videoUrl: status.videoUrl,
+                          jobId
+                        }
+                      }
+                      return next
+                    })
+                    return
+                  }
+
+                  if (status.status === 'failed') {
+                    setError(status.error || 'Falha ao gerar animação')
+                    setAssets(prev => {
+                      const next = [...prev]
+                      next[assetIndex] = {
+                        ...next[assetIndex],
+                        animation: { status: 'failed', jobId }
+                      }
+                      return next
+                    })
+                    return
+                  }
+                } catch (pollErr) {
+                  setError((pollErr as Error).message)
+                }
+
+                if (attempts < maxAttempts) {
+                  setTimeout(poll, intervalMs)
+                } else {
+                  setError('Tempo excedido aguardando animação')
+                }
+              }
+
+              setTimeout(poll, intervalMs)
+            }
           }
 
         } catch (err) {
@@ -1774,10 +1828,24 @@ export function StepWizard({ locale: _locale = 'pt', onComplete, onError }: Step
 
     const hasAnyAssetId = byAssetId.size > 0
 
+    // Regra do Hilton (produção): animar APENAS as 2 primeiras cenas por padrão.
+    // Se o usuário escolher manualmente um tipo de animação na UI, respeitamos.
+    const DEFAULT_ANIM_FIRST_N = 2
+    const DEFAULT_ANIM: AnimationType = 'zoom-in'
+
     return assetsList.map((a, i) => {
       // Fallback to index-based mapping when UI scenes don't carry assetId
       const s = (hasAnyAssetId ? (byAssetId.get(a.id) || (scenes as any[])[i]) : (scenes as any[])[i])
-      const anim = String(s?.animation || s?.animateType || s?.animationType || (s?.animate ? 'zoom-in' : 'none') || 'none')
+
+      // Read any explicit animation selection from UI.
+      const explicitAnim = String(
+        s?.animation || s?.animateType || s?.animationType || (s?.animate ? 'zoom-in' : 'none') || 'none'
+      ) as AnimationType
+
+      // Apply default rule when no explicit choice exists.
+      const anim: AnimationType = (explicitAnim && explicitAnim !== 'none')
+        ? explicitAnim
+        : (i < DEFAULT_ANIM_FIRST_N ? DEFAULT_ANIM : 'none')
 
       return {
         assetId: a.id,

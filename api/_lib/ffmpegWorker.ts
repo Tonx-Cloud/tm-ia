@@ -43,17 +43,19 @@ const RESOLUTIONS: Record<RenderQuality, Record<RenderFormat, Resolution>> = {
   },
 }
 
-const BITRATES: Record<RenderQuality, string> = {
+const _BITRATES: Record<RenderQuality, string> = {
   basic: '2500k',
   standard: '5000k',
   pro: '8000k',
 }
 
-const PRESETS: Record<RenderQuality, string> = {
+const _PRESETS: Record<RenderQuality, string> = {
   basic: 'veryfast',
   standard: 'fast',
   pro: 'medium', // Slower, better compression
 }
+
+const DOWNLOAD_TIMEOUT_MS = 60_000
 
 // ============================================================================
 // Job Status Management
@@ -141,7 +143,7 @@ export function cleanupOldRenders(maxAgeMs: number = 24 * 60 * 60 * 1000): numbe
 // FFmpeg Progress Parsing
 // ============================================================================
 
-function parseFFmpegProgress(stderr: string, totalDurationSec: number): number | null {
+function _parseFFmpegProgress(stderr: string, totalDurationSec: number): number | null {
   // FFmpeg outputs: time=00:00:05.23
   const match = stderr.match(/time=(\d{2}):(\d{2}):(\d{2})\.(\d{2})/)
   if (match) {
@@ -158,10 +160,36 @@ function parseFFmpegProgress(stderr: string, totalDurationSec: number): number |
 }
 
 // ============================================================================
+// Download Helpers (with timeout)
+// ============================================================================
+
+async function fetchWithTimeout(url: string, timeoutMs: number, label: string) {
+  const ac = new AbortController()
+  const timeout = setTimeout(() => ac.abort(), timeoutMs)
+  try {
+    const resp = await fetch(url, { signal: ac.signal })
+    if (!resp.ok) throw new Error(`${label} download failed (${resp.status})`)
+    return resp
+  } catch (err) {
+    if ((err as any)?.name === 'AbortError') {
+      throw new Error(`${label} download timed out after ${timeoutMs}ms`)
+    }
+    throw err
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function downloadToFile(url: string, filePath: string, timeoutMs: number, label: string) {
+  const resp = await fetchWithTimeout(url, timeoutMs, label)
+  fs.writeFileSync(filePath, Buffer.from(await resp.arrayBuffer()))
+}
+
+// ============================================================================
 // Video Filter Construction
 // ============================================================================
 
-function buildVideoFilters(options: RenderOptions): string[] {
+function _buildVideoFilters(options: RenderOptions): string[] {
   const filters: string[] = []
   const format = options.format || 'horizontal'
   const quality = options.quality || 'standard'
@@ -188,6 +216,11 @@ function buildVideoFilters(options: RenderOptions): string[] {
   return filters
 }
 
+function getWatermarkFilter(options: RenderOptions): string {
+  if (!options.watermark) return ''
+  return `drawtext=text='TM-IA DEMO':fontsize=48:fontcolor=white@0.4:x=w-tw-20:y=h-th-20:shadowcolor=black@0.3:shadowx=2:shadowy=2`
+}
+
 function summarizeStoryboardForLog(project: any) {
   try {
     const sb = (project?.storyboard || []) as any[]
@@ -210,27 +243,30 @@ function summarizeStoryboardForLog(project: any) {
 export async function startFFmpegRender(userId: string, job: RenderJob, options: RenderOptions = {}) {
   await updateJobStatus(userId, job.renderId, 'processing')
 
+  const tmpDir = os.tmpdir()
+  const workDir = path.join(tmpDir, `render_${job.renderId}`)
+  const tempFiles: string[] = []
+  const shouldCleanupWorkDir = true
+
   try {
     const project = await getProject(job.projectId)
     if (!project) throw new Error('Project not found')
 
     // 1. Prepare Workspace
-    const tmpDir = os.tmpdir()
-    const workDir = path.join(tmpDir, `render_${job.renderId}`)
     if (!fs.existsSync(workDir)) fs.mkdirSync(workDir)
 
     // 2. Prepare Audio
     let audioInput = ''
     if (project.audioUrl) {
       const workAudio = path.join(tmpDir, `audio_${job.renderId}.bin`)
-      const resp = await fetch(project.audioUrl)
-      if (!resp.ok) throw new Error(`Audio download failed`)
-      fs.writeFileSync(workAudio, Buffer.from(await resp.arrayBuffer()))
+      await downloadToFile(project.audioUrl, workAudio, DOWNLOAD_TIMEOUT_MS, 'Audio')
       audioInput = workAudio
+      tempFiles.push(workAudio)
     } else if (project.audioData) {
       const workAudio = path.join(tmpDir, `audio_${job.renderId}.bin`)
       fs.writeFileSync(workAudio, Buffer.from(project.audioData, 'base64'))
       audioInput = workAudio
+      tempFiles.push(workAudio)
     } else if (project.audioPath && fs.existsSync(project.audioPath)) {
       audioInput = project.audioPath
     }
@@ -242,6 +278,7 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
     const res = RESOLUTIONS[quality][format]
     const fps = 30
     const ffmpegPath = getFFmpegPath()
+    const watermarkFilter = getWatermarkFilter(options)
 
     // 4. Generate Clips Sequentially
     // Using simple clip generation avoids "filter_complex" complexity and guarantees resolution/animation correctness per scene.
@@ -262,6 +299,78 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
     const sbLog = summarizeStoryboardForLog(project)
     const header = `TM-IA render (sequential)\nformat=${format} quality=${quality} (${res.width}x${res.height})\nscenes=${storyboard.length}\n${sbLog}\n`
     await updateJobProgress(userId, job.renderId, 5, header)
+
+    const hasAnimatedVideo = storyboard.some(s => {
+      const asset: any = project.assets.find(a => a.id === s.assetId)
+      return asset?.animation?.status === 'completed' && asset?.animation?.videoUrl
+    })
+
+    const shouldUseCrossfade = Boolean(options.crossfade) && storyboard.length > 1 && !hasAnimatedVideo
+
+    if (shouldUseCrossfade) {
+      // Crossfade path (still images only)
+      const imageFiles: string[] = []
+      const durations: number[] = []
+      const animateFlags: boolean[] = []
+
+      for (let i = 0; i < storyboard.length; i++) {
+        const item = storyboard[i]
+        const asset: any = project.assets.find(a => a.id === item.assetId)
+        if (!asset?.dataUrl) continue
+
+        const m = asset.dataUrl.match(/^data:(image\/[^;]+);base64,(.*)$/)
+        if (!m) continue
+        const ext = m[1].includes('png') ? 'png' : 'jpg'
+        const imgName = `src_${i}.${ext}`
+        const imgPath = path.join(workDir, imgName)
+        fs.writeFileSync(imgPath, m[2], 'base64')
+
+        const anim = String((item as any).animateType || (item as any).animation || (item.animate ? 'zoom-in' : 'none'))
+        imageFiles.push(imgName)
+        durations.push(item.durationSec || 5)
+        animateFlags.push(anim !== 'none')
+      }
+
+      if (imageFiles.length > 0) {
+        const baseFilters = `scale=${res.width}:${res.height}:force_original_aspect_ratio=decrease,pad=${res.width}:${res.height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1`
+        const finalOutput = path.join(workDir, 'output.mp4')
+        const args = buildCrossfadeCommand(
+          workDir,
+          imageFiles,
+          durations,
+          animateFlags,
+          audioInput,
+          finalOutput,
+          baseFilters,
+          options.crossfadeDuration ?? 0.5,
+          watermarkFilter
+        )
+
+        await new Promise<void>((resolve, reject) => {
+          const p = spawn(ffmpegPath, args)
+          let stderr = ''
+          p.stderr.on('data', d => stderr += d.toString())
+          p.on('close', c => {
+            if (c === 0) resolve()
+            else reject(new Error(`Crossfade render failed: ${stderr.slice(-500)}`))
+          })
+        })
+
+        // 6. Upload
+        console.log('Render success (crossfade):', finalOutput)
+        try {
+          const buf = fs.readFileSync(finalOutput)
+          const key = `renders/${job.projectId}/${job.renderId}.mp4`
+          const obj = await putBufferToR2(key, buf, 'video/mp4')
+          await updateJobStatus(userId, job.renderId, 'complete', obj.url)
+        } catch (err) {
+          const downloadUrl = `${process.env.PUBLIC_BASE_URL || ''}/api/render/download?jobId=${job.renderId}`
+          await updateJobStatus(userId, job.renderId, 'complete', downloadUrl, `Upload failed: ${(err as Error).message}`)
+        }
+
+        return
+      }
+    }
 
     for (let i = 0; i < storyboard.length; i++) {
       const item = storyboard[i]
@@ -284,12 +393,11 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       if (videoUrl && /^https?:\/\//i.test(videoUrl)) {
         // Download the video to local temp (serverless-safe)
         const vidPath = path.join(workDir, `src_${i}.mp4`)
-        const resp = await fetch(videoUrl)
-        if (!resp.ok) throw new Error(`Video download failed for scene ${i + 1}`)
-        fs.writeFileSync(vidPath, Buffer.from(await resp.arrayBuffer()))
+        await downloadToFile(videoUrl, vidPath, DOWNLOAD_TIMEOUT_MS, `Video scene ${i + 1}`)
 
         // Loop the clip if needed to reach dur, then scale/pad
-        const vf = `${scaleFilter}`
+        let vf = `${scaleFilter}`
+        if (watermarkFilter) vf += `,${watermarkFilter}`
         const args = [
           '-stream_loop', '-1',
           '-i', vidPath,
@@ -341,6 +449,7 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
 
         // Safety scale again to catch zoompan resets
         vf += `,scale=${res.width}:${res.height}`
+        if (watermarkFilter) vf += `,${watermarkFilter}`
 
         const args = [
           '-loop', '1',
@@ -414,6 +523,18 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
   } catch (err) {
     console.error('Render worker exception:', err)
     await updateJobStatus(userId, job.renderId, 'failed', undefined, (err as Error).message)
+  } finally {
+    // Best-effort cleanup
+    for (const f of tempFiles) {
+      try {
+        if (fs.existsSync(f)) fs.unlinkSync(f)
+      } catch {
+        // ignore
+      }
+    }
+    if (shouldCleanupWorkDir) {
+      cleanupRenderJob(job.renderId)
+    }
   }
 }
 
@@ -429,7 +550,8 @@ function buildCrossfadeCommand(
   audioInput: string,
   outputFile: string,
   baseFilters: string,
-  crossfadeDuration: number
+  crossfadeDuration: number,
+  watermarkFilter?: string
 ): string[] {
   // For crossfade, we need to use a complex filtergraph
   // Each image is looped for its duration, then xfade is applied between them
@@ -487,7 +609,8 @@ function buildCrossfadeCommand(
   }
 
   const finalLabel = prevLabel
-  filterParts.push(`[${finalLabel}]format=yuv420p[vout]`)
+  const finalFilters = [watermarkFilter, 'format=yuv420p'].filter(Boolean).join(',')
+  filterParts.push(`[${finalLabel}]${finalFilters}[vout]`)
 
   const filterComplex = filterParts.join(';')
   const audioStreamIndex = imageFiles.length

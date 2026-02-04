@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { supabase, supabaseAdmin } from '../_lib/supabase.js'
+import { supabase } from '../_lib/supabase.js'
 import { addCredits, getBalance } from '../_lib/credits.js'
 
 /**

@@ -130,3 +130,16 @@ model ImageJob {
   @@index([userId, createdAt])
   @@index([status, createdAt])
 }
+
+model RateLimit {
+  id        String   @id @default(uuid())
+  key       String
+  scope     String
+  count     Int      @default(0)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([key, scope])
+  @@index([scope, resetAt])
+}

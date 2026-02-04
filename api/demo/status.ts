@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+﻿import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getSessionFromRequest } from '../_lib/auth.js'
 import { checkDemoLimit } from '../_lib/demoUsage.js'
 import { withObservability } from '../_lib/observability.js'
@@ -19,7 +19,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   ctx.userId = session.userId
 
   const rateKey = `demo:${session.userId}`
-  const rate = checkRateLimit(req, { limit: 10, windowMs: 60_000, key: rateKey, ctx })
+  const rate = await checkRateLimit(req, { limit: 10, windowMs: 60_000, key: rateKey, ctx })
   if (!rate.allowed) {
     res.setHeader('Retry-After', String(rate.retryAfterSeconds))
     return res.status(429).json({
@@ -43,3 +43,4 @@ export default withObservability(async function handler(req: VercelRequest, res:
   logger.info('demo.ready')
   return res.status(200).json({ status: 'ready', requestId: ctx.requestId })
 })
+

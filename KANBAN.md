@@ -1,78 +1,52 @@
-# TM-IA — Kanban
+﻿# TM-IA — Kanban
 
 > Quadro simples (arquivo no repo) para acompanhar prioridades sem depender de ferramenta externa.
 > Atualize movendo cards entre colunas.
 
+## NOW (em andamento)
+
+### [NOW-02] Smoke tests completos (com envs reais)
+**Objetivo:** validar o fluxo ponta-a-ponta com serviços externos.
+
+- Rodar `scripts/smoke-test.ps1` com `Token` válido
+- Validar: créditos, criação de projeto e fetch de assets
+- (Opcional) Rodar render real em ambiente controlado
+
+Arquivos/refs:
+- `scripts/smoke-test.ps1`
+
+---
 ## NEXT (prioridade alta)
 
-### [NEXT-01] Endpoint + Dashboard de status do render
-**Objetivo:** acompanhar PENDING/RUNNING/COMPLETE/FAILED, % progress e logTail.
+## BACKLOG (medio prazo)
 
-- Backend
-  - Revisar/confirmar endpoint existente: `GET /api/render/status?renderId=...`
-  - Criar endpoint de listagem por projeto: `GET /api/render/status?projectId=...` (ou `/api/render/history?projectId=...`) retornando: status, progress, outputUrl, error, createdAt
-- Frontend
-  - Criar uma tela/section (ex: Sidebar → Histórico/Renderizações) com listagem + detalhes
+### [BACKLOG-01] Dashboard de status do render
+- Endpoint de listagem por projeto + UI de historico
 
-Arquivos/refs:
-- `api/render/status.ts` (se existir) / `api/render/history.ts`
-- `api/_lib/renderPipeline.ts` + `api/_lib/ffmpegWorker.ts`
-- `web/src/components/StepWizard.tsx`
+### [BACKLOG-02] Ledger de creditos + idempotencia
+- Chave de idempotencia por acao
 
----
+### [BACKLOG-03] Presets de estilo + templates intro/outro
 
-### [NEXT-02] Refatorar storage (S3/R2 + presigned URLs)
-**Objetivo:** desacoplar áudio/renders do Vercel Blob, reduzir custos e ganhar controle.
+### [BACKLOG-04] Export TikTok/Reels
 
-- Definir provedor: Cloudflare R2 ou AWS S3
-- Implementar upload direto do browser via presigned URL
-- Atualizar:
-  - upload de áudio (hoje: `/api/blob/upload`)
-  - upload de render (hoje: `put()` do Vercel Blob)
-
-Arquivos/refs:
-- `api/blob/upload.ts`
-- `api/upload/index.ts`
-- `api/_lib/ffmpegWorker.ts`
+### [BACKLOG-05] Testes automatizados + lint/formatter
 
 ---
 
-### [NEXT-03] Ledger de créditos + idempotência ao debitar
-**Objetivo:** evitar dupla cobrança e facilitar auditoria/reembolso.
+## DONE
 
-- Adotar uma “chave de idempotência” por ação:
-  - ex: `actionId = sha256(userId + projectId + action + renderId/assetId + timestampBucket)`
-- Garantir que `spendCredits` não debite 2x o mesmo `actionId`
-- Salvar no `CreditEntry` metadados mínimos
+### [DONE-01] Proteger trigger interno de render (baseUrl/segredo)
+### [DONE-02] Robustez do render (timeouts + cleanup)
+### [DONE-03] Crossfade e watermark aplicados
+### [DONE-04] Corrigir criacao de projeto no analyze
+### [DONE-05] Rate limit persistente (DB/Prisma)
+### [DONE-06] Lint configurado (eslint + script)
+### [DONE-07] Lint sem warnings (imports/vars ajustados)
+### [DONE-08] Upgrade @vercel/node para 5.5.28 (audit hardening)
 
-Arquivos/refs:
-- `api/_lib/credits.ts`
-- `prisma/schema.prisma` (tabela `CreditEntry`)
+## CHECKLIST de revisao final
 
----
-
-## BACKLOG (médio prazo)
-
-### [BACKLOG-01] Presets de estilo + templates intro/outro
-- presets (cinematic/anime/gospel/etc.)
-- templates de abertura/fechamento
-
-### [BACKLOG-02] Versionamento e reuso de storyboards/projetos
-- versões do storyboard
-- “duplicar projeto”
-
-### [BACKLOG-03] Export/integração TikTok/Reels
-- presets por plataforma
-- metadados e recomendações
-
-### [BACKLOG-04] Testes automatizados + lint/formatter
-- CI de testes
-- padronização (eslint/prettier) e “check” no PR
-
----
-
-## CHECKLIST de revisão final
-
-- [ ] Validar fluxo completo: upload → transcrição → cenas → edição → render → download
-- [ ] Re-testar cenários: 413 (cache antigo) e 429 (rate limit)
-- [ ] Medir concorrência de múltiplos renders e ajustar fila/worker
+- [ ] Validar fluxo completo: upload → transcricao → cenas → edicao → render → download
+- [ ] Re-testar cenarios: 413 (cache antigo) e 429 (rate limit)
+- [ ] Medir concorrencia de multiplos renders e ajustar fila/worker

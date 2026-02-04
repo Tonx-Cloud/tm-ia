@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { CREDIT_PACKAGES, creditsToUSD, formatCostDisplay } from '../_lib/pricing.js'
+import { CREDIT_PACKAGES } from '../_lib/pricing.js'
 import { withObservability } from '../_lib/observability.js'
 
 /**

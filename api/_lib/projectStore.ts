@@ -1,5 +1,4 @@
 import { prisma } from './prisma.js'
-import crypto from 'crypto'
 
 export type Asset = {
   id: string
@@ -141,9 +140,9 @@ export async function getProject(projectId: string): Promise<Project | null> {
 
 export async function upsertProject(project: Project): Promise<void> {
   // Update main fields
-  await prisma.project.update({
+  await prisma.project.upsert({
     where: { id: project.id },
-    data: {
+    update: {
       name: project.name,
       userId: project.userId,
       audioUrl: project.audioUrl,
@@ -152,6 +151,20 @@ export async function upsertProject(project: Project): Promise<void> {
       audioMime: project.audioMime,
       audioData: project.audioData,
       storyboard: JSON.stringify(project.storyboard),
+      mood: project.mood,
+      style: project.style,
+      aspectRatio: project.aspectRatio,
+    },
+    create: {
+      id: project.id,
+      name: project.name,
+      userId: project.userId,
+      audioUrl: project.audioUrl,
+      audioPath: project.audioPath,
+      audioFilename: project.audioFilename,
+      audioMime: project.audioMime,
+      audioData: project.audioData,
+      storyboard: JSON.stringify(project.storyboard || []),
       mood: project.mood,
       style: project.style,
       aspectRatio: project.aspectRatio,

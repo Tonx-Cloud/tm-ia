@@ -8,7 +8,7 @@ import { putBufferToR2 } from '../_lib/r2.js'
 import { getSessionFromRequest } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { getOpenAI } from '../_lib/openaiClient.js'
-import { createProject, upsertProject, getProject } from '../_lib/projectStore.js'
+import { upsertProject, getProject } from '../_lib/projectStore.js'
 import { spendCredits, getBalance, addCredits } from '../_lib/credits.js'
 import { PRICING, calculateTranscriptionCost } from '../_lib/pricing.js'
 import { withObservability } from '../_lib/observability.js'
@@ -245,10 +245,8 @@ export default withObservability(async function handler(req: VercelRequest, res:
     // 4. Hook Analysis
     // If transcript is large, create a short summary first to avoid huge prompts
     let transcriptForPrompt = text
-    let truncated = false
     const MAX_TRANSCRIPT_CHARS = 4000
     if (text.length > MAX_TRANSCRIPT_CHARS) {
-      truncated = true
       // Ask a small/cheap model to summarize the transcript concisely (via Vercel AI Gateway)
       try {
         const { gatewayGenerateText } = await import('../_lib/aiGateway.js')

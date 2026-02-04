@@ -213,7 +213,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       name: user.name || '',
       picture: user.picture || '',
       balance: String(balance),
-      provider: 'google'
+      provider: 'google',
+      redirect: redirectPath
     })
 
     res.setHeader('Location', `${frontendUrl}/auth/callback?${params.toString()}`)

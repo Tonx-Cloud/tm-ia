@@ -1,5 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
-import crypto from 'crypto'
+﻿import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { getSessionFromRequest } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
 import { generateImageDataUrl } from '../_lib/geminiImage.js'
@@ -18,7 +17,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
   ctx.userId = session.userId
 
-  const rate = checkRateLimit(req, { limit: 5, windowMs: 60_000, ctx })
+  const rate = await checkRateLimit(req, { limit: 5, windowMs: 60_000, ctx })
   if (!rate.allowed) {
     return res.status(429).json({ error: 'Too many requests', retryAfter: rate.retryAfterSeconds, requestId: ctx.requestId })
   }
@@ -40,12 +39,12 @@ export default withObservability(async function handler(req: VercelRequest, res:
   const asset = proj.assets.find((a) => a.id === assetId)
   if (!asset) return res.status(404).json({ error: 'Asset not found', requestId: ctx.requestId })
 
-  // marcar necessidade de regen e debitar créditos
+  // marcar necessidade de regen e debitar crÃ©ditos
   await updateAsset(projectId, assetId, { status: 'needs_regen' })
 
   const cost = PRICING.REGENERATE_IMAGE // 30 credits per image
 
-  // debitar créditos de regen (2 por asset)
+  // debitar crÃ©ditos de regen (2 por asset)
   const vip = session.email === 'hiltonsf@gmail.com' || session.email.toLowerCase().includes('felipe')
   if (!vip) {
     try {
@@ -87,3 +86,4 @@ export default withObservability(async function handler(req: VercelRequest, res:
   const refreshedAsset = refreshed?.assets.find((a) => a.id === assetId) || asset
   return res.status(200).json({ project: refreshed || proj, asset: refreshedAsset, cost, balance, requestId: ctx.requestId })
 })
+

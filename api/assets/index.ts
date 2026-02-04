@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+﻿import type { VercelRequest, VercelResponse } from '@vercel/node'
 import crypto from 'crypto'
 import { getSessionFromRequest } from '../_lib/auth.js'
 import { loadEnv } from '../_lib/env.js'
@@ -15,7 +15,7 @@ export default withObservability(async function handler(req: VercelRequest, res:
   }
   ctx.userId = session.userId
 
-  const rate = checkRateLimit(req, { limit: 12, windowMs: 60_000, ctx })
+  const rate = await checkRateLimit(req, { limit: 12, windowMs: 60_000, ctx })
   if (!rate.allowed) {
     return res.status(429).json({ error: 'Too many requests', retryAfter: rate.retryAfterSeconds, requestId: ctx.requestId })
   }
@@ -173,3 +173,4 @@ export default withObservability(async function handler(req: VercelRequest, res:
 
   return res.status(405).json({ error: 'Method not allowed', requestId: ctx.requestId })
 })
+
