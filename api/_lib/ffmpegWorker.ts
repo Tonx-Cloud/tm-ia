@@ -297,7 +297,18 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
 
     // Debug Log Header
     const sbLog = summarizeStoryboardForLog(project)
-    const header = `TM-IA render (sequential)\nformat=${format} quality=${quality} (${res.width}x${res.height})\nscenes=${storyboard.length}\n${sbLog}\n`
+
+    // Capture ffmpeg version (helps diagnose env differences: Vercel vs local vs VM).
+    let ffmpegVersionLine = ''
+    try {
+      const { spawnSync } = await import('child_process')
+      const v = spawnSync(ffmpegPath, ['-version'], { encoding: 'utf-8' })
+      ffmpegVersionLine = (v.stdout || v.stderr || '').split('\n')[0]?.trim() || ''
+    } catch {
+      // ignore
+    }
+
+    const header = `TM-IA render (sequential)\n${ffmpegVersionLine ? `ffmpeg=${ffmpegVersionLine}\n` : ''}format=${format} quality=${quality} (${res.width}x${res.height})\nscenes=${storyboard.length}\n${sbLog}\n`
     await updateJobProgress(userId, job.renderId, 5, header)
 
     const hasAnimatedVideo = storyboard.some(s => {
@@ -511,8 +522,12 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       '-i', audioInput,
       // Re-encode final output to FORCE fps=30 (avoid any 25fps defaults / player dropping frames)
       '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
-      // Force CFR output at 30fps regardless of concat timestamps.
-      '-vf', `fps=${fps}`,
+      // Force CFR output at fps regardless of concat timestamps.
+      // - fps filter: produces the wanted number of frames
+      // - settb/setpts: rebuild timestamps from frame number (avoids strange avg/r_frame_rate)
+      // - fps_mode cfr: ask muxer to keep CFR
+      '-fps_mode', 'cfr',
+      '-vf', `settb=AVTB,setpts=N/${fps}/TB,fps=${fps}`,
       '-pix_fmt', 'yuv420p',
       '-r', String(fps),
       '-c:a', 'aac', '-b:a', '192k',
