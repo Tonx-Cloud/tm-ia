@@ -521,8 +521,8 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
     for (const f of clipFiles) concatArgs.push('-i', f)
     concatArgs.push('-i', audioInput)
 
-    // Build filter_complex concat
-    // Example: [0:v][1:v][2:v]concat=n=3:v=1:a=0,settb=AVTB,setpts=N/30/TB,fps=30[v]
+    // Build filter_complex concat (community-proven recipe)
+    // Ref pattern: settb=AVTB,setpts=N/30/TB,fps=30 to force CFR timeline.
     const vIns = clipFiles.map((_, i) => `[${i}:v]`).join('')
     const n = clipFiles.length
     const fc = `${vIns}concat=n=${n}:v=1:a=0,settb=AVTB,setpts=N/${fps}/TB,fps=${fps}[v]`
@@ -545,6 +545,7 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
       finalOutput
     ]
 
+    console.log('FINAL_MUX=filter_complex_concat')
     console.log('Running Final Concat:', ffmpegPath, fullArgs.join(' '))
     
     await new Promise<void>((resolve, reject) => {
