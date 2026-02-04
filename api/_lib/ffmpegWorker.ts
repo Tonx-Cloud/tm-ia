@@ -510,36 +510,44 @@ export async function startFFmpegRender(userId: string, job: RenderJob, options:
     if (clipFiles.length === 0) throw new Error('No clips generated')
 
     // 5. Concat Clips + Audio
-    const concatList = path.join(workDir, 'concat.txt')
-    const lines = clipFiles.map(f => `file '${f}'`)
-    fs.writeFileSync(concatList, lines.join('\n'))
+    // NOTE: concat demuxer can preserve odd timestamps and result in unexpected fps reports.
+    // Using concat FILTER gives us better control and more consistent CFR outputs.
 
     const finalOutput = path.join(workDir, 'output.mp4')
+
+    // Inputs: one -i per clip, plus one -i for audio
+    const concatArgs: string[] = []
+    for (const f of clipFiles) concatArgs.push('-i', f)
+    concatArgs.push('-i', audioInput)
+
+    // Build filter_complex concat
+    // Example: [0:v][1:v][2:v]concat=n=3:v=1:a=0,settb=AVTB,setpts=N/30/TB,fps=30[v]
+    const vIns = clipFiles.map((_, i) => `[${i}:v]`).join('')
+    const n = clipFiles.length
+    const fc = `${vIns}concat=n=${n}:v=1:a=0,settb=AVTB,setpts=N/${fps}/TB,fps=${fps}[v]`
+
     // We encode again to combine with audio and ensure final bitrate/profile
-    const concatArgs = [
-      '-f', 'concat', '-safe', '0',
-      '-i', concatList,
-      '-i', audioInput,
-      // Re-encode final output to FORCE fps=30 (avoid any 25fps defaults / player dropping frames)
-      '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
-      // Force CFR output at fps regardless of concat timestamps.
-      // - fps filter: produces the wanted number of frames
-      // - settb/setpts: rebuild timestamps from frame number (avoids strange avg/r_frame_rate)
-      // - fps_mode cfr: ask muxer to keep CFR
+    const fullArgs = [
+      '-y',
+      ...concatArgs,
+      '-filter_complex', fc,
+      '-map', '[v]',
+      '-map', `${n}:a:0`,
+      // Force CFR in container
       '-fps_mode', 'cfr',
-      '-vf', `settb=AVTB,setpts=N/${fps}/TB,fps=${fps}`,
+      '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
       '-pix_fmt', 'yuv420p',
       '-r', String(fps),
       '-c:a', 'aac', '-b:a', '192k',
       '-shortest',
       '-movflags', '+faststart',
-      '-y', finalOutput
+      finalOutput
     ]
 
-    console.log('Running Final Concat:', ffmpegPath, concatArgs.join(' '))
+    console.log('Running Final Concat:', ffmpegPath, fullArgs.join(' '))
     
     await new Promise<void>((resolve, reject) => {
-      const p = spawn(ffmpegPath, concatArgs)
+      const p = spawn(ffmpegPath, fullArgs)
       let stderr = ''
       p.stderr.on('data', d => stderr += d.toString())
       p.on('close', c => {
